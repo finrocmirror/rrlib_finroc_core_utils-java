@@ -1,0 +1,5 @@
+<targets>
+  <rrjavalib name="finroc_core_utils">
+    <sources>**.java</sources>
+  </rrjavalib>
+</targets>
