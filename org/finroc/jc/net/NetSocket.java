@@ -271,7 +271,7 @@ public class NetSocket {
     virtual void reset(OutputStreamBuffer* outputStreamBuffer, BufferInfo& buffer) {
         buffer.buffer = &outputStreamBuf;
         buffer.position = 0;
-        buffer.setRange(0, 0);
+        buffer.setRange(0, BUFSIZE);
     }
 
     virtual bool write(OutputStreamBuffer* outputStreamBuffer, BufferInfo& buffer, int writeSizeHint) {
