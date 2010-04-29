@@ -284,4 +284,9 @@ public class MemoryBuffer implements ConstSource, Sink, CustomSerialization, Has
     public void flush(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
         curSize = buffer.position; // update buffer size
     }
+
+    @JavaOnly
+    public void dumpToFile(String filename) {
+        backend.dumpToFile(filename, curSize);
+    }
 }

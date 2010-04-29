@@ -39,7 +39,7 @@ public abstract class StructBase {
     protected long address;
 
     /** Buffer to read or write from (if not available memory is accessed directly) */
-    protected final FixedBuffer buffer;
+    protected FixedBuffer buffer;
 
     /** Pointer to instance relative to buffer - or to parent struct */
     protected int relAddress;
@@ -138,5 +138,31 @@ public abstract class StructBase {
      */
     public void setRelAddress(int relAddress) {
         this.relAddress = relAddress;
+    }
+
+    /**
+     * @return Buffer that is read from/written to (if not available memory is accessed directly)
+     */
+    public FixedBuffer getBuffer() {
+        return buffer;
+    }
+
+    /**
+     * @param buffer Buffer that is read from/written to (if not available memory is accessed directly)
+     */
+    public void setBuffer(FixedBuffer buffer) {
+        this.buffer = buffer;
+    }
+
+    /**
+     * Set Buffers of specified structs
+     *
+     * @param b Buffer
+     * @param structs Structs to set buffer of
+     */
+    public static void setBuffer(FixedBuffer b, StructBase... structs) {
+        for (StructBase struct : structs) {
+            struct.setBuffer(b);
+        }
     }
 }

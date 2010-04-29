@@ -21,6 +21,8 @@
  */
 package org.finroc.jc.stream;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -549,7 +551,7 @@ public class FixedBuffer {
      */
     @JavaOnly public String getUnicode(@SizeT int offset) {
         StringBuilder sb = new StringBuilder();
-        for (int i = offset, n = buffer.capacity() - 1; i < n; i+=2) {
+        for (int i = offset, n = buffer.capacity() - 1; i < n; i += 2) {
             char c = buffer.getChar(i);
             if (c == 0) {
                 return sb.toString();
@@ -568,7 +570,7 @@ public class FixedBuffer {
      */
     @JavaOnly public String getUnicode(@SizeT int offset, @SizeT int length) {
         StringBuilder sb = new StringBuilder();
-        for (int i = offset, n = Math.max(i + (length * 2), buffer.capacity() - 1); i < n; i+=2) {
+        for (int i = offset, n = Math.max(i + (length * 2), buffer.capacity() - 1); i < n; i += 2) {
             char c = buffer.getChar(i);
             if (c == 0) {
                 return sb.toString();
@@ -721,5 +723,18 @@ public class FixedBuffer {
             }
         }
         return pointer;
+    }
+
+    @JavaOnly
+    public void dumpToFile(String filename, int size) {
+        try {
+            BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(filename));
+            int n = size <= 0 ? capacity() : size;
+            for (int i = 0; i < n; i++) {
+                fos.write(getByte(i));
+            }
+            fos.close();
+        } catch (Exception e) {
+        }
     }
 }
