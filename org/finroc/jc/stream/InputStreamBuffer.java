@@ -888,4 +888,11 @@ public class InputStreamBuffer implements Source, HasDestructor {
         //System.out.println("Not here");
         return source != null ? source.moreDataAvailable(this, sourceBuffer) : constSource.moreDataAvailable(this, sourceBuffer);
     }
+
+    /**
+     * @return Number of bytes ever read from this stream
+     */
+    public long getAbsoluteReadPosition() {
+        return absoluteReadPos + curBuffer.position;
+    }
 }

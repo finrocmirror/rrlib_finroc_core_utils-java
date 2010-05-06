@@ -47,7 +47,7 @@ public class LargeIntermediateStreamBuffer extends MemoryBuffer {
     @PassByValue private BufferInfo dummyInfo = new BufferInfo();
 
     /*Cpp
-    LargeIntermediateStreamBuffer(Sink* sink_) : sinkLock(), sink(sink_)
+    LargeIntermediateStreamBuffer(Sink* sink_) : sinkLock(), sink(sink_), dummyInfo()
     {}
      */
 
