@@ -413,6 +413,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
         if (available < required) {
             // copy rest to beginning and get next bytes from input
             fetchNextBytes(required - available);
+            assert(remaining() >= required);
             //  throw new RuntimeException("Attempt to read outside of buffer");
         }
     }
@@ -453,6 +454,9 @@ public class InputStreamBuffer implements Source, HasDestructor {
             constSource.read(this, sourceBuffer, minRequired2);
         }
         assert(sourceBuffer.remaining() >= minRequired2);
+
+        //JavaOnlyBlock
+        assert(sourceBuffer.position >= 0);
 
         // (possibly) fill up boundary buffer
         if (remain > 0) {

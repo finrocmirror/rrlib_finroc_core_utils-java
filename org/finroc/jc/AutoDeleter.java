@@ -27,6 +27,7 @@ import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Managed;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SharedPtr;
+import org.finroc.jc.container.AllocationRegister;
 
 /**
  * @author max
@@ -40,13 +41,19 @@ public class AutoDeleter {
     std::vector<SafeDestructible*> deletables;
      */
 
+    /** "Lock" to allocation register - ensures that report will be printed after static auto-deleter has been deleted */
+    @SuppressWarnings("unused")
+    private static AllocationRegister allocationRegisterLock = AllocationRegister.getInstance();
+
     /** Singleton static instance for all static objects that should be deleted, when the program finishes */
     @SharedPtr private static AutoDeleter instance;
 
     /*Cpp
     virtual ~AutoDeleter() {
         Thread::stopThreads();
-        for (size_t i = 0; i < deletables._size(); i++) {
+
+        // delete in reverse order
+        for (int i = ((int)deletables._size()) - 1; i >= 0; i--) {
             deletables[i]->autoDelete();
         }
     }

@@ -25,17 +25,23 @@ import org.finroc.jc.AtomicInt;
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.Time;
 import org.finroc.jc.annotation.CppInclude;
+import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
+import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SharedPtr;
+import org.finroc.jc.annotation.SizeT;
 
 /**
  * @author max
  *
  * Counts allocations of various kinds of object/containers.
- * Only used for debugging in order to find leaks
+ *
+ * Furthermore, global register for all reusable objects that should be assigned an application-unique 32bit Integer.
+ * Allows associating the unique integer with an object - which in turn allows storing a stamped pointer in a long variable.
  */
 @ForwardDecl( {AbstractReusable.class})
 @CppInclude("AbstractReusable.h")
@@ -50,55 +56,147 @@ public class AllocationRegister implements HasDestructor {
     private final long startTime = Time.getPrecise();
 
     /** Singleton instance */
+    @JavaOnly
     private static AllocationRegister instance;
 
     /**
      * Raw pointer to singleton instance - used in static unregisterReusable -
-     * is safe, because it can be ensured that instance is set to null after
+     * is safe, because it is still accessible after static deallocation of this class
+     * and it can be ensured that instance is set to null after
      * every reusable has unregistered
      */
     @Ptr private static AllocationRegister rawInstance;
 
     /** List of tracked reusables */
     @SuppressWarnings("unused")
-    private final SimpleList<AbstractReusable> trackedReusables = new SimpleList<AbstractReusable>();
+    private final SimpleListWithMutex<AbstractReusable> trackedReusables = new SimpleListWithMutex<AbstractReusable>(0x7FFFFFFF - 5);
 
-    public static synchronized @SharedPtr AllocationRegister getInstance() {
-        if (instance == null && (!shuttingDown())) {
-            instance = new AllocationRegister();
-            rawInstance = instance;
+    /** Initial size of indexed-Reusables register */
+    private static final int INITIAL_REUSABLES_INDEX_SIZE = 128000;
+
+    /** ArrayList that contains all reusables that should be indexed - index in list is "official" index */
+    @PassByValue
+    private SimpleListWithMutex<AbstractReusable> indexedReusables = new SimpleListWithMutex<AbstractReusable>(INITIAL_REUSABLES_INDEX_SIZE, 0x7FFFFFFF - 5);
+
+    /** Queue with free(d) slots in indexedReusables, TODO: needn't be concurrent */
+    @PassByValue
+    @CppType("ConcurrentQueue<int>")
+    private ConcurrentQueue<Integer> freeSlotQueue = new ConcurrentQueue<Integer>();
+
+
+    public static @SharedPtr AllocationRegister getInstance() {
+        //Cpp static ::std::tr1::shared_ptr<AllocationRegister> instance(new AllocationRegister());
+        //Cpp rawInstance = instance._get();
+
+        //JavaOnlyBlock
+        synchronized (AllocationRegister.class) {
+            if (instance == null && (!shuttingDown())) {
+                instance = new AllocationRegister();
+                rawInstance = instance;
+            }
         }
+
         return instance;
     }
 
+    /**
+     * @return Is application shutting down?
+     */
     @InCpp("return Thread::stoppingThreads();")
     private static boolean shuttingDown() {
         return false;
     }
 
+    /**
+     * Basic registration of reusable (for statistics mainly)
+     *
+     * @param r Reusable
+     */
     public void registerReusable(AbstractReusable r) {
         int num = reusables.incrementAndGet();
         interpretNum(num);
     }
 
+    /**
+     * Track usage of reusable
+     * (only actually done in debug mode - since significantly more memory consumption and CPU load)
+     *
+     * @param r Reusable
+     */
     public void trackReusable(AbstractReusable r) {
         /*Cpp
         #ifndef NDEBUG
+        Lock lock1(trackedReusables);
         trackedReusables.add(r);
         #endif
         */
     }
 
-    public static void unregisterReusable(AbstractReusable r) {
-        //Cpp #ifndef NDEBUG
+    /**
+     * Acquire index for reusable object
+     *
+     * @param reusable Reusable object
+     * @return Index/Handle in register
+     */
+    int indexReusable(AbstractReusable reusable) {
+        synchronized (indexedReusables) {
+            if (indexedReusables.size() == 0) {
+                indexedReusables.add(null); // first element should be null element
+            }
+            @InCpp("int free = freeSlotQueue.dequeue();")
+            Integer free = freeSlotQueue.dequeue();
+            if (freeSlotQueue.dequeueSuccessful(free)) {
+                indexedReusables.set(free, reusable);
+                return free;
+            } else {
+                indexedReusables.add(reusable);
+                return indexedReusables.size() - 1;
+            }
+        }
+    }
+
+    /**
+     * Get Reusable object from register by index
+     *
+     * @param index Index of Reusable
+     * @return Reusable
+     */
+    public static AbstractReusable getByIndex(int index) {
         assert(rawInstance != null);
+        return rawInstance.indexedReusables.get(index);
+    }
+
+    /**
+     * Unregister reusable object
+     * (clears entries in all registers)
+     *
+     * @param r Reusable object
+     */
+    public static void unregisterReusable(AbstractReusable r) {
+        assert(rawInstance != null);
+
+        if (r.getRegisterIndex() >= 0) {
+            @SizeT int idx = r.getRegisterIndex();
+            synchronized (rawInstance.indexedReusables) {
+                rawInstance.indexedReusables.set(idx, null);
+                rawInstance.freeSlotQueue.enqueue(idx);
+            }
+        }
+
+        //Cpp #ifndef NDEBUG
         rawInstance.reusables.decrementAndGet();
         /*Cpp
+        Lock lock1(rawInstance->trackedReusables);
         rawInstance->trackedReusables.removeElem(r);
         #endif
         */
     }
 
+    /**
+     * Interpret number of allocated objects
+     *
+     * @param num Number of allocated objects
+     */
     private void interpretNum(int num) {
         if ((num % 100) == 0) {
             System.out.println("Allocated " + reusables.get() + " Reusables");
@@ -112,7 +210,7 @@ public class AllocationRegister implements HasDestructor {
         #ifndef NDEBUG
         printf("\nLeaked Reusable Object Report:\n");
         if (trackedReusables.size() == 0) {
-            printf("  No reusables leaked. Valgrind loves you.\n");
+            printf("  No reusables leaked. Valgrind should appreciate this.\n");
             return;
         }
 

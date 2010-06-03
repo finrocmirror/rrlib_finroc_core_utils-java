@@ -21,7 +21,6 @@
  */
 package org.finroc.jc.container;
 
-import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.HPrepend;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
@@ -35,7 +34,7 @@ import org.finroc.jc.annotation.Ptr;
 @Ptr @Inline
 @HPrepend( {"#ifndef NDEBUG", "#define DEFINE_ADV_REUSABLE_DEBUGGING_ENABLED", "#endif"})
 //@Include("jc/thread/sThreadUtil.h")
-public abstract class AbstractReusable extends Queueable implements HasDestructor {
+public abstract class AbstractReusable extends Queueable {
 
     /** Index in reusable register */
     private int registerIndex = -1;
@@ -92,9 +91,9 @@ public abstract class AbstractReusable extends Queueable implements HasDestructo
     /**
      * Register element at Reusables register (optional - but required for use in some stamped pointers)
      */
-    protected void register() {
+    protected void registerForIndex() {
         assert(registerIndex < 0);
-        registerIndex = ReusablesRegister.register(this);
+        registerIndex = AllocationRegister.getInstance().indexReusable(this);
     }
 
     @JavaOnly
@@ -155,13 +154,6 @@ public abstract class AbstractReusable extends Queueable implements HasDestructo
      */
     public int getRegisterIndex() {
         return registerIndex;
-    }
-
-    /** Called when reusable is deleted */
-    protected void unregister() {
-        if (registerIndex >= 0) {
-            ReusablesRegister.unregister(this);
-        }
     }
 
     /**

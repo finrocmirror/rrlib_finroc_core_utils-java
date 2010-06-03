@@ -26,6 +26,7 @@ import org.finroc.jc.annotation.CppInclude;
 import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.Friend;
 import org.finroc.jc.annotation.PassByValue;
+import org.finroc.jc.annotation.Protected;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.RawTypeArgs;
 import org.finroc.jc.annotation.Virtual;
@@ -42,7 +43,7 @@ import org.finroc.jc.annotation.Virtual;
 public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool<T> {
 
     /** Wrapped Queue */
-    @PassByValue WonderQueueTL<T> wrapped = new WonderQueueTL<T>();
+    private @PassByValue WonderQueueTL<T> wrapped = new WonderQueueTL<T>();
 
     /**
      * Attaches (and enqueues) a Reusable object to this pool.
@@ -96,14 +97,12 @@ public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool
             elem = temp;
         }
 
-        //Cpp delete this; // my favourite line :-)  Due to thread-local-nature we do not need safe delete using garbage collector
+        this.delete(); // my favourite line :-)  Due to thread-local-nature we do not need safe delete using garbage collector
     }
 
-    /*Cpp
-    protected:
     // destructor is intentionally protected: call controlledDelete() instead
-    virtual ~ReusablesPoolTL() {
+    @Override @Protected
+    public void delete() {
         wrapped.deleteEnqueued();
     }
-     */
 }

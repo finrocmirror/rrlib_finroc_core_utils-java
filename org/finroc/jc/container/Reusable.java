@@ -54,13 +54,7 @@ public class Reusable extends AbstractReusable {
             owner.enqueueRaw(this);
         } else { // Owner pool has been deleted... no longer needed
 
-            /*Cpp
-            delete this; // hehe... taking everything into account, this seems a good and safe choice (IMPORTANT: last statement in method)
-             */
-
-            //JavaOnlyBlock
-            super.unregister();
-
+            this.delete(); // hehe... taking everything into account, this seems a good and safe choice (IMPORTANT: last statement in method)
         }
     }
 }

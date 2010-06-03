@@ -155,7 +155,7 @@ public class SimpleList<T> {
      *
      * @param other Other list
      */
-    @InCpp( "addAll(other.backend);")
+    @InCpp("addAll(other.backend);")
     public void addAll(@Const @Ref SimpleList<T> other) {
         backend.addAll(other.backend);
     }
@@ -167,8 +167,7 @@ public class SimpleList<T> {
     }
 
     // Add all elements from other stl::container to this list
-    template<typename U>
-    inline void addAll(const U& other) {
+    inline void addAll(const std::vector<T>& other) {
         backend._insert(backend._end(), other._begin(), other._end());
     }
     */

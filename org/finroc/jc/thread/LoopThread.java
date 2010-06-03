@@ -109,6 +109,7 @@ public abstract class LoopThread extends Thread {
 
             if (pauseSignal) {
                 waitUntilNotification();
+                continue;
             }
 
             // remember start time
@@ -192,8 +193,10 @@ public abstract class LoopThread extends Thread {
     /**
      * Stop Loop. Cannot be restarted.
      */
-    @Virtual public void stopThread() {
-        waiting = true;
+    @Virtual public synchronized void stopThread() {
+        if (waiting) {
+            notify();
+        }
         stopSignal = true;
     }
 

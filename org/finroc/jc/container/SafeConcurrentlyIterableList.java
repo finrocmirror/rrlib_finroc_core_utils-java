@@ -22,6 +22,7 @@
 package org.finroc.jc.container;
 
 import org.finroc.jc.ArrayWrapper;
+import org.finroc.jc.MutexLockOrder;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppInclude;
@@ -75,6 +76,9 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     //AutoDeleter autoDeleter;
     */
 
+    /** Mutex for list - Since we call garbage collector lock for list needs to be before in order */
+    public final MutexLockOrder objMutex;
+
     /** Current list backend */
     protected volatile @Ptr ArrayWrapper<T> currentBackend;
 
@@ -89,6 +93,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     @SuppressWarnings("unchecked")
     @Init( {"currentBackend(initialSize > 0 ? new ArrayWrapper<T>(0u, initialSize) : &(ArrayWrapper<T>::getEmpty()))"})
     public SafeConcurrentlyIterableListBase(@SizeT int initialSize) {
+        objMutex = new MutexLockOrder(Integer.MAX_VALUE - 20);
         currentBackend = initialSize > 0 ? new ArrayWrapper<T>(0, initialSize) : ArrayWrapper.getEmpty();
     }
 

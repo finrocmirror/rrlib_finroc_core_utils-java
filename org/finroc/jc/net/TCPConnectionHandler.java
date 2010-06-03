@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 import org.finroc.jc.ArrayWrapper;
+import org.finroc.jc.MutexLockOrder;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
@@ -74,6 +75,10 @@ public class TCPConnectionHandler extends Thread {
     @JavaOnly
     private ServerSocket serverSocket = null;
 
+    /** Thread::threadList will be locked afterwards */
+    @SuppressWarnings("unused")
+    private static MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 50);
+
     /**
      * @param port Port the Handler is running on
      */
@@ -81,6 +86,7 @@ public class TCPConnectionHandler extends Thread {
     private TCPConnectionHandler(int port) {
         this.port = port;
         setName("TCPConnectionHandler on port " + port);
+        setDaemon(true);
     }
 
     /**
@@ -184,8 +190,12 @@ public class TCPConnectionHandler extends Thread {
                 printf("NetSocket close error: %s\n", ec._message()._c_str());
             }
 
-            // establish connection and close it - this way, we can thread out of the loop
-            NetSocket::createInstance(IPSocketAddress("localhost", port));
+            // establish connection and close it - this way, we can get thread out of the loop
+            try {
+                NetSocket::createInstance(IPSocketAddress("localhost", port));
+            } catch (util::Exception& e) {
+                // do nothing... things should have worked out
+            }
         }
          */
     }
@@ -216,7 +226,20 @@ public class TCPConnectionHandler extends Thread {
             if (ts != null && ts.accepts(first)) {
                 @SharedPtr HandlerThread ht = ThreadUtil.getThreadSharedPtr(new HandlerThread(s, ts, first));
                 ht.start();
+                return;
             }
+        }
+
+        // no handler
+        System.out.println("No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
+        try {
+
+            // JavaOnlyBlock
+            s.getSocket().getInputStream().close();
+
+            s.close();
+        } catch (org.finroc.jc.net.IOException e) {
+            e.printStackTrace();
         }
     }
 

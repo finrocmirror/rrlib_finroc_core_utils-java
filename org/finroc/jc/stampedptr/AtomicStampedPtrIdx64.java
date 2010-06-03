@@ -26,7 +26,7 @@ import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.container.AbstractReusable;
-import org.finroc.jc.container.ReusablesRegister;
+import org.finroc.jc.container.AllocationRegister;
 
 /**
  * @author max
@@ -132,7 +132,7 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
     @SuppressWarnings("unchecked")
     public @Ptr T getPointer(long raw) {
         //return (T)ReusablesRegister.get((int)(raw >>> STAMP_BITS));
-        return (T)ReusablesRegister.get((int)(raw & MAX_INDEX));
+        return (T)AllocationRegister.getByIndex((int)(raw & MAX_INDEX));
     }
 
     /**
@@ -165,7 +165,7 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
 
         // self-test
         for (int stamp = Integer.MIN_VALUE; stamp < Integer.MAX_VALUE; stamp += 10000) {
-            for (int pointer = 1; pointer < Integer.MAX_VALUE; pointer+= 10000) {
+            for (int pointer = 1; pointer < Integer.MAX_VALUE; pointer += 10000) {
                 long raw = ((long)stamp << STAMP_BITS) | pointer;
                 int newStamp = (int)(raw >>> STAMP_BITS);
                 boolean stampOk = (newStamp == stamp);

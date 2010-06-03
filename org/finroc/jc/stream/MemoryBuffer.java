@@ -180,7 +180,7 @@ public class MemoryBuffer implements ConstSource, Sink, CustomSerialization, Has
     public boolean write(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer, int hint) {
 
         // do we need size increase?
-        if (buffer.position + hint >= backend.capacity()) {
+        if (hint >= 0) {
             @SizeT int newSize = Math.max(8, (int)((backend.capacity() + hint) * resizeReserveFactor));
             ensureCapacity(newSize, true, buffer.position);
             buffer.buffer = backend;

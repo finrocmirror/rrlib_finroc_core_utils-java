@@ -243,14 +243,12 @@ public class WonderQueue<T extends Queueable> extends RawWonderQueue {
      * Delete all elements that are enqueued in this list
      */
     public void deleteEnqueued() {
-        /*Cpp
-        while(true) {
-            T* r = dequeue();
-            if (r == NULL) {
+        while (true) {
+            @Ptr T r = dequeue();
+            if (r == null) {
                 break;
             }
-            delete r;
+            r.delete();
         }
-        */
     }
 }

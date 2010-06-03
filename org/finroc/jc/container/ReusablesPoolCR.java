@@ -27,6 +27,7 @@ import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.Friend;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.PassByValue;
+import org.finroc.jc.annotation.Protected;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.RawTypeArgs;
 import org.finroc.jc.annotation.Virtual;
@@ -56,7 +57,7 @@ import org.finroc.jc.annotation.Virtual;
 public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T> {
 
     /** Wrapped Queue */
-    @PassByValue WonderQueueFastCR<T> wrapped = new WonderQueueFastCR<T>();
+    private @PassByValue WonderQueueFastCR<T> wrapped = new WonderQueueFastCR<T>();
 
     /**
      * Attaches (and enqueues) a Reusable object to this pool.
@@ -124,11 +125,11 @@ public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T
     virtual void autoDelete() {
         controlledDelete();
     }
+    */
 
-    protected:
     // destructor is intentionally protected: call controlledDelete() instead
-    virtual ~ReusablesPoolCR() {
+    @Override @Protected
+    public void delete() {
         wrapped.deleteEnqueued();
     }
-     */
 }

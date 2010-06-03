@@ -25,7 +25,7 @@ import org.finroc.jc.AtomicInt;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.container.AbstractReusable;
-import org.finroc.jc.container.ReusablesRegister;
+import org.finroc.jc.container.AllocationRegister;
 
 /**
  * @author max
@@ -127,7 +127,7 @@ public class AtomicStampedPtrIdx32<T extends AbstractReusable> extends AbstractA
      */
     @SuppressWarnings("unchecked")
     public @Ptr T getPointer(int raw) {
-        return (T)ReusablesRegister.get(raw >>> STAMP_BITS);
+        return (T)AllocationRegister.getByIndex(raw >>> STAMP_BITS);
     }
 
     /**

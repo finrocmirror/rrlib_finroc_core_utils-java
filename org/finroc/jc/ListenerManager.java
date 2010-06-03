@@ -22,6 +22,7 @@
 package org.finroc.jc;
 
 import org.finroc.jc.annotation.Const;
+import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Init;
@@ -30,6 +31,7 @@ import org.finroc.jc.annotation.NonVirtual;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SizeT;
 import org.finroc.jc.container.SafeConcurrentlyIterableList;
+import org.finroc.jc.container.SimpleList;
 
 /**
  * @author max
@@ -39,7 +41,7 @@ import org.finroc.jc.container.SafeConcurrentlyIterableList;
  * Allows notifications concurrently to add/remove-operations
  */
 @Include("container/SafeConcurrentlyIterableList.h")
-public abstract class ListenerManager<ORIGIN, PARAMETER, LISTENERTYPE, T extends ListenerManager<ORIGIN, PARAMETER, LISTENERTYPE, ?>> {
+public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T extends ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, ? >> {
 
     /** Single listener - unused, but != NULL when there are more than one listeners */
     private @Ptr LISTENERTYPE listener;
@@ -47,6 +49,9 @@ public abstract class ListenerManager<ORIGIN, PARAMETER, LISTENERTYPE, T extends
     /** If we have more than a single listener - this list will be created and contains ALL listeners */
     @InCpp("SafeConcurrentlyIterableList<_LISTENERTYPE*, 4>* listenerList;")
     private @Ptr SafeConcurrentlyIterableList<LISTENERTYPE> listenerList = null;
+
+    /** Mutex for list - Since we call garbage collector lock for list needs to be before in order */
+    public final MutexLockOrder objMutex = new MutexLockOrder(Integer.MAX_VALUE - 40);
 
 //  /** Only relevant for C++ - Delete all listeners when listener manager is deleted? */
 //  private boolean deleteListenersOnDestruction;
@@ -183,6 +188,34 @@ public abstract class ListenerManager<ORIGIN, PARAMETER, LISTENERTYPE, T extends
             } else {
                 ((T)this).singleNotify(listener, origin, parameter, callId);
             }
+        }
+    }
+
+    /**
+     * @param result List to write result to: Contains all current listeners after call
+     */
+    public void getListenersCopy(@CppType("SimpleList< _LISTENERTYPE*>") SimpleList<LISTENERTYPE> result) {
+        result.clear();
+        if (listenerList != null) {
+            @InCpp("ArrayWrapper<_LISTENERTYPE*>* it = listenerList->getIterable();")
+            @Ptr ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();
+            for (@SizeT int i = 0, n = it.size(); i < n; i++) {
+                @InCpp("_LISTENERTYPE* lt = it->get(i);")
+                @Ptr LISTENERTYPE lt = it.get(i);
+                if (lt != null) {
+
+                    //JavaOnlyBlock
+                    result.add(lt);
+
+                    //Cpp result.add(lt);
+                }
+            }
+        } else if (listener != null) {
+
+            //JavaOnlyBlock
+            result.add(listener);
+
+            //Cpp result.add(listener);
         }
     }
 

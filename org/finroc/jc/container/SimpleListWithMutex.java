@@ -21,38 +21,41 @@
  */
 package org.finroc.jc.container;
 
-import org.finroc.jc.HasDestructor;
+import org.finroc.jc.MutexLockOrder;
 import org.finroc.jc.annotation.Inline;
+import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.NoCpp;
-import org.finroc.jc.annotation.PassByValue;
-import org.finroc.jc.annotation.Ptr;
+//import org.finroc.jc.annotation.PassByValue;
+import org.finroc.jc.annotation.SizeT;
 
 /**
  * @author max
  *
- * This is the base class of a queueable object. It contains the pointer
- * to the next element in singly-linked queue.
+ * Simple List with an ordered mutex
  */
-@Inline @NoCpp
-public class Queueable implements HasDestructor {
+@Inline @SizeT @NoCpp
+public class SimpleListWithMutex<T> extends SimpleList<T> {
 
-    /** Terminator (not null for efficiency reasons) */
-    public final static @PassByValue Queueable terminator = new Queueable(true);
+    /** UID */
+    @JavaOnly
+    private static final long serialVersionUID = 50893536986507019L;
+
+    /** Mutex */
+    public final MutexLockOrder objMutex;
 
     /**
-     * Pointer to next element in reuse queue... null if there's none
-     * Does not need to be volatile... because only critical for reader
-     * thread regarding terminator/null (and reader thread sets this himself)...
-     * writer changes may be delayed without problem
+     * @param lockOrder Primary lock order level for mutex
      */
-    @Ptr public Queueable next = null;
-
-    public Queueable() {}
-
-    private Queueable(boolean isTerminator) {
-        next = this;
+    public SimpleListWithMutex(int lockOrder) {
+        objMutex = new MutexLockOrder(lockOrder);
     }
 
-    @Override
-    public void delete() {}
+    /**
+     * @param initialSize Initial List Size
+     * @param lockOrder Primary lock order level for mutex
+     */
+    public SimpleListWithMutex(@SizeT int initialSize, int lockOrder) {
+        super(initialSize);
+        objMutex = new MutexLockOrder(lockOrder);
+    }
 }

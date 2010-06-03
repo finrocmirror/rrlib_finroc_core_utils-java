@@ -23,6 +23,7 @@ package org.finroc.jc.stream;
 
 import org.finroc.jc.AutoDeleter;
 import org.finroc.jc.HasDestructor;
+import org.finroc.jc.MutexLockOrder;
 import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppUnused;
@@ -31,7 +32,7 @@ import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
-import org.finroc.jc.container.ReusablesPool;
+import org.finroc.jc.container.ReusablesPoolCR;
 
 /**
  * @author max
@@ -74,7 +75,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
 //  @Ptr protected BufferChunk last = first;
 
     /** Pool with chunks */
-    @Ptr private static ReusablesPool<BufferChunk> chunks;
+    @Ptr private static ReusablesPoolCR<BufferChunk> chunks;
 
     /** Use blocking readers? */
     protected final boolean blockingReaders;
@@ -88,12 +89,16 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     /** "Destructive source" */
     @PassByValue protected DestructiveSource destructiveSource = new DestructiveSource();
 
+    /** Must be locked before AllocationRegister */
+    @SuppressWarnings("unused")
+    private static final MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 160);
+
 //  /** Data type of chunk */
 //  @ConstPtr
 //  public final static DataType BUFFER_TYPE = DataTypeRegister.getInstance().getDataType(ChunkedBuffer.class);
 
     public static void staticInit() {
-        chunks = new ReusablesPool<BufferChunk>();
+        chunks = new ReusablesPoolCR<BufferChunk>();
         AutoDeleter.addStatic(chunks);
     }
 

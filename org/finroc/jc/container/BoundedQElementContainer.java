@@ -87,7 +87,7 @@ public abstract class BoundedQElementContainer extends Reusable {
 //  public boolean recycled = true;
 
     protected BoundedQElementContainer() {
-        register(); // bounded queue requires containers to be registered
+        registerForIndex(); // bounded queue requires containers to be registered
     }
 
     /**

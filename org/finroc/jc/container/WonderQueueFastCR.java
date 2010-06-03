@@ -77,20 +77,18 @@ public class WonderQueueFastCR<T extends Queueable> extends RawWonderQueueFast {
      * Delete all elements that are enqueued in this list
      */
     public void deleteEnqueued() {
-        /*Cpp
-        while(true) {
-            T* r = dequeue();
-            if (r == NULL) {
+        while (true) {
+            @Ptr T r = dequeue();
+            if (r == null) {
                 break;
             }
-            delete r;
+            r.delete();
         }
 
         // delete last element
-        Queueable* last = this->nextCR.get();
-        if (last != &(Queueable::terminator) && last != this) {
-            delete last;
+        @Ptr Queueable last = this.nextCR.get();
+        if (last != Queueable.terminator && last != this) {
+            last.delete();
         }
-        */
     }
 }
