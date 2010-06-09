@@ -193,6 +193,20 @@ public class IPAddress {
         return LOCAL_HOST;
     }
 
+    public boolean isLocalHost() {
+        if (equals(getLocalHost())) {
+            return true;
+        }
+
+        //JavaOnlyBlock
+        byte[] addr = wrapped.getAddress();
+        if (addr[0] == 127 && addr[1] == 0 && addr[2] == 0) {
+            return true;
+        }
+
+        return false;
+    }
+
 //  public static SimpleList<IPAddress> getAllForThisHost() {
 //
 //

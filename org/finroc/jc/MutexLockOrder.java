@@ -83,5 +83,4 @@ public class MutexLockOrder {
     public int getSecondary() {
         return secondary;
     }
-
 }
