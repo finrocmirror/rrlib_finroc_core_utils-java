@@ -58,6 +58,9 @@ public class Time extends LoopThread {
     /** Is thread running? */
     private static boolean threadRunning = false;
 
+    /** Nano-seconds per second */
+    public static final long NSEC_PER_SEC = 1000000000;
+
     private Time() {
         super(INTERVAL, true, false);
         setPriority(MAX_PRIORITY - 1);
@@ -109,5 +112,56 @@ public class Time extends LoopThread {
             })
     public static long getPrecise() {
         return System.currentTimeMillis();
+    }
+
+    /**
+     * @return Current time in nanoseconds of most precise system clock.
+     * Value is relative to some arbitrary point in time -
+     * and therefore only suitable for calculating time differences
+     * (only valid on local system).
+     * (see Java: System.nanoTime)
+     */
+    @InCpp( {"struct timespec t;",
+             "clock_gettime(_CLOCK_MONOTONIC, &t);",
+             "int64 sec = t.tv_sec, nsec = t.tv_nsec;",
+             "return (sec * NSEC_PER_SEC) + nsec;"
+            })
+    public static long nanoTime() {
+        return System.nanoTime();
+    }
+
+    /**
+     * Sleep until specified point in time
+     *
+     * @param ms Point in time in ms (same scale as getCoarse() and getPrecise())
+     */
+    public static void sleepUntil(long ms) throws InterruptedException {
+        long diff = ms - getPrecise();
+        if (diff > 0) {
+            Thread.sleep(diff);
+        }
+    }
+
+    /**
+     * Sleep until specified point in time
+     *
+     * @param nano Point in time in nano-seconds (same scale as nanoTime())
+     */
+    @InCpp( {"struct timespec t;",
+             "t.tv_sec = static_cast<int>(nanoTime / NSEC_PER_SEC);",
+             "t.tv_nsec = static_cast<int>(nanoTime % NSEC_PER_SEC);",
+             "clock_nanosleep(_CLOCK_MONOTONIC, _TIMER_ABSTIME, &t, NULL);"
+            })
+    public static void sleepUntilNano(long nanoTime) {
+        long diff = nanoTime - nanoTime();
+        if (diff > 0) {
+            long ms = diff / 1000000;
+            int nanos = (int)diff % 1000000;
+            try {
+                Thread.sleep(ms, nanos);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

@@ -79,4 +79,17 @@ public class ThreadUtil {
     public static @SharedPtr <T extends Thread> T getThreadSharedPtr(@Managed @Ptr T t) {
         return t;
     }
+
+    /**
+     * Makes a thread a real-time thread.
+     * This currently only works in C++ with a real-time kernel.
+     * (To do this in RT-Java we need a major restructuring in Thread class hierarchy:
+     *  probably wrap either java.lang.Thread or javax.realtime.RealtimeThread)
+     *
+     * @param t Thread to make real-time
+     */
+    @InCpp("t->setRealtime();")
+    public static void makeThreadRealtime(@SharedPtr Thread t) {
+        t.setPriority(Thread.MAX_PRIORITY);
+    }
 }
