@@ -28,6 +28,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.jc.annotation.Ref;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -53,20 +54,20 @@ import org.w3c.dom.Node;
  * @author Tobias Föhst
  */
 @JavaOnly
-public class LoggingDomainRegistry {
+public class LogDomainRegistry {
     String fileNamePrefix;
-    ArrayList<LoggingDomain> domains = new ArrayList<LoggingDomain>();
-    ArrayList<LoggingDomainConfiguration> domainConfigurations = new ArrayList<LoggingDomainConfiguration>();
+    ArrayList<LogDomain> domains = new ArrayList<LogDomain>();
+    ArrayList<LogDomainConfiguration> domainConfigurations = new ArrayList<LogDomainConfiguration>();
 
     /** Ctor of tLoggingDomainRegistry
      *
      * Private default ctor for singleton pattern
      */
-    LoggingDomainRegistry() {
-        LoggingDomainConfiguration conf = new LoggingDomainConfiguration(".");
+    LogDomainRegistry() {
+        LogDomainConfiguration conf = new LogDomainConfiguration(".");
         conf.enabled = true;
         domainConfigurations.add(conf);
-        domains.add(new LoggingDomain(conf));
+        domains.add(new LogDomain(conf));
     }
 
     /** Get the index of the domain with the given name
@@ -95,13 +96,13 @@ public class LoggingDomainRegistry {
      *
      * @return The wanted domain configuration as a shared pointer
      */
-    private LoggingDomainConfiguration getConfigurationByName(String name) {
-        for (LoggingDomainConfiguration conf : domainConfigurations) {
+    private LogDomainConfiguration getConfigurationByName(String name) {
+        for (LogDomainConfiguration conf : domainConfigurations) {
             if (conf.name.equals(name)) {
                 return conf;
             }
         }
-        LoggingDomainConfiguration conf = new LoggingDomainConfiguration(name);
+        LogDomainConfiguration conf = new LogDomainConfiguration(name);
         domainConfigurations.add(conf);
         return conf;
     }
@@ -118,7 +119,7 @@ public class LoggingDomainRegistry {
     private void propagateDomainConfigurationToChildren(String name) {
         int i = getDomainIndexByName(name);
         if (i != domains.size()) {
-            for (LoggingDomain dom : domains.get(i).children) {
+            for (LogDomain dom : domains.get(i).children) {
                 dom.configureSubTree();
             }
         }
@@ -138,7 +139,7 @@ public class LoggingDomainRegistry {
         return addConfigurationFromXMLNode(node, "");
     }
 
-    static final List<String> levelNames = Arrays.asList("verbose", "low", "medium", "high", "always");
+    static final List<String> levelNames = Arrays.asList("user", "error", "warning", "debug_warning", "debug", "debug_verbose_1", "debug_verbose_2", "debug_verbose_3");
     static final List<String> streamNames = Arrays.asList("stdout", "stderr", "file", "combined_file");
 
     /** Add a domain configuration from a given XML node
@@ -190,7 +191,7 @@ public class LoggingDomainRegistry {
             setDomainPrintsLocation(name, item.getNodeValue().trim().toLowerCase().equals("true"));
         }
 
-        item = node.getAttributes().getNamedItem("min_level");
+        item = node.getAttributes().getNamedItem("max_level");
         if (item != null) {
             setDomainMinMessageLevel(name, LogLevel.values()[levelNames.indexOf(item.getNodeValue().trim().toLowerCase())]);
         }
@@ -235,7 +236,7 @@ public class LoggingDomainRegistry {
 //Public methods
 //----------------------------------------------------------------------
 
-    private static final LoggingDomainRegistry instance = new LoggingDomainRegistry();
+    private static final LogDomainRegistry instance = new LogDomainRegistry();
 
     /** Get an instance of this class (singleton)
      *
@@ -244,7 +245,7 @@ public class LoggingDomainRegistry {
      *
      * @return The only instance of this class that should exist
      */
-    public static LoggingDomainRegistry getInstance() {
+    public static LogDomainRegistry getInstance() {
         return instance;
     }
 
@@ -255,7 +256,7 @@ public class LoggingDomainRegistry {
      *
      * @return The default domain object
      */
-    public static LoggingDomain getDefaultDomain() {
+    public static LogDomain getDefaultDomain() {
         return getInstance().domains.get(0);
     }
 
@@ -271,13 +272,13 @@ public class LoggingDomainRegistry {
      *
      * @return The found or newly created domain object as a shared pointer
      */
-    public LoggingDomain getSubDomain(String name, LoggingDomain parent) {
-        assert(name != null && name.length() > 0);
+    public LogDomain getSubDomain(String name, @Ref LogDomain parent) {
+        assert(name != null && name.length() > 0 && parent != null);
         String fullQualifiedDomainName = parent.getName() + (parent.parent != null ? "." : "") + name;
         int i = getDomainIndexByName(fullQualifiedDomainName);
         if (i == domains.size()) {
-            LoggingDomainConfiguration configuration = getConfigurationByName(fullQualifiedDomainName);
-            LoggingDomain ld = new LoggingDomain(configuration, parent);
+            LogDomainConfiguration configuration = getConfigurationByName(fullQualifiedDomainName);
+            LogDomain ld = new LogDomain(configuration, parent);
             domains.add(ld);
             return ld;
         }
@@ -378,7 +379,7 @@ public class LoggingDomainRegistry {
      * @param value   The new value of the setting
      */
     public void setDomainConfiguresSubTree(String name, boolean value) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
+        LogDomainConfiguration configuration = getConfigurationByName(name);
         configuration.configureSubTree = value;
         propagateDomainConfigurationToChildren(name);
     }
@@ -392,7 +393,7 @@ public class LoggingDomainRegistry {
      * @param value   The new value of the setting
      */
     public void setDomainIsEnabled(String name, boolean value) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
+        LogDomainConfiguration configuration = getConfigurationByName(name);
         configuration.enabled = value;
         propagateDomainConfigurationToChildren(name);
     }
@@ -405,7 +406,7 @@ public class LoggingDomainRegistry {
      * @param value   The new value of the setting
      */
     public void setDomainPrintsTime(String name, boolean value) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
+        LogDomainConfiguration configuration = getConfigurationByName(name);
         configuration.printTime = value;
         propagateDomainConfigurationToChildren(name);
     }
@@ -419,7 +420,7 @@ public class LoggingDomainRegistry {
      * @param value   The new value of the setting
      */
     public void setDomainPrintsName(String name, boolean value) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
+        LogDomainConfiguration configuration = getConfigurationByName(name);
         configuration.printName = value;
         propagateDomainConfigurationToChildren(name);
     }
@@ -432,7 +433,7 @@ public class LoggingDomainRegistry {
      * @param value   The new value of the setting
      */
     public void setDomainPrintsLevel(String name, boolean value) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
+        LogDomainConfiguration configuration = getConfigurationByName(name);
         configuration.printLevel = value;
         propagateDomainConfigurationToChildren(name);
     }
@@ -446,7 +447,7 @@ public class LoggingDomainRegistry {
      * @param value   The new value of the setting
      */
     public void setDomainPrintsLocation(String name, boolean value) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
+        LogDomainConfiguration configuration = getConfigurationByName(name);
         configuration.printLocation = value;
         propagateDomainConfigurationToChildren(name);
     }
@@ -461,8 +462,8 @@ public class LoggingDomainRegistry {
      * @param value   The new value of the setting
      */
     public void setDomainMinMessageLevel(String name, LogLevel value) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
-        configuration.minMessageLevel = value;
+        LogDomainConfiguration configuration = getConfigurationByName(name);
+        configuration.maxMessageLevel = value;
         propagateDomainConfigurationToChildren(name);
     }
 
@@ -475,10 +476,10 @@ public class LoggingDomainRegistry {
      * @param outputs   The new value of the setting
      */
     public void setDomainStreamMask(String name, LogStream... outputs) {
-        LoggingDomainConfiguration configuration = getConfigurationByName(name);
+        LogDomainConfiguration configuration = getConfigurationByName(name);
         synchronized (configuration) {
             configuration.streamMask = outputs;
-            configuration.streamMaskRevision = LoggingDomainConfiguration.streamMaskRevisionGen.incrementAndGet();
+            configuration.streamMaskRevision = LogDomainConfiguration.streamMaskRevisionGen.incrementAndGet();
             propagateDomainConfigurationToChildren(name);
         }
     }

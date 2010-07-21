@@ -30,7 +30,7 @@ import org.finroc.jc.annotation.PostProcess;
  * Class that can have (debug) logging turned on and off for every instance separately
  */
 @JavaOnly
-public abstract class LoggingInstance {
+public abstract class LogInstance {
 
     /**
      * @return Show Debug messages for this specific instance
@@ -42,7 +42,7 @@ public abstract class LoggingInstance {
      * @return Description for logging output
      */
     @NonVirtual
-    public abstract String getDescription();
+    public abstract String getLogDescription();
 
     /**
      * Print logging message.
@@ -53,9 +53,9 @@ public abstract class LoggingInstance {
      * @param msg Log message
      */
     @PostProcess("org.finroc.j2c.LogMessage")
-    public void logMessage(LogLevel level, LoggingDomain domain, String msg) {
-        if (level.ordinal() > LogLevel.eLL_LOW.ordinal() || showDebugMessages()) {
-            domain.message(level, getDescription(), msg, 2);
+    public void logMessage(LogLevel level, LogDomain domain, String msg) {
+        if (level.ordinal() <= LogLevel.eLL_WARNING.ordinal() || showDebugMessages()) {
+            domain.message(level, getLogDescription(), msg, 2);
         }
     }
 }

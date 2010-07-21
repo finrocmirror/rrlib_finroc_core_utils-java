@@ -32,10 +32,13 @@ import org.finroc.jc.annotation.JavaOnly;
  */
 @JavaOnly
 public enum LogLevel {
-    eLL_VERBOSE,    //!< Messages of this level should only be used for debugging purposes
-    eLL_LOW,        //!< Lower level message (not processed when _RRLIB_LOGGING_LESS_OUTPUT_ is defined)
-    eLL_MEDIUM,     //!< Medium level messages (default min. level when _RRLIB_LOGGING_LESS_OUTPUT_ is not defined)
-    eLL_HIGH,       //!< Higher level messages (default min. level when _RRLIB_LOGGING_LESS_OUTPUT_ is defined)
-    eLL_ALWAYS,     //!< Messages of this level are always shown if the domain is active
-    eLL_DIMENSION   //!< Endmarker and dimension of eLogLevel
+    eLL_USER,             //!< Information for user (including end-users). Is always shown if domain is active.
+    eLL_ERROR,            //!< Error message. Used to inform about _certain_ malfunction of application. Is always shown if domain is active.
+    eLL_WARNING,          //!< Critical warning. Warns about possible application malfunction and invalid (and therefore discarded) user input. (default max level with _RRLIB_LOG_LESS_OUTPUT_)
+    eLL_DEBUG_WARNING,    //!< Debug info with warning character (e.g. "Parameter x not set - using default y")
+    eLL_DEBUG,            //!< Debug info about coarse program flow (default max level without _RRLIB_LOG_LESS_OUTPUT_) - information possibly relevant to developers outside of respective domain
+    eLL_DEBUG_VERBOSE_1,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
+    eLL_DEBUG_VERBOSE_2,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
+    eLL_DEBUG_VERBOSE_3,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
+    eLL_DIMENSION         //!< Endmarker and dimension of eLogLevel
 };

@@ -40,9 +40,9 @@ import org.finroc.jc.annotation.JavaOnly;
  * @author Tobias Föhst
  */
 @JavaOnly
-public class LoggingDomainConfiguration {
+public class LogDomainConfiguration {
 
-    final LogLevel DEFAULT_MIN_LOG_LEVEL = LogLevel.eLL_HIGH;   //!< Default min log level for reduced output mode
+    final LogLevel DEFAULT_MAX_LOG_LEVEL = LogLevel.eLL_DEBUG;   //!< Default max log level for reduced output mode
     final boolean DEFAULT_PRINT_TIME = false;              //!< Default print time setting for reduced output mode
     final boolean DEFAULT_PRINT_NAME = false;              //!< Default print name setting for reduced output mode
     final boolean DEFAULT_PRINT_LEVEL = false;             //!< Default print level setting for reduced output mode
@@ -57,17 +57,17 @@ public class LoggingDomainConfiguration {
     boolean printName = DEFAULT_PRINT_NAME;
     boolean printLevel = DEFAULT_PRINT_LEVEL;
     boolean printLocation = DEFAULT_PRINT_LOCATION;
-    LogLevel minMessageLevel = DEFAULT_MIN_LOG_LEVEL;
+    LogLevel maxMessageLevel = DEFAULT_MAX_LOG_LEVEL;
     LogStream[] streamMask = new LogStream[] {LogStream.eLS_STDOUT};
 
     final static AtomicInt streamMaskRevisionGen = new AtomicInt(0);
     volatile int streamMaskRevision = streamMaskRevisionGen.incrementAndGet();
 
-    LoggingDomainConfiguration(String name) {
+    LogDomainConfiguration(String name) {
         this.name = name;
     }
 
-    LoggingDomainConfiguration(String name, LoggingDomainConfiguration other) {
+    LogDomainConfiguration(String name, LogDomainConfiguration other) {
         this.name = name;
         configureSubTree = other.configureSubTree;
         enabled = other.enabled;
@@ -75,7 +75,7 @@ public class LoggingDomainConfiguration {
         printName = other.printName;
         printLevel = other.printLevel;
         printLocation = other.printLocation;
-        minMessageLevel = other.minMessageLevel;
+        maxMessageLevel = other.maxMessageLevel;
         streamMask = other.streamMask;
         //name = other.name;
     }

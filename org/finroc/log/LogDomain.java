@@ -32,6 +32,7 @@ import java.util.Set;
 import org.finroc.jc.Time;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PostProcess;
+import org.finroc.jc.annotation.SharedPtr;
 
 /**
  * The RRLib logging system is structured into hierarchical domains that
@@ -50,13 +51,13 @@ import org.finroc.jc.annotation.PostProcess;
  * @author Max Reichardt
  * @author Tobias Föhst
  */
-@JavaOnly
-public class LoggingDomain {
+@JavaOnly @SharedPtr
+public class LogDomain {
 
-    LoggingDomain parent;
-    ArrayList<LoggingDomain> children = new ArrayList<LoggingDomain>();
+    LogDomain parent;
+    ArrayList<LogDomain> children = new ArrayList<LogDomain>();
 
-    private LoggingDomainConfiguration configuration;
+    private LogDomainConfiguration configuration;
 
     //private PrintStream streamBuffer;
     //private OutputStream stream;
@@ -82,7 +83,7 @@ public class LoggingDomain {
      *
      * @param configuration   The configuration for the new domain
      */
-    LoggingDomain(LoggingDomainConfiguration configuration) {
+    LogDomain(LogDomainConfiguration configuration) {
         this.configuration = configuration;
         //streamBuffer = new PrintStream
     }
@@ -95,7 +96,7 @@ public class LoggingDomain {
      * @param configuration   The configuration for the new domain
      * @param parent          The parent domain
      */
-    LoggingDomain(LoggingDomainConfiguration configuration, LoggingDomain parent) {
+    LogDomain(LogDomainConfiguration configuration, LogDomain parent) {
         this(configuration);
         this.parent = parent;
         parent.children.add(this);
@@ -109,8 +110,8 @@ public class LoggingDomain {
      */
     void configureSubTree() {
         if (parent != null && parent.configuration.configureSubTree) {
-            configuration = new LoggingDomainConfiguration(configuration.name, parent.configuration);
-            for (LoggingDomain ld : children) {
+            configuration = new LogDomainConfiguration(configuration.name, parent.configuration);
+            for (LogDomain ld : children) {
                 ld.configureSubTree();
             }
         }
@@ -128,7 +129,7 @@ public class LoggingDomain {
         if (fileStream != null) {
             return true;
         }
-        String fileNamePrefix = LoggingDomainRegistry.getInstance().getOutputFileNamePrefix();
+        String fileNamePrefix = LogDomainRegistry.getInstance().getOutputFileNamePrefix();
         if (fileNamePrefix.length() == 0) {
             System.err.println("RRLib Logging >> Prefix for file names not set. Can not use eMS_FILE.");
             System.err.println("Consider calling tMessageDomainRegistry::GetInstance().SetOutputFileNamePrefix(basename(argv[0])) for example.");
@@ -166,7 +167,7 @@ public class LoggingDomain {
                 } else if (ls == LogStream.eLS_FILE) {
                     tmp.add(openFileOutputStream() ? fileStream : System.err);
                 } else if (ls == LogStream.eLS_COMBINED_FILE) {
-                    LoggingDomain domain = this;
+                    LogDomain domain = this;
                     for (; domain.parent != null && domain.parent.configuration.configureSubTree; domain = domain.parent) {}
                     tmp.add(domain.openFileOutputStream() ? fileStream : System.err);
                 }
@@ -211,14 +212,14 @@ public class LoggingDomain {
      */
     private String getLevelString(LogLevel level) {
         switch (level) {
-        case eLL_VERBOSE:
-            return "[verbose] ";
-        case eLL_LOW:
-            return "[low]     ";
-        case eLL_MEDIUM:
-            return "[medium]  ";
-        case eLL_HIGH:
-            return "[high]    ";
+        case eLL_ERROR:
+            return "[error]   ";
+        case eLL_WARNING:
+            return "[warning] ";
+        case eLL_DEBUG_WARNING:
+            return "[debug]   ";
+        case eLL_DEBUG:
+            return "[debug]   ";
         default:
             return "          ";
         }
@@ -249,14 +250,14 @@ public class LoggingDomain {
      */
     private String getControlStringForColoredOutput(LogLevel level) {
         switch (level) {
-        case eLL_VERBOSE:
-            return "\033[;2;32m";
-        case eLL_LOW:
-            return "\033[;2;33m";
-        case eLL_MEDIUM:
-            return "\033[;1;34m";
-        case eLL_HIGH:
+        case eLL_ERROR:
             return "\033[;1;31m";
+        case eLL_WARNING:
+            return "\033[;1;34m";
+        case eLL_DEBUG_WARNING:
+            return "\033[;2;33m";
+        case eLL_DEBUG:
+            return "\033[;2;32m";
         default:
             return "\033[;0m";
         }
@@ -344,8 +345,8 @@ public class LoggingDomain {
      *
      * @return The configured minimal log level
      */
-    LogLevel getMinMessageLevel() {
-        return configuration.minMessageLevel;
+    LogLevel getMaxMessageLevel() {
+        return configuration.maxMessageLevel;
     }
 
     /** Get the mask representing which streams are used for message output
@@ -460,7 +461,7 @@ public class LoggingDomain {
      */
     void message(LogLevel level, String callerDescription, String msg, int callerStackIndex) {
 
-        if (level.ordinal() < getMinMessageLevel().ordinal() || !isEnabled()) {
+        if (level.ordinal() > getMaxMessageLevel().ordinal() || !isEnabled()) {
             return;
         }
 
@@ -501,6 +502,16 @@ public class LoggingDomain {
                 }
             }
         }
+    }
+
+    /**
+     * Convenience method.
+     * Calls tLoggingDomainRegistry::GetSubDomain(...)
+     *
+     * @param name Name of sub domain
+     */
+    public LogDomain getSubDomain(String name) {
+        return LogDomainRegistry.getInstance().getSubDomain(name, this);
     }
 
 }
