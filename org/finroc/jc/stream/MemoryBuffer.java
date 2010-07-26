@@ -25,9 +25,14 @@ import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppDefault;
+import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.jc.log.LogUser;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -39,7 +44,7 @@ import org.finroc.jc.annotation.SizeT;
  *
  * Writing and reading concurrently is not supported - due to resize.
  */
-public class MemoryBuffer implements ConstSource, Sink, CustomSerialization, HasDestructor {
+public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSerialization, HasDestructor {
 
     /** Size of temporary array */
     @Const @SizeT public final static int TEMP_ARRAY_SIZE = 2048;
@@ -58,6 +63,10 @@ public class MemoryBuffer implements ConstSource, Sink, CustomSerialization, Has
 
     /** Current size of buffer */
     @SizeT protected int curSize;
+
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"stream\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("stream");
 
     @JavaOnly
     public MemoryBuffer() {
@@ -170,7 +179,8 @@ public class MemoryBuffer implements ConstSource, Sink, CustomSerialization, Has
             throw new RuntimeException("Attempt to write outside of buffer");
         }
         if (resizeReserveFactor <= 1.2) {
-            System.out.println("warning: small resizeReserveFactor");
+            //System.out.println("warning: small resizeReserveFactor");
+            log(LogLevel.LL_DEBUG_WARNING, logDomain, "warning: small resizeReserveFactor");
         }
 
         reallocate(newSize, keepContents, oldSize);

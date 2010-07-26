@@ -31,8 +31,11 @@ import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ref;
+import org.finroc.jc.log.LogDefinitions;
 import org.finroc.jc.stream.InputStreamBuffer;
 import org.finroc.jc.stream.OutputStreamBuffer;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -59,11 +62,15 @@ public class IPAddress {
     @JavaOnly
     @Const private static IPAddress LOCAL_HOST;
 
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"net\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
+
     static {
         try {
             LOCAL_HOST = new IPAddress(InetAddress.getLocalHost());
         } catch (java.net.UnknownHostException e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_ERROR, "IPAdress static init", e);
         }
     }
 
@@ -169,7 +176,7 @@ public class IPAddress {
         try {
             return new IPAddress(InetAddress.getByAddress(bytes));
         } catch (java.net.UnknownHostException e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_ERROR, "IPAddress deserialize", e);
             return null;
         }
 

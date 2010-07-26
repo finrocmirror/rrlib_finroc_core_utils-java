@@ -2,8 +2,7 @@
  * You received this file as part of an advanced experimental
  * robotics framework prototype ('finroc')
  *
- * Copyright (C) 2007-2010 Max Reichardt,
- *   Robotics Research Lab, University of Kaiserslautern
+ * Copyright (C) 2010 Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,29 +18,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.jni;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.finroc.log;
 
 import org.finroc.jc.annotation.JavaOnly;
-import org.finroc.jc.log.LogUser;
 
 /**
- * @author max
- *
- * Marks all objects wrapping something that can also be used in C++
+* The enumeration that encodes the streams used by a logging domain.
+* Messages can be streams to stdout, stderr, into on file per domain
+* or into on combined file for all domains that are recursively
+* configured in one subtree of the domain hierarchy.
  */
 @JavaOnly
-public abstract class UsedInC extends LogUser {
-
-    /** Objects and buffers that need to exist in C++ as long as this object does */
-    protected List<Object> ownedObjects = new ArrayList<Object>();
-
-    /** get Pointer of object on C side */
-    public abstract long getPointer();
-
-    public void addOwnedObject(Object uic) {
-        ownedObjects.add(uic);
-    }
+public enum LogStreamOutput {
+    LS_STDOUT,          //!< Messages are printed to stdout
+    LS_STDERR,          //!< Messages are printed to stderr
+    LS_FILE,            //!< Messages are printed to one file per domain
+    LS_COMBINED_FILE,   //!< Messages are collected in one file per recursively configured subtree
+    LS_DIMENSION        //!< Endmarker and dimension of eLogStream
 }

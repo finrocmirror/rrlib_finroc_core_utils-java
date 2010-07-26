@@ -30,6 +30,7 @@ import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.thread.LoopThread;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -71,7 +72,7 @@ public class Time extends LoopThread {
     }
 
     public void stopThread() {
-        //Cpp printf("Stopping time caching thread\n");
+        logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Stopping time caching thread");
         super.stopThread();
     }
 
@@ -160,7 +161,7 @@ public class Time extends LoopThread {
             try {
                 Thread.sleep(ms, nanos);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logDomain.log(LogLevel.LL_DEBUG_WARNING, "", e);
             }
         }
     }

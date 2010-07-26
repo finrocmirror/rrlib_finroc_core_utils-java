@@ -24,8 +24,13 @@ package org.finroc.jc.stream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.jc.log.LogUser;
 import org.finroc.jc.net.EOFException;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -33,7 +38,7 @@ import org.finroc.jc.net.EOFException;
  * Wraps Java Input Stream as source
  */
 @JavaOnly
-public class InputStreamSource implements Source {
+public class InputStreamSource extends LogUser implements Source {
 
     /** Wrapped input stream */
     private final InputStream wrapped;
@@ -41,6 +46,10 @@ public class InputStreamSource implements Source {
     /** Source state */
     public enum State { INITIAL, OPENED, CLOSED }
     State state = State.INITIAL;
+
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"stream\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("stream");
 
     public InputStreamSource(InputStream is) {
         wrapped = is;
@@ -120,7 +129,7 @@ public class InputStreamSource implements Source {
         try {
             return wrapped.available() > 0;
         } catch (IOException e) {
-            e.printStackTrace();
+            log(LogLevel.LL_ERROR, logDomain, e);
             return false;
         }
     }

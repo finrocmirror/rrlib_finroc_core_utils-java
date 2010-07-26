@@ -31,11 +31,14 @@ import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.annotation.Superclass;
 import org.finroc.jc.annotation.Virtual;
+import org.finroc.jc.log.LogDefinitions;
 import org.finroc.jc.net.IOException;
 import org.finroc.jc.stream.InputStreamSource;
 import org.finroc.jc.stream.OutputStreamSink;
 import org.finroc.jc.stream.Sink;
 import org.finroc.jc.stream.Source;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -73,6 +76,10 @@ public class NetSocket {
     public NetSocket(Socket socket) {
         wrapped = socket;
     }
+
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"net\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
 
     /*Cpp
     NetSocket() : thizz(), inputStreamBuf(BUFSIZE), outputStreamBuf(BUFSIZE), wrapped(TCPUtil::io_service) {}
@@ -359,7 +366,7 @@ public class NetSocket {
         try {
             wrapped.shutdownOutput();
         } catch (Exception e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_ERROR, "NetSocket", e);
         }
     }
 
@@ -373,7 +380,7 @@ public class NetSocket {
         } catch (SocketException e) {
             // do nothing... can happen if socket is close twice
         } catch (Exception e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_ERROR, "NetSocket", e);
         }
     }
 }

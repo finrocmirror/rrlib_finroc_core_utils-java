@@ -23,13 +23,18 @@ package org.finroc.jc.container;
 
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.CppType;
+import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Managed;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.RawTypeArgs;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.VoidPtr;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.jc.log.LogUser;
 import org.finroc.jc.stampedptr.AtomicStampedPtrIdx64;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -60,7 +65,7 @@ import org.finroc.jc.stampedptr.AtomicStampedPtrIdx64;
  *   [29bit counter - wrapped around]
  */
 @Include( {"Atomic.h", "stampedptr/AtomicStampedPtr.h"}) @RawTypeArgs
-public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> implements HasDestructor {
+public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> extends LogUser implements HasDestructor {
 
     ////Cpp typedef util::AtomicStampedPtrIdx64<C> StampedPtrT;
     //Cpp typedef Atomic32BitStampedPtr<C> StampedPtrT;
@@ -89,6 +94,10 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
 
     /** Dummy object to signal that we need to retry an operation */
     private static final Object RETRY = new Object();
+
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"queue_impl\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     public WonderQueueBounded() {
         BoundedQElementContainer.staticInit();
@@ -184,7 +193,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
         boolean s = prev.next2.compareAndSet(BoundedQElementContainer.getDummy(lastCounter), pd); // only set, if still needed
 //      assert(!rec || !s);
         if (!s) {
-            System.out.println("Skipped setting next");
+            log(LogLevel.LL_DEBUG_VERBOSE_1, logDomain, "Skipped setting next");
         }
 
         // adjust length - if size exceeds maximum length

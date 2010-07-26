@@ -21,10 +21,12 @@
  */
 package org.finroc.jc.container;
 
+import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.HPrepend;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
+import org.finroc.jc.annotation.Ref;
 
 /**
  * @author max
@@ -159,13 +161,15 @@ public abstract class AbstractReusable extends Queueable {
     /**
      * for C++-debugging only: Print trace of where object has been last used
      */
-    public void printTrace(long startTime) {
+    public void printTrace(@Ref @CppType("rrlib::logging::LogStream") Object output, long startTime) {
         /*Cpp
         #ifdef DEFINE_ADV_REUSABLE_DEBUGGING_ENABLED
-        printf("  trace: (recycle count: %d)\n", recycleCount);
+        output << "  trace: (recycle count: " << recycleCount << ")" << std::endl;
+        //printf("  trace: (recycle count: %d)\n", recycleCount);
         for (size_t i = 0; i < trace.size(); i++) {
             TraceEntry re = trace.get(i);
-            printf("    state: %s  by/with %s %p (Thread: %lld, Time: %lld ms)\n", getStateString(re.state), re.partnerObjectClassName, re.partnerObject, re.threadId, re.timestamp - startTime);
+            output << "    state: " << getStateString(re.state) << "  by/with " << re.partnerObjectClassName << " " << re.partnerObject << " (Thread: " << re.threadId << ", Time: " << (re.timestamp - startTime) << " ms)" << std::endl;
+            //printf("    state: %s  by/with %s %p (Thread: %lld, Time: %lld ms)\n", getStateString(re.state), re.partnerObjectClassName, re.partnerObject, re.threadId, re.timestamp - startTime);
         }
         #endif
          */

@@ -21,9 +21,14 @@
  */
 package org.finroc.jc.container;
 
+import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.RawTypeArgs;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.jc.log.LogUser;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -33,7 +38,7 @@ import org.finroc.jc.annotation.RawTypeArgs;
  * Used to dequeue all elements of bounded WonderQueue at once
  */
 @PassByValue @RawTypeArgs
-public class QueueFragment<T, C extends BoundedQElementContainer> {
+public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUser {
 
     //Cpp template <typename X, typename Y>
     //Cpp friend class WonderQueueBounded;
@@ -52,6 +57,10 @@ public class QueueFragment<T, C extends BoundedQElementContainer> {
 
     /** Skip first/next element */
     public boolean skipFirst = false;
+
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"queue_impl\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     /**
      * Dequeue one element
@@ -79,7 +88,8 @@ public class QueueFragment<T, C extends BoundedQElementContainer> {
                     while (current.prev != n2) {
                         current = current.prev;
                     }
-                    System.out.println("Rare preemption case: " + n2.toString() + " " + current.toString());
+                    //System.out.println("Rare preemption case: " + n2.toString() + " " + current.toString());
+                    log(LogLevel.LL_DEBUG_VERBOSE_1, logDomain, "Rare preemption case: " + n2.toString() + " " + current.toString());
                     next = (C)current;
                 }
                 //assert(n2.count == current.count - 1);

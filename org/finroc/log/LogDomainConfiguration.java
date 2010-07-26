@@ -42,8 +42,8 @@ import org.finroc.jc.annotation.JavaOnly;
 @JavaOnly
 public class LogDomainConfiguration {
 
-    final LogLevel DEFAULT_MAX_LOG_LEVEL = LogLevel.eLL_DEBUG;   //!< Default max log level for reduced output mode
-    final boolean DEFAULT_PRINT_TIME = false;              //!< Default print time setting for reduced output mode
+    final LogLevel DEFAULT_MAX_LOG_LEVEL = LogLevel.LL_DEBUG;   //!< Default max log level for reduced output mode
+    final boolean DEFAULT_PRINT_TIME = true;              //!< Default print time setting for reduced output mode
     final boolean DEFAULT_PRINT_NAME = false;              //!< Default print name setting for reduced output mode
     final boolean DEFAULT_PRINT_LEVEL = false;             //!< Default print level setting for reduced output mode
     final boolean DEFAULT_PRINT_LOCATION = false;          //!< Default print location setting for reduced output mode
@@ -52,13 +52,13 @@ public class LogDomainConfiguration {
     String name;
     boolean configureSubTree;
 
-    boolean enabled;
+    boolean enabled = true;
     boolean printTime = DEFAULT_PRINT_TIME;
     boolean printName = DEFAULT_PRINT_NAME;
     boolean printLevel = DEFAULT_PRINT_LEVEL;
     boolean printLocation = DEFAULT_PRINT_LOCATION;
     LogLevel maxMessageLevel = DEFAULT_MAX_LOG_LEVEL;
-    LogStream[] streamMask = new LogStream[] {LogStream.eLS_STDOUT};
+    LogStreamOutput[] streamMask = new LogStreamOutput[] {LogStreamOutput.LS_STDOUT};
 
     final static AtomicInt streamMaskRevisionGen = new AtomicInt(0);
     volatile int streamMaskRevision = streamMaskRevisionGen.incrementAndGet();

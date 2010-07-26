@@ -24,7 +24,12 @@ package org.finroc.jc.stream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.jc.log.LogUser;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -32,7 +37,7 @@ import org.finroc.jc.annotation.JavaOnly;
  * Wraps output stream as sink
  */
 @JavaOnly
-public class OutputStreamSink implements Sink {
+public class OutputStreamSink extends LogUser implements Sink {
 
     /** Wrapped output stream */
     private OutputStream wrapped;
@@ -40,6 +45,10 @@ public class OutputStreamSink implements Sink {
     /** Source state */
     public enum State { INITIAL, OPENED, CLOSED }
     State state = State.INITIAL;
+
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"stream\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("stream");
 
     public OutputStreamSink(OutputStream is) {
         wrapped = is;
@@ -113,7 +122,7 @@ public class OutputStreamSink implements Sink {
         try {
             wrapped.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log(LogLevel.LL_ERROR, logDomain, e);
         }
     }
 

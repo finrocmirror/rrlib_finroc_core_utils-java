@@ -26,6 +26,9 @@ import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.annotation.Virtual;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -57,6 +60,10 @@ public abstract class LoopThread extends Thread {
      * More precisely: Is thread currently waiting or executing uncritical code in waitFor-method?
      */
     private volatile boolean waiting;
+
+    /** Log domain for this class */
+    @JavaOnly
+    public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("thread");
 
     /**
      * @param defaultCycleTime Cycle time with which callback function is called
@@ -94,9 +101,11 @@ public abstract class LoopThread extends Thread {
             mainLoop();
 
         } catch (InterruptedException ie) {
-            System.out.println(toString() + " Interrupted");
+
+            //System.out.println(toString() + " Interrupted");
+            logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Uncaught Thread Interrupt");
         } catch (Exception e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Uncaught Thread Exception - ", e);
         }
     }
 
@@ -120,7 +129,8 @@ public abstract class LoopThread extends Thread {
             // wait
             long waitForX = cycleTime - (System.currentTimeMillis() - startTimeMs);
             if (waitForX < 0 && warnOnCycleTimeExceed && DISPLAYWARNINGS) {
-                System.err.println("warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
+                //System.err.println("warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
+                logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
             } else if (waitForX > 0) {
                 waitFor(waitForX);
             }
@@ -140,7 +150,8 @@ public abstract class LoopThread extends Thread {
             Thread.sleep(waitFor);
             waiting = false;
         } catch (InterruptedException e) {
-            System.out.println("wait for " + toString() + " Interrupted");
+            //System.out.println("wait for " + toString() + " Interrupted");
+            logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Thread interrupted waiting for next loop");
             waiting = false;
         }
     }
@@ -286,4 +297,12 @@ public abstract class LoopThread extends Thread {
      */
     @JavaOnly
     public void lockObject(@SharedPtr Object o) {}
+
+    /**
+     * @return log description
+     */
+    @JavaOnly
+    public String getLogDescription() {
+        return getName();
+    }
 }

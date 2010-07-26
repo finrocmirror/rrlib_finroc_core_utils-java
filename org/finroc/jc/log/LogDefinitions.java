@@ -2,7 +2,7 @@
  * You received this file as part of an advanced experimental
  * robotics framework prototype ('finroc')
  *
- * Copyright (C) 2007-2010 Max Reichardt,
+ * Copyright (C) 2010 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,29 +19,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.jni;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.finroc.jc.log;
 
 import org.finroc.jc.annotation.JavaOnly;
-import org.finroc.jc.log.LogUser;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogDomainRegistry;
 
 /**
  * @author max
  *
- * Marks all objects wrapping something that can also be used in C++
+ * Log domain definitions "finroc" and "finroc.util" are defined here
  */
 @JavaOnly
-public abstract class UsedInC extends LogUser {
+public class LogDefinitions {
 
-    /** Objects and buffers that need to exist in C++ as long as this object does */
-    protected List<Object> ownedObjects = new ArrayList<Object>();
+    /** finroc logging domain */
+    public static final LogDomain finroc = LogDomainRegistry.getDefaultDomain().getSubDomain("finroc");
 
-    /** get Pointer of object on C side */
-    public abstract long getPointer();
-
-    public void addOwnedObject(Object uic) {
-        ownedObjects.add(uic);
-    }
+    /** finroc.util logging domain */
+    public static final LogDomain finrocUtil = finroc.getSubDomain("util");
 }

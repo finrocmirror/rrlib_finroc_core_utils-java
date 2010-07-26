@@ -24,6 +24,7 @@ package org.finroc.jc.container;
 import org.finroc.jc.AtomicInt;
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.Time;
+import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.CppInclude;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.ForwardDecl;
@@ -34,6 +35,11 @@ import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.jc.log.LogUser;
+import org.finroc.log.LogDomainRegistry;
+import org.finroc.log.LogLevel;
+import org.finroc.log.LogDomain;
 
 /**
  * @author max
@@ -46,7 +52,7 @@ import org.finroc.jc.annotation.SizeT;
 @ForwardDecl( {AbstractReusable.class})
 @CppInclude("AbstractReusable.h")
 @SharedPtr
-public class AllocationRegister implements HasDestructor {
+public class AllocationRegister extends LogUser implements HasDestructor {
 
     /** Number of reusables objects allocated */
     private AtomicInt reusables = new AtomicInt();
@@ -83,6 +89,17 @@ public class AllocationRegister implements HasDestructor {
     @CppType("ConcurrentQueue<int>")
     private ConcurrentQueue<Integer> freeSlotQueue = new ConcurrentQueue<Integer>();
 
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"reusables\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("reusables");
+
+    /** "Lock" on root log domain - to prevent domains from being deallocated before AllocationRegister */
+    @SuppressWarnings("unused") @Const
+    private LogDomain logRoot = LogDomainRegistry.getDefaultDomain();
+
+    public AllocationRegister() {
+        //Cpp logDomain::getDomainForUseInRRLibMacros();
+    }
 
     public static @SharedPtr AllocationRegister getInstance() {
         //Cpp static ::std::tr1::shared_ptr<AllocationRegister> instance(new AllocationRegister());
@@ -199,7 +216,7 @@ public class AllocationRegister implements HasDestructor {
      */
     private void interpretNum(int num) {
         if ((num % 100) == 0) {
-            System.out.println("Allocated " + reusables.get() + " Reusables");
+            logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, getLogDescription(), "Allocated " + reusables.get() + " Reusables");
         }
     }
 
@@ -208,16 +225,18 @@ public class AllocationRegister implements HasDestructor {
         rawInstance = null;
         /*Cpp
         #ifndef NDEBUG
-        printf("\nLeaked Reusable Object Report:\n");
+        rrlib::logging::LogStream output = _FINROC_LOG_STREAM(trackedReusables.size() == 0 ? rrlib::logging::eLL_DEBUG : rrlib::logging::eLL_DEBUG_WARNING, logDomain);
+        output << std::endl << "Leaked Reusable Object Report:" << std::endl;
         if (trackedReusables.size() == 0) {
-            printf("  No reusables leaked. Valgrind should appreciate this.\n");
+            output << "  No reusables leaked. Valgrind should appreciate this.";
             return;
         }
 
         for (size_t i = 0; i < trackedReusables.size(); i++) {
             AbstractReusable* ar = trackedReusables.get(i);
-            printf("%s %p \n", typeid(*ar).name(), ar);
-            ar->printTrace(startTime);
+            output << "  " << typeid(*ar).name() << " " << ar << std::endl;
+            //printf("%s %p \n", typeid(*ar).name(), ar);
+            ar->printTrace(output, startTime);
         }
         #endif
         */

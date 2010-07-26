@@ -24,6 +24,7 @@ package org.finroc.jc;
 import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.CppPrepend;
 import org.finroc.jc.annotation.CppType;
+import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.JavaOnly;
@@ -31,8 +32,11 @@ import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.container.ConcurrentQueue;
+import org.finroc.jc.log.LogDefinitions;
 import org.finroc.jc.thread.LoopThread;
 import org.finroc.jc.thread.ThreadUtil;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -59,7 +63,7 @@ import org.finroc.jc.thread.ThreadUtil;
 public class GarbageCollector extends LoopThread {
 
     /*Cpp
-    // Some mutex variables - too keep mutex constructed as long as possible
+    // Some mutex variables - to keep mutex constructed as long as possible
     // Actual mutex
     static std::tr1::shared_ptr<Mutex> mutex;
 
@@ -84,6 +88,10 @@ public class GarbageCollector extends LoopThread {
 
     /** Next delete task - never null */
     private DeferredDeleteTask next = new DeferredDeleteTask();
+
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"garbage_collector\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("garbage_collector");
 
     @Init("mutexLock(mutex)")
     private GarbageCollector() {
@@ -121,7 +129,7 @@ public class GarbageCollector extends LoopThread {
         try {
             join();
         } catch (Exception e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_DEBUG_WARNING, getLogDescription(), e);
         }
         instance = null;
     }
@@ -163,6 +171,11 @@ public class GarbageCollector extends LoopThread {
     static void deleteDeferred(Object* elementToDelete) {
         deleteDeferredImpl(static_cast<SafeDestructible*>(elementToDelete));
     }
+
+    static const char* getLogDescription() {
+        return "GarbageCollector";
+    }
+
     */
 
     public void mainLoopCallback() throws Exception {
@@ -212,7 +225,8 @@ public class GarbageCollector extends LoopThread {
         if (obj != NULL) {
           s = obj->toString();
         }
-        _printf("Delete requested for: %p %s\n", elementToDelete, s.toCString());
+        //_printf("Delete requested for: %p %s\n", elementToDelete, s.toCString());
+        _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "Delete requested for: " << elementToDelete << " " << s.toCString());
          */
 
         assert(deleted == YES || deleted == NO);
@@ -286,12 +300,18 @@ public class GarbageCollector extends LoopThread {
 
         void operator()(SafeDestructible* elementToDelete) {
             printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
+            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "invoking GarbageCollector Functor for " << elementToDelete);
             GarbageCollector::deleteDeferred(elementToDelete);
         }
 
         void operator()(Object* elementToDelete) {
             printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
+            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "invoking GarbageCollector Functor for " << elementToDelete);
             GarbageCollector::deleteDeferred(elementToDelete);
+        }
+
+        const char* getLogDescription() {
+            return "GarbageCollector::Functor";
         }
     };
     */

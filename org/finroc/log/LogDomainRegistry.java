@@ -28,7 +28,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.finroc.jc.annotation.JavaOnly;
-import org.finroc.jc.annotation.Ref;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -200,11 +199,11 @@ public class LogDomainRegistry {
         item = node.getAttributes().getNamedItem("stream");
         if (item != null) {
             streamConfigured = true;
-            setDomainStreamMask(name, LogStream.values()[streamNames.indexOf(item.getNodeValue().trim().toLowerCase())]);
+            setDomainStreamMask(name, LogStreamOutput.values()[streamNames.indexOf(item.getNodeValue().trim().toLowerCase())]);
         }
 
 
-        ArrayList<LogStream> streamMask = new ArrayList<LogStream>();
+        ArrayList<LogStreamOutput> streamMask = new ArrayList<LogStreamOutput>();
         for (int i = 0; i < node.getChildNodes().getLength(); i++) {
             Node child = node.getChildNodes().item(i);
             if (child.getNodeName().equals("stream")) {
@@ -213,11 +212,11 @@ public class LogDomainRegistry {
                     return false;
                 }
                 item = node.getAttributes().getNamedItem("output");
-                streamMask.add(LogStream.values()[streamNames.indexOf(item.getNodeValue().trim().toLowerCase())]);
+                streamMask.add(LogStreamOutput.values()[streamNames.indexOf(item.getNodeValue().trim().toLowerCase())]);
             }
         }
         if (streamMask.size() > 0) {
-            setDomainStreamMask(name, streamMask.toArray(new LogStream[0]));
+            setDomainStreamMask(name, streamMask.toArray(new LogStreamOutput[0]));
         }
 
         for (int i = 0; i < node.getChildNodes().getLength(); i++) {
@@ -272,9 +271,9 @@ public class LogDomainRegistry {
      *
      * @return The found or newly created domain object as a shared pointer
      */
-    public LogDomain getSubDomain(String name, @Ref LogDomain parent) {
+    public LogDomain getSubDomain(String name, LogDomain parent) {
         assert(name != null && name.length() > 0 && parent != null);
-        String fullQualifiedDomainName = parent.getName() + (parent.parent != null ? "." : "") + name;
+        String fullQualifiedDomainName = (parent != getDefaultDomain() ? (parent.getName() + ".") : "") + name;
         int i = getDomainIndexByName(fullQualifiedDomainName);
         if (i == domains.size()) {
             LogDomainConfiguration configuration = getConfigurationByName(fullQualifiedDomainName);
@@ -475,7 +474,7 @@ public class LogDomainRegistry {
      * @param name   The full qualified name of the domain
      * @param outputs   The new value of the setting
      */
-    public void setDomainStreamMask(String name, LogStream... outputs) {
+    public void setDomainStreamMask(String name, LogStreamOutput... outputs) {
         LogDomainConfiguration configuration = getConfigurationByName(name);
         synchronized (configuration) {
             configuration.streamMask = outputs;
@@ -529,9 +528,7 @@ public class LogDomainRegistry {
         try {
             for (int i = 0; i < node.getChildNodes().getLength(); i++) {
                 Node child = node.getChildNodes().item(i);
-                if (child.getNodeName().equals("domain"))
-
-                {
+                if (child.getNodeName().equals("domain")) {
                     if (!addConfigurationFromXMLNode(child)) {
                         return false;
                     }

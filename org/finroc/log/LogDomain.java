@@ -76,6 +76,9 @@ public class LogDomain {
 
     private StringBuilder buffer = new StringBuilder(); // temporary buffer for output string (only use with lock on domain)
 
+    /** Use colored console output ? (we don't want during debugging in IDEs such as Eclipse) */
+    private final static boolean COLORED_CONSOLE_OUTPUT = LogDomain.class.getResource("LogDomain.class").toString().contains(".jar!");
+
     /** The ctor of a top level domain
      *
      * This ctor is to be called by the registry that creates the top level
@@ -151,7 +154,7 @@ public class LogDomain {
      *
      *@param outputs   Streams to output to
      */
-    private void setupOutputStream(LogStream... outputs)  {
+    private void setupOutputStream(/*LogStream... outputs*/)  {
         if (outputStreamsRevision == configuration.streamMaskRevision) {
             return;
         }
@@ -159,14 +162,14 @@ public class LogDomain {
         synchronized (configuration) {
             outputStreams.clear();
             Set<PrintStream> tmp = new HashSet<PrintStream>();
-            for (LogStream ls : outputs) {
-                if (ls == LogStream.eLS_STDOUT) {
+            for (LogStreamOutput ls : configuration.streamMask) {
+                if (ls == LogStreamOutput.LS_STDOUT) {
                     tmp.add(System.out);
-                } else if (ls == LogStream.eLS_STDERR) {
+                } else if (ls == LogStreamOutput.LS_STDERR) {
                     tmp.add(System.err);
-                } else if (ls == LogStream.eLS_FILE) {
+                } else if (ls == LogStreamOutput.LS_FILE) {
                     tmp.add(openFileOutputStream() ? fileStream : System.err);
-                } else if (ls == LogStream.eLS_COMBINED_FILE) {
+                } else if (ls == LogStreamOutput.LS_COMBINED_FILE) {
                     LogDomain domain = this;
                     for (; domain.parent != null && domain.parent.configuration.configureSubTree; domain = domain.parent) {}
                     tmp.add(domain.openFileOutputStream() ? fileStream : System.err);
@@ -212,13 +215,13 @@ public class LogDomain {
      */
     private String getLevelString(LogLevel level) {
         switch (level) {
-        case eLL_ERROR:
+        case LL_ERROR:
             return "[error]   ";
-        case eLL_WARNING:
+        case LL_WARNING:
             return "[warning] ";
-        case eLL_DEBUG_WARNING:
+        case LL_DEBUG_WARNING:
             return "[debug]   ";
-        case eLL_DEBUG:
+        case LL_DEBUG:
             return "[debug]   ";
         default:
             return "          ";
@@ -250,13 +253,13 @@ public class LogDomain {
      */
     private String getControlStringForColoredOutput(LogLevel level) {
         switch (level) {
-        case eLL_ERROR:
+        case LL_ERROR:
             return "\033[;1;31m";
-        case eLL_WARNING:
+        case LL_WARNING:
             return "\033[;1;34m";
-        case eLL_DEBUG_WARNING:
+        case LL_DEBUG_WARNING:
             return "\033[;2;33m";
-        case eLL_DEBUG:
+        case LL_DEBUG:
             return "\033[;2;32m";
         default:
             return "\033[;0m";
@@ -439,8 +442,49 @@ public class LogDomain {
     * @param msg           The message to output
     */
     @PostProcess("org.finroc.j2c.LogMessage")
-    public void message(LogLevel level, String callerDescription, String msg) {
-        message(level, callerDescription, msg, 1);
+    public void log(LogLevel level, String callerDescription, String msg) {
+        log(level, callerDescription, msg, null, 2);
+    }
+
+    /** A printf like variant of using logging domains for message output
+    *
+    * Instead of using operator << to output messages this method can be
+    * used. It then itself uses printf to format the given message and
+    * streams the result through the result obtained from GetMessageStream.
+    * That way the message prefix is only generated in one place and - more
+    * important - the underlying technique is the more sane one from
+    * iostreams instead of file descriptors.
+    * Apart from that: iostreams and file descriptors can not be mixed. So
+    * a decision had to be made.
+    *
+    * @param level         The log level of the message
+    * @param callerDescription Description of calling object or context
+    * @param msg           The message to output
+    * @param e             Exception to output
+    */
+    @PostProcess("org.finroc.j2c.LogMessage")
+    public void log(LogLevel level, String callerDescription, String msg, Exception e) {
+        log(level, callerDescription, msg, e, 2);
+    }
+
+    /** A printf like variant of using logging domains for message output
+    *
+    * Instead of using operator << to output messages this method can be
+    * used. It then itself uses printf to format the given message and
+    * streams the result through the result obtained from GetMessageStream.
+    * That way the message prefix is only generated in one place and - more
+    * important - the underlying technique is the more sane one from
+    * iostreams instead of file descriptors.
+    * Apart from that: iostreams and file descriptors can not be mixed. So
+    * a decision had to be made.
+    *
+    * @param level         The log level of the message
+    * @param callerDescription Description of calling object or context
+    * @param e             Exception to output
+    */
+    @PostProcess("org.finroc.j2c.LogMessage")
+    public void log(LogLevel level, String callerDescription, Exception e) {
+        log(level, callerDescription, "", e, 2);
     }
 
     /** A printf like variant of using logging domains for message output
@@ -457,9 +501,10 @@ public class LogDomain {
      * @param level         The log level of the message
      * @param callerDescription Description of calling object or context
      * @param msg           The message to output
+     * @param e             Exception to output
      * @param callerStackIndex Stack index of caller (advanced feature)
      */
-    void message(LogLevel level, String callerDescription, String msg, int callerStackIndex) {
+    public void log(LogLevel level, String callerDescription, String msg, Exception e, int callerStackIndex) {
 
         if (level.ordinal() > getMaxMessageLevel().ordinal() || !isEnabled()) {
             return;
@@ -476,29 +521,32 @@ public class LogDomain {
             setupOutputStream();
             buffer.delete(0, buffer.length());
             if (getPrintTime()) {
-                buffer.append(getTimeString());
+                buffer.append(getTimeString()).append(" ");
             }
 
             if (getPrintName()) {
-                buffer.append(getNameString());
+                buffer.append("[").append(getNameString()).append("] ");
             }
             if (getPrintLevel()) {
-                buffer.append(getLevelString(level));
+                buffer.append(getLevelString(level)).append(" ");
             }
-            buffer.append(callerDescription).append("::").append(function).append(" ");
+            buffer.append(callerDescription).append("::").append(function).append("()");
             if (getPrintLocation()) {
-                buffer.append(getLocationString(file, line));
+                buffer.append(" (").append(getLocationString(file, line)).append(")");
             }
-            buffer.append(">> ");
+            buffer.append(" >> ").append(msg);
 
             String nonColoredOutput = buffer.toString();
             String coloredOutput = getControlStringForColoredOutput(level) + nonColoredOutput + "\033[;0m";
 
             for (PrintStream ps : outputStreams) {
-                if (ps instanceof FileStream) {
+                if (ps instanceof FileStream || (!COLORED_CONSOLE_OUTPUT)) {
                     ps.println(nonColoredOutput);
                 } else {
                     ps.println(coloredOutput);
+                }
+                if (e != null) {
+                    e.printStackTrace(ps);
                 }
             }
         }
@@ -514,4 +562,7 @@ public class LogDomain {
         return LogDomainRegistry.getInstance().getSubDomain(name, this);
     }
 
+    public String toString() {
+        return getName();
+    }
 }

@@ -23,6 +23,9 @@ package org.finroc.jc.jni;
 
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -37,6 +40,9 @@ public abstract class JNIWrapper extends UsedInC implements HasDestructor {
 
     /** Has Java class created C++ class and is responsible for deleting it? */
     private boolean owner;
+
+    /** Log domain for this class */
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("jni");
 
     public JNIWrapper(long ptr) {
         this(ptr, false);
@@ -54,7 +60,8 @@ public abstract class JNIWrapper extends UsedInC implements HasDestructor {
         // Automatically delete C++ object with garbage collection
         super.finalize();
         if (owner && pointer != 0) {
-            System.out.println("deleting " + toString());
+            //System.out.println("Deleting C++ object " + toString());
+            log(LogLevel.LL_DEBUG_VERBOSE_1, logDomain, "Deleting C++ object " + toString());
             delete();
             cppDelete();
             pointer = 0;

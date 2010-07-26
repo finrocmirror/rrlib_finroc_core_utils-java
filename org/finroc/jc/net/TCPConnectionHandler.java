@@ -37,7 +37,10 @@ import org.finroc.jc.annotation.SizeT;
 import org.finroc.jc.annotation.Virtual;
 import org.finroc.jc.container.ConcurrentMap;
 import org.finroc.jc.container.SafeConcurrentlyIterableList;
+import org.finroc.jc.log.LogDefinitions;
 import org.finroc.jc.thread.ThreadUtil;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -79,6 +82,10 @@ public class TCPConnectionHandler extends Thread {
     @SuppressWarnings("unused")
     private static MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 50);
 
+    /** Log domain for this class */
+    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"net\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
+
     /**
      * @param port Port the Handler is running on
      */
@@ -107,19 +114,22 @@ public class TCPConnectionHandler extends Thread {
             boost::asio::ip::tcp::_endpoint epoint(boost::asio::ip::tcp::_v4(), port);
             acceptor_._open(epoint._protocol(), ec);
             if (ec) {
-                printf("Could not listen on port: %d.\n", port);
+                //printf("Could not listen on port: %d.\n", port);
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_USER, logDomain, << "Could not listen on port: " << port << ".");
                 return false;
             }
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
             acceptor_._bind(epoint, ec);
             if (ec) {
-                printf("Could not listen on port: %d.\n", port);
+                //printf("Could not listen on port: %d.\n", port);
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_USER, logDomain, << "Could not listen on port: " << port << ".");
                 return false;
             }
             return true;
             */
         } catch (Exception e) {
-            System.err.println("Could not listen on port: " + port + ".");
+            //System.err.println("Could not listen on port: " + port + ".");
+            logDomain.log(LogLevel.LL_USER, getLogDescription(), "Could not listen on port: " + port + ".");
             return false;
         }
     }
@@ -146,13 +156,13 @@ public class TCPConnectionHandler extends Thread {
             try {
                 handle(new NetSocket(serverSocket.accept()));
             } catch (IOException e) {
-                e.printStackTrace();
+                logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
             }
         }
         try {
             serverSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
         }
 
         /*Cpp
@@ -165,7 +175,8 @@ public class TCPConnectionHandler extends Thread {
                 std::tr1::shared_ptr<NetSocket> s = NetSocket::createInstance();
                 acceptor_._accept(s->getSocket(), ec);
                 if (ec) {
-                    printf("NetSocket accept error: %s\n", ec._message()._c_str());
+                    //printf("NetSocket accept error: %s\n", ec._message()._c_str());
+                    _FINROC_LOG_STREAM(rrlib::logging::eLL_ERROR, logDomain, << "NetSocket accept error: " << ec._message()._c_str());
                 } else {
                     handle(s);
                 }
@@ -187,7 +198,8 @@ public class TCPConnectionHandler extends Thread {
         if (acceptorPtr != NULL) {
             acceptorPtr->_close(ec);
             if (ec) {
-                printf("NetSocket close error: %s\n", ec._message()._c_str());
+                //printf("NetSocket close error: %s\n", ec._message()._c_str());
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_ERROR, logDomain, << "NetSocket close error: " << ec._message()._c_str());
             }
 
             // establish connection and close it - this way, we can get thread out of the loop
@@ -231,7 +243,8 @@ public class TCPConnectionHandler extends Thread {
         }
 
         // no handler
-        System.out.println("No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
+        //System.out.println("No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
+        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
         try {
 
             // JavaOnlyBlock
@@ -239,7 +252,7 @@ public class TCPConnectionHandler extends Thread {
 
             s.close();
         } catch (org.finroc.jc.net.IOException e) {
-            e.printStackTrace();
+            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
         }
     }
 
@@ -318,4 +331,10 @@ public class TCPConnectionHandler extends Thread {
         }
     }
 
+    /**
+     * @return Description for logging
+     */
+    private String getLogDescription() {
+        return "TCPConnectionHandler on port " + port;
+    }
 }
