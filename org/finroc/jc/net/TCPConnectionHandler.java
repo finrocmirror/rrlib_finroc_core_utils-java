@@ -115,21 +115,21 @@ public class TCPConnectionHandler extends Thread {
             acceptor_._open(epoint._protocol(), ec);
             if (ec) {
                 //printf("Could not listen on port: %d.\n", port);
-                _FINROC_LOG_STREAM(rrlib::logging::eLL_USER, logDomain, << "Could not listen on port: " << port << ".");
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, << "Could not listen on port: " << port << ".");
                 return false;
             }
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
             acceptor_._bind(epoint, ec);
             if (ec) {
                 //printf("Could not listen on port: %d.\n", port);
-                _FINROC_LOG_STREAM(rrlib::logging::eLL_USER, logDomain, << "Could not listen on port: " << port << ".");
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, << "Could not listen on port: " << port << ".");
                 return false;
             }
             return true;
             */
         } catch (Exception e) {
             //System.err.println("Could not listen on port: " + port + ".");
-            logDomain.log(LogLevel.LL_USER, getLogDescription(), "Could not listen on port: " + port + ".");
+            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Could not listen on port: " + port + ".");
             return false;
         }
     }

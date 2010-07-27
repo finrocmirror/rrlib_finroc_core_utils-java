@@ -60,7 +60,7 @@ public class LogUser {
     /**
      * @return Log description (default implementation is "<class name> (<pointer>)"
      */
-    @InCpp("return *this;")
+    @InCpp("return *this;") @NonVirtual
     public @ConstMethod @Const @Ref @CppType("LogUser") String getLogDescription() {
         return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
     }

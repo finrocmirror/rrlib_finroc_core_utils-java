@@ -299,13 +299,13 @@ public class GarbageCollector extends LoopThread {
     public:
 
         void operator()(SafeDestructible* elementToDelete) {
-            printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
+            //printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
             _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "invoking GarbageCollector Functor for " << elementToDelete);
             GarbageCollector::deleteDeferred(elementToDelete);
         }
 
         void operator()(Object* elementToDelete) {
-            printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
+            //printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
             _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "invoking GarbageCollector Functor for " << elementToDelete);
             GarbageCollector::deleteDeferred(elementToDelete);
         }
