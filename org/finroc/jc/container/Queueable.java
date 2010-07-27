@@ -26,6 +26,7 @@ import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
+import org.finroc.jc.log.LogUser;
 
 /**
  * @author max
@@ -34,7 +35,7 @@ import org.finroc.jc.annotation.Ptr;
  * to the next element in singly-linked queue.
  */
 @Inline @NoCpp
-public class Queueable implements HasDestructor {
+public class Queueable extends LogUser implements HasDestructor {
 
     /** Terminator (not null for efficiency reasons) */
     public final static @PassByValue Queueable terminator = new Queueable(true);

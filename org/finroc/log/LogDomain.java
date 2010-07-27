@@ -562,6 +562,11 @@ public class LogDomain {
         return LogDomainRegistry.getInstance().getSubDomain(name, this);
     }
 
+    @PostProcess("org.finroc.j2c.LogStream")
+    public LogStream getLogStream(LogLevel level, String description) {
+        return new LogStream(level, this, description);
+    }
+
     public String toString() {
         return getName();
     }
