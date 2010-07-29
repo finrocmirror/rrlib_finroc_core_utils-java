@@ -90,7 +90,7 @@ public class GarbageCollector extends LoopThread {
     private DeferredDeleteTask next = new DeferredDeleteTask();
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"garbage_collector\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"garbage_collector\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("garbage_collector");
 
     @Init("mutexLock(mutex)")
@@ -226,7 +226,7 @@ public class GarbageCollector extends LoopThread {
           s = obj->toString();
         }
         //_printf("Delete requested for: %p %s\n", elementToDelete, s.toCString());
-        _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "Delete requested for: " << elementToDelete << " " << s.toCString());
+        _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, "Delete requested for: ", elementToDelete, " ", s.toCString());
          */
 
         assert(deleted == YES || deleted == NO);
@@ -300,13 +300,13 @@ public class GarbageCollector extends LoopThread {
 
         void operator()(SafeDestructible* elementToDelete) {
             //printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
-            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "invoking GarbageCollector Functor for " << elementToDelete);
+            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, "invoking GarbageCollector Functor for ", elementToDelete);
             GarbageCollector::deleteDeferred(elementToDelete);
         }
 
         void operator()(Object* elementToDelete) {
             //printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
-            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, << "invoking GarbageCollector Functor for " << elementToDelete);
+            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, "invoking GarbageCollector Functor for ", elementToDelete);
             GarbageCollector::deleteDeferred(elementToDelete);
         }
 

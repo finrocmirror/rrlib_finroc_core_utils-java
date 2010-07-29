@@ -96,7 +96,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
     private static final Object RETRY = new Object();
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"queue_impl\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"queue_impl\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     public WonderQueueBounded() {

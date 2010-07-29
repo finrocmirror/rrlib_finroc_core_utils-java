@@ -63,7 +63,7 @@ public class IPAddress {
     @Const private static IPAddress LOCAL_HOST;
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"net\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"net\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
 
     static {

@@ -78,7 +78,7 @@ public class NetSocket {
     }
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"net\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"net\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
 
     /*Cpp

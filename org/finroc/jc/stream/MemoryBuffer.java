@@ -65,7 +65,7 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
     @SizeT protected int curSize;
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"stream\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"stream\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("stream");
 
     @JavaOnly

@@ -25,7 +25,6 @@ import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.HAppend;
-import org.finroc.jc.annotation.HPrepend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
@@ -44,7 +43,7 @@ import org.finroc.log.LogLevel;
  *
  * Furthermore, objects can have (debug) logging turned on and off for every instance separately
  */
-@HPrepend("typedef rrlib::logging::eLogLevel eLogLevel;")
+//@HPrepend("typedef rrlib::logging::eLogLevel eLogLevel;")
 @HAppend( {"inline std::ostream& operator << (std::ostream& output, const LogUser* lu) {",
            "    output << typeid(*lu).name() << \" (\" << ((void*)lu) << \")\";",
            "    return output;",

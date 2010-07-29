@@ -48,7 +48,7 @@ public class InputStreamSource extends LogUser implements Source {
     State state = State.INITIAL;
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"stream\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"stream\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("stream");
 
     public InputStreamSource(InputStream is) {

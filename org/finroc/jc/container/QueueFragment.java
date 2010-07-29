@@ -59,7 +59,7 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
     public boolean skipFirst = false;
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"queue_impl\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"queue_impl\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     /**

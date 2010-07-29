@@ -90,7 +90,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
     private ConcurrentQueue<Integer> freeSlotQueue = new ConcurrentQueue<Integer>();
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"reusables\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"reusables\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("reusables");
 
     /** "Lock" on root log domain - to prevent domains from being deallocated before AllocationRegister */
@@ -98,7 +98,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
     private LogDomain logRoot = LogDomainRegistry.getDefaultDomain();
 
     public AllocationRegister() {
-        //Cpp logDomain::getDomainForUseInRRLibMacros();
+        //Cpp log_domain();
     }
 
     public static @SharedPtr AllocationRegister getInstance() {

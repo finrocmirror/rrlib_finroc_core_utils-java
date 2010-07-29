@@ -83,7 +83,7 @@ public class TCPConnectionHandler extends Thread {
     private static MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 50);
 
     /** Log domain for this class */
-    @InCpp("_CREATE_NAMED_LOGGING_DOMAIN(logDomain, \"net\");")
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"net\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
 
     /**
@@ -115,14 +115,14 @@ public class TCPConnectionHandler extends Thread {
             acceptor_._open(epoint._protocol(), ec);
             if (ec) {
                 //printf("Could not listen on port: %d.\n", port);
-                _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, << "Could not listen on port: " << port << ".");
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, "Could not listen on port: ", port, ".");
                 return false;
             }
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
             acceptor_._bind(epoint, ec);
             if (ec) {
                 //printf("Could not listen on port: %d.\n", port);
-                _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, << "Could not listen on port: " << port << ".");
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, "Could not listen on port: ", port, ".");
                 return false;
             }
             return true;
@@ -176,7 +176,7 @@ public class TCPConnectionHandler extends Thread {
                 acceptor_._accept(s->getSocket(), ec);
                 if (ec) {
                     //printf("NetSocket accept error: %s\n", ec._message()._c_str());
-                    _FINROC_LOG_STREAM(rrlib::logging::eLL_ERROR, logDomain, << "NetSocket accept error: " << ec._message()._c_str());
+                    _FINROC_LOG_STREAM(rrlib::logging::eLL_ERROR, logDomain, "NetSocket accept error: ", ec._message()._c_str());
                 } else {
                     handle(s);
                 }
@@ -199,7 +199,7 @@ public class TCPConnectionHandler extends Thread {
             acceptorPtr->_close(ec);
             if (ec) {
                 //printf("NetSocket close error: %s\n", ec._message()._c_str());
-                _FINROC_LOG_STREAM(rrlib::logging::eLL_ERROR, logDomain, << "NetSocket close error: " << ec._message()._c_str());
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_ERROR, logDomain, "NetSocket close error: ", ec._message()._c_str());
             }
 
             // establish connection and close it - this way, we can get thread out of the loop
