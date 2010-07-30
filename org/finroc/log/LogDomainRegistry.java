@@ -28,6 +28,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.jc.annotation.SharedPtr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -244,7 +245,7 @@ public class LogDomainRegistry {
      *
      * @return The only instance of this class that should exist
      */
-    public static LogDomainRegistry getInstance() {
+    public static @SharedPtr LogDomainRegistry getInstance() {
         return instance;
     }
 

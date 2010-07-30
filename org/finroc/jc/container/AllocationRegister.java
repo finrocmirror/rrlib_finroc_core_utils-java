@@ -93,9 +93,9 @@ public class AllocationRegister extends LogUser implements HasDestructor {
     @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"reusables\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("reusables");
 
-    /** "Lock" on root log domain - to prevent domains from being deallocated before AllocationRegister */
-    @SuppressWarnings("unused") @Const
-    private LogDomain logRoot = LogDomainRegistry.getDefaultDomain();
+    /** "Lock" on log domain registry - to prevent domains from being deallocated before AllocationRegister */
+    @SuppressWarnings("unused") @Const @SharedPtr
+    private LogDomainRegistry logRoot = LogDomainRegistry.getInstance();
 
     public AllocationRegister() {
         //Cpp log_domain();

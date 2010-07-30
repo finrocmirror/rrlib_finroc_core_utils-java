@@ -59,7 +59,9 @@ import org.finroc.log.LogLevel;
  * anymore), it is completely deleted by this thread.
  */
 @Ptr
-@CppPrepend("std::tr1::shared_ptr<Mutex> GarbageCollector::mutex(new Mutex());")
+@CppPrepend( {"std::tr1::shared_ptr<Mutex> GarbageCollector::mutex(new Mutex());",
+              "rrlib::logging::LogDomainSharedPointer gcClassInitDomainDummy = GarbageCollector::_V_logDomain();"
+             })
 public class GarbageCollector extends LoopThread {
 
     /*Cpp
@@ -91,7 +93,7 @@ public class GarbageCollector extends LoopThread {
 
     /** Log domain for this class */
     @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"garbage_collector\");")
-    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("garbage_collector");
+    public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("garbage_collector");
 
     @Init("mutexLock(mutex)")
     private GarbageCollector() {
@@ -100,6 +102,7 @@ public class GarbageCollector extends LoopThread {
 
         //JavaOnlyBlock
         setDaemon(true);
+
     }
 
     /*Cpp
