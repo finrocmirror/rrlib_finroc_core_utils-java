@@ -222,8 +222,8 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
         if (buffer.end < curSize) {
 
             // Keep buffer and perform size increase
-            @SizeT int currenWritePosInBuffer = (int)(written - bc.virtualPosition);
-            buffer.end = Math.min(curSize, currenWritePosInBuffer);
+            @SizeT int currentWritePosInBuffer = (int)(written - bc.virtualPosition);
+            buffer.end = Math.min(curSize, currentWritePosInBuffer);
             assert(curSize - buffer.position >= len) : "Minimal buffer size increase causes problem - probably incorrectly aligned data (eliminating obsolete flushes might also help)?";
         } else {
 

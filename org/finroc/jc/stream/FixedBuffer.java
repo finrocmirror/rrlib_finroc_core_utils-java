@@ -301,7 +301,7 @@ public class FixedBuffer {
      *
      * @param offset Offset in this buffer
      * @param src Source Buffer
-     * @param off offset in source array
+     * @param off offset in source buffer
      * @param length number of bytes to copy
      */
     @JavaOnly public void put(int offset, ByteBuffer src, int off, int len) {
@@ -332,7 +332,7 @@ public class FixedBuffer {
              "put(offset, src.getPointer() + off, len);"
             })
     public void put(@SizeT int offset, @Const @Ref FixedBuffer src, @SizeT int off, @SizeT int len) {
-        put(offset, src.buffer, off, len);
+        put(offset, src.getTempBuffer(), off, len);
     }
 
     /**
