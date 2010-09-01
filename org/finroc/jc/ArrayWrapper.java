@@ -60,7 +60,7 @@ public class ArrayWrapper<T> {
     private final T[] backend;
 
     /** Universal Empty Array Wrapper */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static final ArrayWrapper EMPTY = new ArrayWrapper(0, 0);
 
     /**
@@ -76,7 +76,7 @@ public class ArrayWrapper<T> {
     /**
      * @return Empty Array Wrapper
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static @Ptr ArrayWrapper getEmpty() {
         return EMPTY;
     }

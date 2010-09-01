@@ -140,7 +140,7 @@ class RawWonderQueue extends Queueable {
      * @param maxElements Maximum number of elements to dequeue
      * @return Actual number of elements dequeued (can be less if queue has lass elements)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public @SizeT int dequeueRaw(@Ptr ArrayWrapper buffer, @SizeT int maxElements) {
         @SizeT int pos = 0;
 

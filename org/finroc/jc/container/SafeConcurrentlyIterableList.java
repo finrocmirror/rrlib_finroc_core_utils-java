@@ -99,7 +99,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
 
     /*Cpp
     virtual ~SafeConcurrentlyIterableListBase() {
-        deleteBackend(currentBackend);
+        deleteBackend(currentBackend); // clear() is done in non-abstract subclass
     }
      */
 
@@ -304,7 +304,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
 public class SafeConcurrentlyIterableList<T> extends SafeConcurrentlyIterableListBase<T> {
 
     /** Empty Dummy List */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static final SafeConcurrentlyIterableList EMPTY = new SafeConcurrentlyIterableList(0, 0);
 
     /** Factor by which list is enlarged, when backend is too small */
@@ -313,7 +313,7 @@ public class SafeConcurrentlyIterableList<T> extends SafeConcurrentlyIterableLis
     /**
      * @return Empty Dummy List
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Ref public static SafeConcurrentlyIterableList getEmptyInstance() {
         return EMPTY;
     }
