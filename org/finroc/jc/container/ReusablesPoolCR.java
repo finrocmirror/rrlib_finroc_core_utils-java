@@ -22,8 +22,6 @@
 package org.finroc.jc.container;
 
 import org.finroc.jc.GarbageCollector;
-import org.finroc.jc.annotation.CppInclude;
-import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.Friend;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.PassByValue;
@@ -50,9 +48,7 @@ import org.finroc.jc.annotation.Virtual;
  * - The owningPool field of its element will be set to NULL
  * - It will be deleted deferred (by the garbage collector to avoid dangerous race conditions)
  */
-@ForwardDecl( {Reusable.class, GarbageCollector.class})
 @Friend(GarbageCollector.class)
-@CppInclude("Reusable.h")
 @Ptr @RawTypeArgs
 public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T> {
 

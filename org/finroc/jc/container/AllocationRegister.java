@@ -27,7 +27,6 @@ import org.finroc.jc.Time;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.CppInclude;
 import org.finroc.jc.annotation.CppType;
-import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
 import org.finroc.jc.annotation.JavaOnly;
@@ -49,7 +48,6 @@ import org.finroc.log.LogDomain;
  * Furthermore, global register for all reusable objects that should be assigned an application-unique 32bit Integer.
  * Allows associating the unique integer with an object - which in turn allows storing a stamped pointer in a long variable.
  */
-@ForwardDecl( {AbstractReusable.class})
 @CppInclude("AbstractReusable.h")
 @SharedPtr
 public class AllocationRegister extends LogUser implements HasDestructor {

@@ -45,7 +45,7 @@ import org.finroc.log.LogLevel;
  */
 @PassByValue
 @Include( {"<boost/asio/ip/tcp.hpp>", "TCPUtil.h"})
-@CppInclude("<sstream>") @Friend( {NetSocket.class, IPSocketAddress.class})
+@CppInclude( {"<sstream>", "stream/InputStreamBuffer.h", "stream/OutputStreamBuffer.h"}) @Friend( {NetSocket.class, IPSocketAddress.class})
 public class IPAddress {
 
     /*Cpp

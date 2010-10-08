@@ -43,10 +43,10 @@ import org.finroc.jc.annotation.JavaOnly;
 public class LogDomainConfiguration {
 
     final LogLevel DEFAULT_MAX_LOG_LEVEL = LogLevel.LL_DEBUG;   //!< Default max log level for reduced output mode
-    final boolean DEFAULT_PRINT_TIME = true;              //!< Default print time setting for reduced output mode
+    final boolean DEFAULT_PRINT_TIME = false;              //!< Default print time setting for reduced output mode
     final boolean DEFAULT_PRINT_NAME = false;              //!< Default print name setting for reduced output mode
     final boolean DEFAULT_PRINT_LEVEL = false;             //!< Default print level setting for reduced output mode
-    final boolean DEFAULT_PRINT_LOCATION = false;          //!< Default print location setting for reduced output mode
+    final boolean DEFAULT_PRINT_LOCATION = true;          //!< Default print location setting for reduced output mode
 
 
     String name;

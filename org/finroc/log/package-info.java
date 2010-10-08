@@ -20,7 +20,7 @@
  */
 
 @Namespace("rrlib::logging")
-@CppLocation("")
+@CppLocation("rrlib/logging")
 
 /**
  * This package contains flexible logging and debugging classes.

@@ -22,8 +22,6 @@
 package org.finroc.jc.container;
 
 import org.finroc.jc.GarbageCollector;
-import org.finroc.jc.annotation.CppInclude;
-import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.Friend;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Protected;
@@ -36,9 +34,7 @@ import org.finroc.jc.annotation.Virtual;
  *
  * This is the static thread-local ("TL")/not-thread-safe variant of ReusablesPoolTL.
  */
-@ForwardDecl( {ReusableTL.class, GarbageCollector.class})
 @Friend(GarbageCollector.class)
-@CppInclude("ReusableTL.h")
 @Ptr @RawTypeArgs
 public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool<T> {
 

@@ -29,6 +29,7 @@ import org.finroc.jc.MutexLockOrder;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
+import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
@@ -53,7 +54,8 @@ import org.finroc.log.LogLevel;
  * TCP Serving class (TCPServer interface) register at this handler.
  */
 @Ptr
-@Include( {"<boost/asio/ip/tcp.hpp>", "container/SafeConcurrentlyIterableList.h"})
+@Include("<boost/asio/ip/tcp.hpp>")
+@IncludeClass(SafeConcurrentlyIterableList.class)
 public class TCPConnectionHandler extends Thread {
 
     /*Cpp

@@ -36,7 +36,7 @@ import org.finroc.jc.annotation.Struct;
  * (can be passed to and modified by Manager (by reference))
  */
 @NoSuperclass @Struct @NoCpp @Inline
-class BufferInfo {
+public class BufferInfo {
 
     /** Buffer that read view currently operates on */
     @Ptr public FixedBuffer buffer = null;

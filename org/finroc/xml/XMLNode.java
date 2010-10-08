@@ -20,6 +20,10 @@
  */
 package org.finroc.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.finroc.jc.annotation.PassByValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -77,14 +81,15 @@ public class XMLNode {
      * to this method (lazy evaluation)
      *
      * @return A reference to the node's vector containing its children
+     * (hint: wrap in simple list to use in Java and C++)
      */
-    public XMLNodeVector getChildren() {
-        XMLNodeVector result = new XMLNodeVector();
+    public @PassByValue List<XMLNode> getChildren() {
+        ArrayList<XMLNode> result = new ArrayList<XMLNode>();
         NodeList nl = node.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node n = nl.item(i);
             if (n.getNodeType() == Node.ELEMENT_NODE) {
-                result.addNode(new XMLNode(doc, (Element)n));
+                result.add(new XMLNode(doc, (Element)n));
             }
         }
         return result;

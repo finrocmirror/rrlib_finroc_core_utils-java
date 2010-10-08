@@ -24,7 +24,7 @@ package org.finroc.jc;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.InCpp;
-import org.finroc.jc.annotation.Include;
+import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.NonVirtual;
@@ -40,7 +40,7 @@ import org.finroc.jc.container.SimpleList;
  *
  * Allows notifications concurrently to add/remove-operations
  */
-@Include("container/SafeConcurrentlyIterableList.h")
+@IncludeClass(SafeConcurrentlyIterableList.class)
 public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T extends ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, ? >> {
 
     /** Single listener - unused, but != NULL when there are more than one listeners */

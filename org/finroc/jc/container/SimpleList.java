@@ -22,9 +22,11 @@
 package org.finroc.jc.container;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
+import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Init;
@@ -188,6 +190,12 @@ public class SimpleList<T> {
         return size() <= 0;
     }
 
+    /**
+     * Does list contain specified element?
+     *
+     * @param element Element
+     * @return Answer
+     */
     @InCpp( {"for (typename std::vector<T>::const_iterator it = backend._begin(); it != backend._end(); ++it) {",
              "    if (*(it) == element) {",
              "        return true;",
@@ -197,6 +205,21 @@ public class SimpleList<T> {
             })
     @ConstMethod public boolean contains(T element) {
         return backend.contains(element);
+    }
+
+    /**
+     * @param element Element
+     * @return (First) Index of element in list; -1 if element could not be found (note, that return type of this method is int)
+     */
+    @InCpp( {"for (size_t i = 0; i < size(); i++) {",
+             "    if (get(i) == element) {",
+             "        return i;",
+             "    }",
+             "}",
+             "return -1;"
+            })
+    @ConstMethod @CppType("int") public int indexOf(T element) {
+        return backend.indexOf(element);
     }
 
     /**
@@ -213,7 +236,7 @@ public class SimpleList<T> {
     /**
      * Add all these elements to list
      *
-     * @param elements to add
+     * @param elements elements to add
      */
     public void addAll(@Const @Ref T[] elements) {
         for (@SizeT int i = 0; i < elements.length; i++) {
@@ -221,8 +244,21 @@ public class SimpleList<T> {
         }
     }
 
+    /**
+     * @return List backend
+     */
     @JavaOnly
     public ArrayList<T> getBackend() {
         return backend;
+    }
+
+    /**
+     * Add all these elements to list
+     *
+     * @param other elements to add
+     */
+    @JavaOnly
+    public void addAll(Collection<T> other) {
+        backend.addAll(other);
     }
 }

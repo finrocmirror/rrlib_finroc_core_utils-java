@@ -61,7 +61,7 @@ public class LogUser {
      */
     @InCpp("return *this;") @NonVirtual
     public @ConstMethod @Const @Ref @CppType("LogUser") String getLogDescription() {
-        return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+        return getClass().getSimpleName() + " (@" + Integer.toHexString(hashCode()) + ")";
     }
 
     /**

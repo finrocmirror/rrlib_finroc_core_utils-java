@@ -20,7 +20,7 @@
  */
 
 @Namespace("rrlib::xml2")
-@CppLocation("")
+@CppLocation("rrlib/xml2_wrapper")
 
 /**
  * This package contains an xml wrapper - analog to rrlib_xml2_wrapper

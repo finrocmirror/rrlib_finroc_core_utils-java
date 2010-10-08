@@ -19,44 +19,35 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.container;
+package org.finroc.jc;
 
-import org.finroc.jc.HasDestructor;
-import org.finroc.jc.annotation.ConstMethod;
-import org.finroc.jc.annotation.IncludeClass;
+import java.io.File;
+
+import org.finroc.jc.annotation.Const;
+import org.finroc.jc.annotation.InCpp;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.NoCpp;
-import org.finroc.jc.annotation.Ptr;
+import org.finroc.jc.annotation.Prefix;
+import org.finroc.jc.annotation.Ref;
 
 /**
  * @author max
  *
- * This is the base class of all kinds of pools of reusable objects.
+ * Some basic file operations
  */
-@Inline @NoCpp @IncludeClass(AbstractReusable.class)
-public abstract class AbstractReusablesPool<T extends AbstractReusable> implements HasDestructor {
-
-    /** Pointer to Last created reusable => linked list to all reusables */
-    @Ptr
-    protected T lastCreated;
-
-    //Cpp #ifndef NDEBUG
-
-    /** "Lock" to allocation register - ensures that report will be printed after pool has been deleted */
-    protected AllocationRegister allocationRegisterLock = AllocationRegister.getInstance();
-
-    /*Cpp
-    #else
-
-    AbstractReusablesPool() : lastCreated(NULL) {}
-
-    #endif
-     */
+@Inline @NoCpp @Prefix("s")
+@Include("<boost/filesystem.hpp>")
+public class Files {
 
     /**
-     * @return Pointer to Last created reusable => linked list to all reusables
+     * Does file with specified name exist?
+     *
+     * @param filename File name
+     * @return Answer
      */
-    @ConstMethod public @Ptr T getLastCreated() {
-        return lastCreated;
+    @InCpp("return boost::filesystem::_exists(filename.getStdString());")
+    public static boolean exists(@Const @Ref String filename) {
+        return new File(filename).exists();
     }
 }

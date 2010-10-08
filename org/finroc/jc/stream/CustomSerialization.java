@@ -22,7 +22,6 @@
 package org.finroc.jc.stream;
 
 import org.finroc.jc.annotation.ConstMethod;
-import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.Ref;
 
 /**
@@ -31,7 +30,6 @@ import org.finroc.jc.annotation.Ref;
  * Classes that implement this interface can be  serialized and deserialized from
  * a stream very efficiently (without unnecessary object allocation)
  */
-@ForwardDecl( {InputStreamBuffer.class, OutputStreamBuffer.class})
 public interface CustomSerialization {
 
     /**

@@ -26,6 +26,7 @@ import java.net.SocketException;
 
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
+import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.SharedPtr;
@@ -33,6 +34,8 @@ import org.finroc.jc.annotation.Superclass;
 import org.finroc.jc.annotation.Virtual;
 import org.finroc.jc.log.LogDefinitions;
 import org.finroc.jc.net.IOException;
+import org.finroc.jc.stream.BufferInfo;
+import org.finroc.jc.stream.FixedBuffer;
 import org.finroc.jc.stream.InputStreamSource;
 import org.finroc.jc.stream.OutputStreamSink;
 import org.finroc.jc.stream.Sink;
@@ -46,9 +49,8 @@ import org.finroc.log.LogLevel;
  * This class wraps a Java TCP Socket
  * and works similarly in C++.
  */
-@Include( {"<boost/asio/ip/tcp.hpp>", "stream/BufferInfo.h", "stream/FixedBuffer.h", "<boost/asio/error.hpp>",
-           "<boost/asio/completion_condition.hpp>", "<boost/asio/read.hpp>"
-          })
+@IncludeClass( {BufferInfo.class, FixedBuffer.class})
+@Include( {"<boost/asio/ip/tcp.hpp>", "<boost/asio/error.hpp>", "<boost/asio/completion_condition.hpp>", "<boost/asio/read.hpp>" })
 @SharedPtr @Superclass( {Object.class, Source.class, Sink.class})
 public class NetSocket {
 
