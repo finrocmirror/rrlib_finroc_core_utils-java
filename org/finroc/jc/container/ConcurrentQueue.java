@@ -82,7 +82,7 @@ public class ConcurrentQueue<T> {
     /*Cpp
     // true, if there was an element to dequeue
     inline bool dequeue(T& t) {
-    #if TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2
+    #if (TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2) || (TBB_VERSION_MAJOR >= 3)
         return backend.try_pop(t);
     #else
         return backend.pop_if_present(t);
@@ -111,7 +111,7 @@ public class ConcurrentQueue<T> {
 
         /*Cpp
         T t;
-        #if TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2
+        #if (TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2) || (TBB_VERSION_MAJOR >= 3)
         success = backend.try_pop(t);
         #else
         success = backend.pop_if_present(t);
@@ -144,7 +144,7 @@ public class ConcurrentQueue<T> {
 
         /*Cpp
         T t = NULL;
-        #if TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2
+        #if (TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2) || (TBB_VERSION_MAJOR >= 3)
         backend.try_pop(t);
         #else
         backend.pop_if_present(t);
