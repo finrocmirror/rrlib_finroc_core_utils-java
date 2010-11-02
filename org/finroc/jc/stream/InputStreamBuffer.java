@@ -83,6 +83,9 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /** Is direct read support available with this sink? */
     protected boolean directReadSupport = false;
 
+    /** timeout for blocking calls (<= 0 when disabled) */
+    protected int timeout = -1;
+
     @Init("sourceLock()")
     public InputStreamBuffer() {
         boundaryBuffer.buffer = boundaryBufferBackend;
@@ -445,6 +448,23 @@ public class InputStreamBuffer implements Source, HasDestructor {
             //boundaryBuffer.buffer.put(boundaryBuffer.position, sourceBuffer.buffer, sourceBuffer.position, remain);
             sourceBuffer.buffer.get(sourceBuffer.position, boundaryBuffer.buffer, boundaryBuffer.position, remain); // equivalent, but without problem that SourceBuffer limit is changed in java
             curBuffer = boundaryBuffer;
+        }
+
+        // if we have a timeout set - wait until more data is available
+        // TODO: this doesn't ensure that there are minRequired2 bytes available. However, it should be sufficient in 99.9% of the cases.
+        if (timeout > 0) {
+            int initialSleep = 20; // timeout-related
+            int slept = 0; // timeout-related
+            while (timeout > 0 && (!(source != null ? source.moreDataAvailable(this, sourceBuffer) : constSource.moreDataAvailable(this, sourceBuffer)))) {
+                initialSleep *= 2;
+                try {
+                    Thread.sleep(initialSleep);
+                } catch (InterruptedException e) {}
+                slept += initialSleep;
+                if (slept > timeout) {
+                    throw new RuntimeException("Read Timeout");
+                }
+            }
         }
 
         // read next block
@@ -898,5 +918,19 @@ public class InputStreamBuffer implements Source, HasDestructor {
      */
     public long getAbsoluteReadPosition() {
         return absoluteReadPos + curBuffer.position;
+    }
+
+    /**
+     * @return timeout for blocking calls (<= 0 when disabled)
+     */
+    public int getTimeout() {
+        return timeout;
+    }
+
+    /**
+     * @param timeout for blocking calls (<= 0 when disabled)
+     */
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 }
