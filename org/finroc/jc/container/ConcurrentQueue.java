@@ -25,11 +25,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
-import org.finroc.jc.annotation.CppPrepend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.Inline;
+import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ref;
 
@@ -58,17 +58,9 @@ import org.finroc.jc.annotation.Ref;
  * implementation that works with both Java and C++.
  * Feel free to come up with something better.
  */
-@Inline
+@Inline @NoCpp
 @Include("<tbb/concurrent_queue.h>")
-@CppPrepend( {"template<typename T>",
-              "__thread bool ConcurrentQueue<T>::success = false;"
-             })
-public class ConcurrentQueue<T> {
-
-    /*Cpp
-    // Did last dequeue operation return something valid ?
-    static __thread bool success;
-     */
+public class ConcurrentQueue<T> extends ConcurrentQueueBase {
 
     /** Wrapped Queue (in C++ there's no peek - so no peek...) */
     @InCpp("tbb::concurrent_queue<T> backend;")
