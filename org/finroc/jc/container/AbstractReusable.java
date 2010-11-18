@@ -66,6 +66,7 @@ public abstract class AbstractReusable extends Queueable {
     /** Current state (for debugging only - comment out, if not needed to save memory) */
     private byte state = UNKNOWN;
     //Cpp #endif
+    //Cpp public:
 
     /** Possible states (for debugging only) - these are bit flags */
     public static final byte UNKNOWN = 1, RECYCLED = 2, USED = 4, ENQUEUED = 8, POST_QUEUED = 16, DELETED = 32;
