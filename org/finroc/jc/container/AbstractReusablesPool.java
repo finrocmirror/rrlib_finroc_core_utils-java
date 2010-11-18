@@ -23,6 +23,7 @@ package org.finroc.jc.container;
 
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.ConstMethod;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.NoCpp;
@@ -34,13 +35,14 @@ import org.finroc.jc.annotation.Ptr;
  * This is the base class of all kinds of pools of reusable objects.
  */
 @Inline @NoCpp @IncludeClass(AbstractReusable.class)
+@Include("definitions.h")
 public abstract class AbstractReusablesPool<T extends AbstractReusable> implements HasDestructor {
 
     /** Pointer to Last created reusable => linked list to all reusables */
     @Ptr
     protected T lastCreated;
 
-    //Cpp #ifndef NDEBUG
+    //Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
 
     /** "Lock" to allocation register - ensures that report will be printed after pool has been deleted */
     protected AllocationRegister allocationRegisterLock = AllocationRegister.getInstance();

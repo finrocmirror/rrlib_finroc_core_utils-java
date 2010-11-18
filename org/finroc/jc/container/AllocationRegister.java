@@ -29,6 +29,7 @@ import org.finroc.jc.annotation.CppInclude;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
@@ -50,6 +51,7 @@ import org.finroc.log.LogDomain;
  */
 @CppInclude("AbstractReusable.h")
 @SharedPtr
+@Include("definitions.h")
 public class AllocationRegister extends LogUser implements HasDestructor {
 
     /** Number of reusables objects allocated */
@@ -140,7 +142,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
      */
     public void trackReusable(AbstractReusable r) {
         /*Cpp
-        #ifndef NDEBUG
+        #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         Lock lock1(trackedReusables);
         trackedReusables.add(r);
         #endif
@@ -198,7 +200,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
             }
         }
 
-        //Cpp #ifndef NDEBUG
+        //Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         rawInstance.reusables.decrementAndGet();
         /*Cpp
         Lock lock1(rawInstance->trackedReusables);
@@ -222,7 +224,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
     public void delete() {
         rawInstance = null;
         /*Cpp
-        #ifndef NDEBUG
+        #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         rrlib::logging::LogStream output = _FINROC_LOG_STREAM(trackedReusables.size() == 0 ? rrlib::logging::eLL_DEBUG : rrlib::logging::eLL_DEBUG_WARNING, logDomain);
         output << std::endl << "Leaked Reusable Object Report:" << std::endl;
         if (trackedReusables.size() == 0) {

@@ -23,6 +23,7 @@ package org.finroc.jc.container;
 
 import org.finroc.jc.GarbageCollector;
 import org.finroc.jc.annotation.Friend;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Protected;
 import org.finroc.jc.annotation.Ptr;
@@ -36,6 +37,7 @@ import org.finroc.jc.annotation.Virtual;
  */
 @Friend(GarbageCollector.class)
 @Ptr @RawTypeArgs
+@Include("definitions.h")
 public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool<T> {
 
     /** Wrapped Queue */
@@ -58,7 +60,7 @@ public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool
         r.nextInBufferPool = lastCreated;
         lastCreated = r;
         r.owner = wrapped;
-        //Cpp #ifndef NDEBUG
+        //Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         allocationRegisterLock.trackReusable(r);
         //Cpp #endif
         if (enqueueNow) {

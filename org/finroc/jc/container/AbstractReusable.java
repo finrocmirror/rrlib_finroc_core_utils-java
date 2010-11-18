@@ -22,7 +22,7 @@
 package org.finroc.jc.container;
 
 import org.finroc.jc.annotation.CppType;
-import org.finroc.jc.annotation.HPrepend;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
@@ -34,8 +34,7 @@ import org.finroc.jc.annotation.Ref;
  * Abstract base class for all reusables
  */
 @Ptr @Inline
-@HPrepend( {"#ifndef NDEBUG", "#define DEFINE_ADV_REUSABLE_DEBUGGING_ENABLED", "#endif"})
-//@Include("jc/thread/sThreadUtil.h")
+@Include("definitions.h")
 public abstract class AbstractReusable extends Queueable {
 
     /** Index in reusable register */
@@ -43,7 +42,7 @@ public abstract class AbstractReusable extends Queueable {
 
     /*Cpp
 
-    #ifdef DEFINE_ADV_REUSABLE_DEBUGGING_ENABLED
+    #ifdef __JC_DETAILED_REUSABLE_TRACING_ENABLED__
 
     //! entry for tracing operations on reusable object
     struct TraceEntry {
@@ -63,7 +62,7 @@ public abstract class AbstractReusable extends Queueable {
     #endif
      */
 
-    //Cpp #ifndef NDEBUG
+    //Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
     /** Current state (for debugging only - comment out, if not needed to save memory) */
     private byte state = UNKNOWN;
     //Cpp #endif
@@ -75,12 +74,12 @@ public abstract class AbstractReusable extends Queueable {
 
     AbstractReusable() :
             registerIndex(-1)
-    #ifdef DEFINE_ADV_REUSABLE_DEBUGGING_ENABLED
+    #ifdef __JC_DETAILED_REUSABLE_TRACING_ENABLED__
             ,
             trace(),
             recycleCount(0)
     #endif
-    #ifndef NDEBUG
+    #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
             ,
             state(UNKNOWN)
     #endif
@@ -104,7 +103,7 @@ public abstract class AbstractReusable extends Queueable {
     }
 
     public void delete() {
-//Cpp #ifndef NDEBUG
+//Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         state = DELETED;
 //Cpp #endif
         AllocationRegister.unregisterReusable(this);
@@ -121,7 +120,7 @@ public abstract class AbstractReusable extends Queueable {
     public boolean stateChange(byte precondition, byte newState, @Ptr Object partnerObject) {
 
         /*Cpp
-        #ifdef DEFINE_ADV_REUSABLE_DEBUGGING_ENABLED
+        #ifdef __JC_DETAILED_REUSABLE_TRACING_ENABLED__
 
         if (newState == RECYCLED && state != UNKNOWN) {
             recycleCount++;
@@ -136,7 +135,7 @@ public abstract class AbstractReusable extends Queueable {
         #endif
          */
 
-        //Cpp #ifndef NDEBUG
+        //Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         if ((state & precondition) > 0) {
             state = newState;
             return true;
@@ -163,7 +162,7 @@ public abstract class AbstractReusable extends Queueable {
      */
     public void printTrace(@Ref @CppType("rrlib::logging::LogStream") Object output, long startTime) {
         /*Cpp
-        #ifdef DEFINE_ADV_REUSABLE_DEBUGGING_ENABLED
+        #ifdef __JC_DETAILED_REUSABLE_TRACING_ENABLED__
         output << "  trace: (recycle count: " << recycleCount << ")" << std::endl;
         //printf("  trace: (recycle count: %d)\n", recycleCount);
         for (size_t i = 0; i < trace.size(); i++) {
