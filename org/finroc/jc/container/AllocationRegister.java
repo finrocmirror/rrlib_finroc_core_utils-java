@@ -21,6 +21,8 @@
  */
 package org.finroc.jc.container;
 
+import java.util.ArrayDeque;
+
 import org.finroc.jc.AtomicInt;
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.Time;
@@ -51,7 +53,7 @@ import org.finroc.log.LogDomain;
  */
 @CppInclude("AbstractReusable.h")
 @SharedPtr
-@Include("definitions.h")
+@Include( {"definitions.h", "<queue>"})
 public class AllocationRegister extends LogUser implements HasDestructor {
 
     /** Number of reusables objects allocated */
@@ -86,8 +88,8 @@ public class AllocationRegister extends LogUser implements HasDestructor {
 
     /** Queue with free(d) slots in indexedReusables, TODO: needn't be concurrent */
     @PassByValue
-    @CppType("ConcurrentQueue<int>")
-    private ConcurrentQueue<Integer> freeSlotQueue = new ConcurrentQueue<Integer>();
+    @CppType("std::_queue<int>")
+    private ArrayDeque<Integer> freeSlotQueue = new ArrayDeque<Integer>();
 
     /** Log domain for this class */
     @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"reusables\");")
@@ -160,9 +162,13 @@ public class AllocationRegister extends LogUser implements HasDestructor {
             if (indexedReusables.size() == 0) {
                 indexedReusables.add(null); // first element should be null element
             }
-            @InCpp("int free = freeSlotQueue.dequeue();")
-            Integer free = freeSlotQueue.dequeue();
-            if (freeSlotQueue.dequeueSuccessful(free)) {
+
+            @InCpp("bool empty = freeSlotQueue._empty();")
+            boolean empty = freeSlotQueue.isEmpty();
+            if (!empty) {
+                @InCpp("int free = freeSlotQueue._front();")
+                Integer free = freeSlotQueue.pop();
+                //Cpp freeSlotQueue._pop();
                 indexedReusables.set(free, reusable);
                 return free;
             } else {
@@ -196,7 +202,11 @@ public class AllocationRegister extends LogUser implements HasDestructor {
             @SizeT int idx = r.getRegisterIndex();
             synchronized (rawInstance.indexedReusables) {
                 rawInstance.indexedReusables.set(idx, null);
-                rawInstance.freeSlotQueue.enqueue(idx);
+
+                //JavaOnlyBlock
+                rawInstance.freeSlotQueue.push(idx);
+
+                //Cpp rawInstance->freeSlotQueue._push(idx);
             }
         }
 

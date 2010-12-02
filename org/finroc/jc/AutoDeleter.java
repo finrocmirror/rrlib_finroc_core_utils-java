@@ -26,7 +26,6 @@ import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Managed;
 import org.finroc.jc.annotation.Ptr;
-import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.container.AllocationRegister;
 
 /**
@@ -44,9 +43,6 @@ public class AutoDeleter {
     /** "Lock" to allocation register - ensures that report will be printed after static auto-deleter has been deleted */
     @SuppressWarnings("unused")
     private static AllocationRegister allocationRegisterLock = AllocationRegister.getInstance();
-
-    /** Singleton static instance for all static objects that should be deleted, when the program finishes */
-    @SharedPtr private static AutoDeleter instance;
 
     /*Cpp
     virtual ~AutoDeleter() {
@@ -86,10 +82,10 @@ public class AutoDeleter {
      * @param del (Pointer to) object to delete when program ends
      */
     private static void addStaticImpl(@Ptr @CppType("SafeDestructible") Object del) {
-        if (instance == null) {
-            instance = new AutoDeleter(); // usually called during static initialization - so no problems with concurrency
-        }
-        //Cpp instance->add(del);
+        /*Cpp
+        static ::std::tr1::shared_ptr<AutoDeleter> instance(new AutoDeleter());
+        instance->add(del);
+        */
     }
 
     /**
