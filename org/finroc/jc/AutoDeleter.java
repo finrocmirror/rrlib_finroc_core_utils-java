@@ -21,12 +21,15 @@
  */
 package org.finroc.jc;
 
+import org.finroc.jc.annotation.CppInclude;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.InCpp;
+import org.finroc.jc.annotation.InCppFile;
 import org.finroc.jc.annotation.Include;
+import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Managed;
 import org.finroc.jc.annotation.Ptr;
-import org.finroc.jc.container.AllocationRegister;
+import org.finroc.jc.annotation.SharedPtr;
 
 /**
  * @author max
@@ -34,17 +37,18 @@ import org.finroc.jc.container.AllocationRegister;
  * All objects added to this container will be deleted as soon as the container is.
  */
 @Include("<vector>")
+@CppInclude("container/AllocationRegister.h")
 public class AutoDeleter {
 
+    @JavaOnly
+    private static AutoDeleter instance = new AutoDeleter();
+
     /*Cpp
+    private:
     std::vector<SafeDestructible*> deletables;
-     */
 
-    /** "Lock" to allocation register - ensures that report will be printed after static auto-deleter has been deleted */
-    @SuppressWarnings("unused")
-    private static AllocationRegister allocationRegisterLock = AllocationRegister.getInstance();
+    public:
 
-    /*Cpp
     virtual ~AutoDeleter() {
         Thread::stopThreads();
 
@@ -75,6 +79,19 @@ public class AutoDeleter {
     }
      */
 
+    @InCppFile
+    @InCpp( {
+        "// 'Lock' to allocation register - ensures that report will be printed after static auto-deleter has been deleted",
+        "static ::std::tr1::shared_ptr<AllocationRegister> allocationRegisterLock(AllocationRegister::getInstance());",
+        "// This 'lock' ensures that Thread info is deallocated after static auto-deleter has been deleted",
+        "static util::ThreadInfoLock threadInfoLock = util::Thread::getThreadInfoLock();",
+        "static ::std::tr1::shared_ptr<AutoDeleter> instance(new AutoDeleter());",
+        "return instance;"
+    })
+    public static @SharedPtr AutoDeleter getStaticInstance() {
+        return instance;
+    }
+
     /**
      * Registers object/resource for deletion when program ends
      * (irrelevant for Java)
@@ -82,10 +99,7 @@ public class AutoDeleter {
      * @param del (Pointer to) object to delete when program ends
      */
     private static void addStaticImpl(@Ptr @CppType("SafeDestructible") Object del) {
-        /*Cpp
-        static ::std::tr1::shared_ptr<AutoDeleter> instance(new AutoDeleter());
-        instance->add(del);
-        */
+        getStaticInstance().add(del);
     }
 
     /**
