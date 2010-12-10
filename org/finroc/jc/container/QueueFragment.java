@@ -108,14 +108,6 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
         return result;
     }
 
-// not correct... will produce leaks in this way
-//  /**
-//   * @return Is port queue fragment currently empty?
-//   */
-//  public boolean isEmpty() {
-//      return last == null || (next == last && next.element == null);
-//  }
-
     /**
      * @param recycleContents Recycle contents?
      */
@@ -148,13 +140,5 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
             }
         }
     }
-
-//  /** @return Length of fragment */
-//  public int getLength() {
-//      if (last == null || next == null) {
-//          return 0;
-//      }
-//      return last.count - next.count + 1;
-//  }
 
 }

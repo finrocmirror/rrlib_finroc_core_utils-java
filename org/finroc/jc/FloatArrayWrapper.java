@@ -49,15 +49,6 @@ public class FloatArrayWrapper {
     /** Universal Empty Array Wrapper */
     private static final FloatArrayWrapper EMPTY = new FloatArrayWrapper(0);
 
-//  /**
-//   * @param backend backend
-//   * @param size size of array... may be smaller than backend capacity
-//   */
-//  public FloatArrayWrapper(float[] backend, int size) {
-//      this.backend = backend;
-//      this.size = size;
-//  }
-
     /**
      * @return Empty Array Wrapper
      */
@@ -105,13 +96,6 @@ public class FloatArrayWrapper {
         backend[index] = value;
     }
 
-//  /**
-//   * @return Backend
-//   */
-//  public float[] getBackend() {
-//      return backend;
-//  }
-
     /**
      * @return Is there free capacity in the array?
      */
@@ -155,22 +139,4 @@ public class FloatArrayWrapper {
     public void setSize(@SizeT int i) {
         size = 0;
     }
-
-    /**
-     * Add value to element at specified index
-     *
-     * @param index Index
-     * @param value Value to add
-     * @return Return new value of element
-     */
-    /*public int add(int index, int value) {
-        int tmp = backend[index] + value;
-        backend[index] = tmp;
-        return tmp;
-    }*/
-
-//  @Destructor
-//  public void destructor() {
-//      //Cpp delete backend
-//  }
 }

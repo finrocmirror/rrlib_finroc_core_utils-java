@@ -83,9 +83,6 @@ public abstract class BoundedQElementContainer extends Reusable {
     /** Next element in queue */
     public final AtomicPtr<BoundedQElementContainer> next2 = new AtomicPtr<BoundedQElementContainer>(getDummy(0));
 
-//  /** for debugging only */
-//  public boolean recycled = true;
-
     protected BoundedQElementContainer() {
         registerForIndex(); // bounded queue requires containers to be registered
     }

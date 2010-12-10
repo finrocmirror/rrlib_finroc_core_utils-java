@@ -52,9 +52,6 @@ public abstract class LoopThread extends Thread {
     /** Display warnings on console? */
     private static final boolean DISPLAYWARNINGS = false;
 
-    /** Maximum time to spend waiting before waitCallback() is called */
-    //private int maxWaitTime = Integer.MAX_VALUE;
-
     /**
      * Is Thread currently waiting?
      * More precisely: Is thread currently waiting or executing uncritical code in waitFor-method?
@@ -264,22 +261,6 @@ public abstract class LoopThread extends Thread {
     public boolean isStopSignalSet() {
         return stopSignal;
     }
-
-
-    /**
-     * @return the maxWaitTime
-     */
-    /*public int getMaxWaitTime() {
-        return maxWaitTime;
-    }*/
-
-
-    /**
-     * @param maxWaitTime the maxWaitTime to set
-     */
-    /*public void setMaxWaitTime(int maxWaitTime) {
-        this.maxWaitTime = maxWaitTime;
-    }*/
 
     /**
      * @return Is Thread currently waiting?

@@ -41,15 +41,6 @@ public class IntArrayWrapper {
     /** Universal Empty Array Wrapper */
     private static final IntArrayWrapper EMPTY = new IntArrayWrapper(0);
 
-//  /**
-//   * @param backend backend
-//   * @param size size of array... may be smaller than backend capacity
-//   */
-//  public IntArrayWrapper(int[] backend, int size) {
-//      this.backend = backend;
-//      this.size = size;
-//  }
-
     /**
      * @return Empty Array Wrapper
      */
@@ -97,13 +88,6 @@ public class IntArrayWrapper {
         backend[index] = value;
     }
 
-//  /**
-//   * @return Backend
-//   */
-//  public int[] getBackend() {
-//      return backend;
-//  }
-
     /**
      * @return Is there free capacity in the array?
      */
@@ -147,22 +131,4 @@ public class IntArrayWrapper {
     public void setSize(@SizeT int i) {
         size = 0;
     }
-
-    /**
-     * Add value to element at specified index
-     *
-     * @param index Index
-     * @param value Value to add
-     * @return Return new value of element
-     */
-    /*public int add(int index, int value) {
-        int tmp = backend[index] + value;
-        backend[index] = tmp;
-        return tmp;
-    }*/
-
-//  @Destructor
-//  public void destructor() {
-//      //Cpp delete backend
-//  }
 }

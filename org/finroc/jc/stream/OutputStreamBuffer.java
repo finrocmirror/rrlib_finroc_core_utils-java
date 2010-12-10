@@ -62,10 +62,6 @@ import org.finroc.jc.annotation.SizeT;
  *  1) flush immediately
  *  2) flush when requested or full
  */
-//@ForwardDecl(InputStreamBuffer.class)
-//@PostInclude("ReadView.h")
-//@CppPrepend({"ReadView StreamBuffer::getReadView(bool reset) {",
-//    "    return ReadView(this);", "}"})
 public class OutputStreamBuffer implements Sink, HasDestructor {
 
     /*Cpp
@@ -73,41 +69,8 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     std::tr1::shared_ptr<const Interface> sinkLock;
     */
 
-//  /** UID */
-//  private static final long serialVersionUID = 70L;
-//
-//  /** Thread-local read-related variables */
-//  @JavaOnly protected final ReadThreadLocal readVars = new ReadThreadLocal();
-//
-//  /*Cpp
-//  friend class ReadView;
-//   */
-
     /** Committed buffers are buffered/copied (not forwarded directly), when smaller than 1/(2^n) of buffer capacity */
     @Const protected final static double BUFFER_COPY_FRACTION = 0.25;
-
-//  /**
-//   * Optional source stream specified?
-//   *
-//   * true implies that either source or blockSource is not null;
-//   * false implies that source and blockSource are null;
-//   *
-//   * if false, no source is used and read operations may fail, when there's no more data
-//   */
-//  @Const protected final boolean hasSource;
-//
-//  /** Optional source stream */
-//  protected final @SharedPtr Source source;
-//
-//  /**
-//   * Optional block source stream
-//   * Using such a source stream avoids extra copying.
-//   * However, data (e.g. a double value) may not split between different blocks.
-//   */
-//  protected final @SharedPtr BlockSource blockSource;
-//
-//  /** Optional destination stream - if null, no sink is used and buffer size is increased when insufficient */
-//  protected final @SharedPtr Sink sink;
 
     /** Source that determines where buffers that are written to come from and how they are handled */
     @Ptr protected Sink sink = null;
@@ -143,44 +106,6 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     public void delete() {
         close();
     }
-
-    /*
-    // stream operator
-    template <typename T>
-    ByteBuffer& operator<<(const T& t) {
-        ensureAdditionalCapacity(sizeof(T));
-        putImpl<T>(writePos, t);
-        writePos += sizeof(T);
-    }
-     */
-
-//  /**
-//   * Reallocate buffers with the specified size
-//   * Old buffer storage area needs to be deallocated manually in C++ (!!)
-//   *
-//   * @param size Size
-//   */
-//  @JavaOnly protected synchronized void allocateBuffer(int size) {
-//      buffer = USE_DIRECT_BUFFERS ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size);
-//      buffer.order(BYTE_ORDER);
-//      allocationCount++;
-//  }
-//
-//  //Cpp ReadView getReadView(bool reset);
-//
-//  /**
-//   * @param reset Reset position and limit to match write buffer?
-//   * @return Thread-safe read view of buffer (Note: it is only thread-safe when no streams(source/sink) are used)
-//   * It is somewhat expensive to call this regularly, so users should rather continue using the read view object.
-//   * When buffer is reallocated (can happen when writing), the read view becomes invalid and has to be retrieved again
-//   * using this method.
-//   */
-//  @InCpp("return ReadView(this);") @InCppFile @ConstMethod @NonVirtual
-//  public InputStreamBuffer getReadView(boolean reset) {
-//      InputStreamBuffer rv = readVars.get();
-//      rv.init(reset);
-//      return rv;
-//  }
 
     /**
      * @return Size of data that was written to buffer
@@ -414,69 +339,6 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         }
     }
 
-//  /**
-//   * Ensure that the specified number of bytes is available in buffer.
-//   * Possibly resize or flush.
-//   * (Internal implementation)
-//   *
-//   * @param c Number of Bytes.
-//   * @param keepOldContents preserve contents already in (smaller) buffer => additional copy operation (irrelevant for streamed buffers)
-//   */
-//  public void ensureCapacity(@SizeT int c, boolean keepOldContents) {
-//      ensureCapacity(c, keepOldContents, resizeReserveFactor);
-//  }
-//
-//  /**
-//   * Ensure that the specified number of bytes is available in buffer.
-//   * Possibly resize or flush.
-//   * (Internal implementation)
-//   *
-//   * @param c Number of Bytes.
-//   * @param keepOldContents preserve contents already in (smaller) buffer => additional copy operation (irrelevant for streamed buffers)
-//   * @param resizeFactor Factor to multiply required capacity with to have some space in reserve (irrelevant for streamed buffers)
-//   */
-//  @Inlin
-//  protected void ensureCapacity(@SizeT int c, boolean keepOldContents, double resizeFactor) {
-//      if (capacity)
-//      if (capacity() >= c) {
-//          return;
-//      }
-//      curSkipOffsetPlaceholder = -1;
-//
-//      if (sink == null || resizeReserveFactor > 1) {
-//          if (resizeReserveFactor < 1) {
-//              throw new RuntimeException("This buffer is not supposed to be resized");
-//          }
-//
-//          // JavaOnlyBlock
-//          ByteBuffer old = buffer;
-//          allocateBuffer((int)((c * resizeReserveFactor) + 1));
-//          if (keepOldContents) {
-//              old.position(0);
-//              old.limit(writePos);
-//              buffer.put(old);
-//          }
-//
-//          /*Cpp
-//          int8* old = buffer;
-//          size_t newCap = (size_t)((c * resizeReserveFactor) + 1);
-//          buffer = new int8[newCap];
-//          if (keepOldContents) {
-//              memcpy(buffer, old, capacity());
-//          }
-//          capacityX = newCap;
-//          delete[] old;
-//          //allocationCount++;
-//           */
-//
-//      } else {
-//          assert c < capacity();
-//          if (remaining() < c) {
-//              flush();
-//          }
-//      }
-//  }
-
     /**
      * Immediately flush buffer if appropriate option is set
      * Used in print methods
@@ -579,113 +441,9 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         checkFlush();
     }
 
-    // Serialization related
-
-    /*@Override
-    @InCpp("return 70;")
-    public short getUid() {
-        return (short)serialVersionUID;
-    }*/
-
-//  /**
-//   * Does specified Buffer fit in the remaining capacity of this buffer?
-//   *
-//   * @param cbb Buffer
-//   * @param writeSize Will size be written, too?
-//   * @return Answer
-//   */
-//  public boolean fits(@Const @Ref OutputStreamBuffer cbb, boolean writeSize) {
-//      int diff = remaining() - cbb.getWriteSize();
-//      return writeSize ? diff - 4 >= 0 : diff >= 0;
-//  }
-
     public String toString() {
         return "OutputStreamBuffer - " + buffer.toString();
     }
-
-//  /**
-//   * Reads the specified number of bytes from the source (possibly blocks)
-//   *
-//   * @param source Source to read from
-//   * @param len Size of data to read
-//   * @param startAt0 Write to this buffer at position 0 or rather continue at current position?
-//   */
-//  public void write(Source source, @SizeT int len, boolean startAt0) {
-//      if (sink == null) {
-//          if (startAt0) {
-//              writePos = 0;
-//              ensureCapacity(len, false, resizeReserveFactor);
-//          } else {
-//              ensureAdditionalCapacity(len);
-//          }
-//          source.readFully(this, writePos, len);
-//          writePos += len;
-//      } else {
-//          while(len > 0) {
-//              @SizeT int read = Math.min(len, remaining());
-//              source.readFully(this, writePos, len);
-//              writePos += read;
-//              len -= read;
-//              if (len > 0) {
-//                  flush();
-//              }
-//          }
-//      }
-//  }
-
-//  /**
-//   * Reads from the specified stream until it is finished (possibly blocks)
-//   *
-//   * @param source Source to read from
-//   */
-//  public void writeFully(Source source) {
-//      writeFully(source, 0, resizeReserveFactor, false);
-//  }
-
-//  /**
-//   * Reads from the specified stream until it is finished (possibly blocks)
-//   * (the last three parameters are only relevant for self-growing buffers)
-//   *
-//   * @param source Source to read from
-//   * @param sizeHint Approximation what size this stream might have (this size will be allocated instantly)
-//   * @param resizeFactor Alternative Resize reserver factor
-//   * @param startAt0 Write to this buffer at position 0 or rather continue at current position?
-//   */
-//  public void writeFully(Source source, int sizeHint, double resizeFactor, boolean startAt0) {
-//      if (sink == null) {
-//          if (startAt0) {
-//              writePos = 0;
-//              ensureCapacity(sizeHint, false, resizeFactor);
-//          } else {
-//              ensureCapacity(getWriteSize() + sizeHint, true, resizeFactor);
-//          }
-//
-//          while(true) {
-//              int read = source.read(this, writePos);
-//              if (read == -1) {
-//                  return;
-//              }
-//              writePos += read;
-//              if (writePos == capacity()) {
-//                  if (resizeReserveFactor < 1.1) {
-//                      System.out.println("warning: small resize factor");
-//                  }
-//                  ensureCapacity(capacity() + 1, true, resizeReserveFactor);
-//              }
-//          }
-//      } else { // streamed
-//          while(true) {
-//              if (writePos > capacity() - getCopyFraction()) {
-//                  flush();
-//              }
-//              int read = source.read(this, writePos);
-//              if (read == -1) {
-//                  return;
-//              }
-//              writePos += read;
-//          }
-//      }
-//  }
 
     public void close() {
         if (!closed) {
@@ -695,20 +453,6 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         }
         closed = true;
     }
-
-//  @JavaOnly
-//  protected InputStreamBuffer createReadView() {
-//      return new InputStreamBuffer(this);
-//  }
-//
-//  @JavaOnly
-//  class ReadThreadLocal extends ThreadLocal<InputStreamBuffer> {
-//
-//      @Override
-//      protected InputStreamBuffer initialValue() {
-//          return createReadView();
-//      }
-//  }
 
     public void write(@Const @Ref IntArrayWrapper array) {
         writeInt(array.size());

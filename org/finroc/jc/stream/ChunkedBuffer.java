@@ -59,20 +59,10 @@ import org.finroc.jc.container.ReusablesPoolCR;
  * in buffer an exception is thrown. So check with available() whether data is available
  * and only commit complete chunks.
  */
-//@CppPrepend({
-//  "ChunkedReadView ChunkedBuffer::getReadView(bool reset) {",
-//  "    return ChunkedReadView(this);",
-//  "}"})
-//@CppInclude("core/portdatabase/DataTypeRegister.h")
-//@ForwardDecl(ChunkedReadView.class)
-//@PostInclude("ChunkedReadView.h")
 public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, HasDestructor {
 
     /** First chunk in buffer - only changed by reader - next ones can be determined following links through "next"-attributes*/
     @Ptr protected BufferChunk first;
-
-//  /** Last chunk in this buffer */
-//  @Ptr protected BufferChunk last = first;
 
     /** Pool with chunks */
     @Ptr private static ReusablesPoolCR<BufferChunk> chunks;
@@ -83,19 +73,12 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     /** Number of written bytes - only set by reader - increases monotonically with every "official" commit */
     protected volatile long writtenBytes = 0;
 
-    /** Read position - beginning of "first buffer */
-    //private long readPos;  // - stored in BufferChunk.virtualPosition now
-
     /** "Destructive source" */
     @PassByValue protected DestructiveSource destructiveSource = new DestructiveSource();
 
     /** Must be locked before AllocationRegister */
     @SuppressWarnings("unused")
     private static final MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 160);
-
-//  /** Data type of chunk */
-//  @ConstPtr
-//  public final static DataType BUFFER_TYPE = DataTypeRegister.getInstance().getDataType(ChunkedBuffer.class);
 
     public static void staticInit() {
         chunks = new ReusablesPoolCR<BufferChunk>();
@@ -144,12 +127,6 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
             bc.recycle();
         }
     }
-
-//
-//  @Override
-//  public void handleRecycle() {
-//      reset();
-//  }
 
     // Concurrent Source implementation
 

@@ -118,73 +118,6 @@ public class InputStreamBuffer implements Source, HasDestructor {
         close();
     }
 
-//  /** Reference to stream buffer */
-//  @Const @Ptr protected OutputStreamBuffer streamBuffer;
-//
-//  /** Reference to stream buffer - in case it has source and is not const (in C++) - otherwise null */
-//  @Ptr protected OutputStreamBuffer streamBufferSrc;
-//
-//    /*Cpp
-//    inline ReadView() :
-//      streamBuffer(NULL),
-//      streamBufferSrc(NULL),
-//      readPos(0),
-//      absoluteReadPos(0)
-//    {}
-//
-//    inline ReadView(const StreamBuffer* streamBuffer_) :
-//        streamBuffer(streamBuffer_),
-//        streamBufferSrc(NULL),
-//        readPos(0),
-//        absoluteReadPos(0)
-//    {}
-//  */
-//
-//  /**
-//   * @param streamBuffer
-//   */
-//  public InputStreamBuffer(@Ptr OutputStreamBuffer streamBuffer_) {
-//      streamBuffer = streamBuffer_;
-//      streamBufferSrc = streamBuffer.hasSource ? streamBuffer_ : null;
-//  }
-
-    /** ReadView of buffer - one for each thread */
-    //@InCpp("FixedBuffer readView, ")
-    //protected ByteBuffer readView;
-
-    /** Version of buffer that is wrapped */
-    //@JavaOnly private int allocationView = -1;
-
-    /** TempView of buffer - one for each thread */
-    //protected TempByteBuffer tempView;
-
-    /** Temporary byte array for copy operations */
-    //protected final byte[] tempArray = new byte[TEMP_ARRAY_SIZE];
-//
-//  public void init(boolean reset) {
-//      /*if (allocationView != allocationCount) {
-//          readView
-//      }
-//      if (reset) {
-//          rv.readView.position(0);
-//          rv.readView.limit(buffer.limit());
-//      }
-//      readView = buffer.duplicate();
-//      allocationView = allocationCount;*/
-//      if (reset) {
-//          readPos = 0;
-//          absoluteReadPos = 0;
-//      }
-//  }
-
-//  /**
-//   * @return Size of data that can be read from buffer
-//   */
-//  public @SizeT int getSize() {
-//      //return writePos > 0 ? writePos : capacity();
-//      return this.streamBuffer.writePos;
-//  }
-
     /**
      * @return Remaining size of data in wrapped current intermediate buffer.
      * There might actually be more to read in following buffers though.
@@ -388,26 +321,6 @@ public class InputStreamBuffer implements Source, HasDestructor {
     }
 
     /**
-     * Read custom serializable object from stream
-     *
-     * @param writeTo Already allocated object to write data to (if null, new object will be allocated)
-     * @return Deserialized object
-     */
-    /*@SuppressWarnings("unchecked")
-    public <K extends CustomSerialization> K readCSObject(K writeTo) throws Exception {
-        short uid = readShort();
-        if (writeTo == null || writeTo.getUid() != uid) {
-            K cs = (K)DataTypeRegister2.getInstance().getDataType(uid).createInstance();
-            cs.deserialize(this);
-            return cs;
-        } else {
-            writeTo.deserialize(this);
-            return writeTo;
-        }
-        return CoreDataCommon.readCSObject(this, writeTo);
-    }*/
-
-    /**
      * Ensures that the specified number of bytes is available for reading
      */
     @Inline protected void ensureAvailable(@SizeT int required) {
@@ -485,64 +398,6 @@ public class InputStreamBuffer implements Source, HasDestructor {
             boundaryBuffer.end = 7 + minRequired2;
             sourceBuffer.position += minRequired2;
         }
-
-//      int minRequired = minRequired2; // int, because we also need to be able to handle negative numbers
-//      if (streamBufferSrc.source != null) { // "ordinary" source
-//          assert minRequired <= streamBufferSrc.capacity();
-//
-//          // preserve rest ?
-//          int remain = remaining();
-//          if (remain > 0) {
-//
-//              // JavaOnlyBlock
-//              ByteBuffer bb = streamBufferSrc.getTempBuffer();
-//              streamBufferSrc.put(0, bb, readPos, remain);
-//
-//              /*Cpp
-//              streamBufferSrc->put(0, streamBufferSrc->buffer + readPos, remain); // shouldn't overlap since we typically fetch a few bytes
-//               */
-//          }
-//
-//          absoluteReadPos += readPos;
-//          readPos = 0;
-//          streamBufferSrc.writePos = remain;
-//          minRequired -= remain;
-//
-//          //@SizeT int maxRemaining = streamBufferSrc.capacity() - remain; // don't need that because source.read already takes care of this
-//          @SizeT int lastRead = 0;
-//          do {
-//              lastRead = streamBufferSrc.source.read(streamBufferSrc, streamBufferSrc.writePos);
-//              //maxRemaining -= lastRead;
-//              minRequired -= lastRead;
-//              streamBufferSrc.writePos += lastRead;
-//          } while (lastRead > 0 && minRequired > 0);
-//
-//          if (minRequired > 0) { // switch to blocking get
-//              streamBufferSrc.source.readFully(streamBufferSrc, streamBufferSrc.writePos, minRequired);
-//          }
-//      } else { // block source
-//          assert remaining() <= 0 : "Data on block boundary";
-//          FixedBuffer fb = streamBufferSrc.blockSource.readNextBlock();
-//          absoluteReadPos += readPos;
-//          readPos = 0;
-//          streamBufferSrc.writePos = fb.capacity();
-//
-//          // JavaOnlyBlock
-//          streamBufferSrc.buffer = fb.buffer.duplicate();
-//          streamBufferSrc.allocationCount++;
-//
-//          /*Cpp
-//          streamBufferSrc->checkDelete();
-//          streamBufferSrc->ownsBuf = false;
-//          streamBufferSrc->buffer = fb.buffer;
-//          streamBufferSrc->capacityX = fb.capacityX;
-//           */
-//
-//          /*readView = buffer.duplicate();
-//          allocationView = allocationCount;
-//          readView.position(0);
-//          readView.limit(buffer.limit());*/
-//      }
     }
 
     /**
@@ -640,23 +495,6 @@ public class InputStreamBuffer implements Source, HasDestructor {
             }
             fetchNextBytes(1);
         }
-//
-//      if (!this.streamBuffer.hasSource) {
-//          this.streamBuffer.get(readPos, b, off, len);
-//          readPos += len;
-//      } else {
-//          int curOff = off;
-//          while(len > 0) {
-//              int read = Math.min(len, remaining());
-//              this.streamBuffer.get(readPos, b, curOff, read);
-//              readPos += read;
-//              len -= read;
-//              curOff += read;
-//              if (len > 0) { // possibly fetch new bytes
-//                  fetchNextBytes(Math.min(len, this.streamBuffer.capacity()));
-//              }
-//          }
-//      }
     }
 
     /**
@@ -695,22 +533,6 @@ public class InputStreamBuffer implements Source, HasDestructor {
                 break;
             }
         }
-
-//      if (streamBufferSrc == null) {
-//          streamBuffer.get(readPos, bb, off, len);
-//          readPos += len;
-//      } else {
-//          int read = Math.min(len, remaining());
-//          streamBufferSrc.get(readPos, bb, off, read);
-//          readPos += read;
-//          len -= read;
-//          off += read;
-//          if (len > 0) {
-//              streamBufferSrc.source.readFully(bb, off, len); // shortcut
-//              streamBufferSrc.writePos = 0; // invalidate buffer contents
-//              readPos = 0;
-//          }
-//      }
     }
 
     /**

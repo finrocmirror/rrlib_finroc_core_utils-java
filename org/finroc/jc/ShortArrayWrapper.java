@@ -40,15 +40,6 @@ public class ShortArrayWrapper {
     /** Universal Empty Array Wrapper */
     private static final ShortArrayWrapper EMPTY = new ShortArrayWrapper(0);
 
-//  /**
-//   * @param backend backend
-//   * @param size size of array... may be smaller than backend capacity
-//   */
-//  public ShortArrayWrapper(short[] backend, int size) {
-//      this.backend = backend;
-//      this.size = size;
-//  }
-
     /**
      * @return Empty Array Wrapper
      */
@@ -96,13 +87,6 @@ public class ShortArrayWrapper {
         backend[index] = value;
     }
 
-//  /**
-//   * @return Backend
-//   */
-//  public short[] getBackend() {
-//      return backend;
-//  }
-
     /**
      * @return Is there free capacity in the array?
      */
@@ -147,21 +131,4 @@ public class ShortArrayWrapper {
         size = 0;
     }
 
-    /**
-     * Add value to element at specified index
-     *
-     * @param index Index
-     * @param value Value to add
-     * @return Return new value of element
-     */
-    /*public int add(int index, int value) {
-        int tmp = backend[index] + value;
-        backend[index] = tmp;
-        return tmp;
-    }*/
-
-//  @Destructor
-//  public void destructor() {
-//      //Cpp delete backend
-//  }
 }

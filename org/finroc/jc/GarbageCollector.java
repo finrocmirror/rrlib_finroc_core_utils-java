@@ -102,15 +102,8 @@ public class GarbageCollector extends LoopThread {
     }
 
     /*Cpp
-    virtual ~GarbageCollector() { // delete everything - other threads should have been stopped before
-
-        if (next.elementToDelete != NULL) {
-            next.execute();
-        }
-
-        while(!tasks.isEmpty()) {
-            tasks.dequeue().execute();
-        }
+    virtual ~GarbageCollector() {
+        assert(tasks.isEmpty());
     }
     */
 

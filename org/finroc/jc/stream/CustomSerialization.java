@@ -44,9 +44,4 @@ public interface CustomSerialization {
      * @param readView Stream to deserialize from
      */
     public void deserialize(@Ref InputStreamBuffer readView);
-
-    /**
-     * @return Returns the serialVersionUID of the class (must lie between 0 and 32K)
-     */
-    //@ConstMethod public short getUid();
 }

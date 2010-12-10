@@ -191,17 +191,6 @@ public class ConcurrentMap<K, V> {
          */
     }
 
-//  /**
-//   * Did last get operation return something valid ? (or was queue empty?)
-//   *
-//   * @param t Dequeued element
-//   * @return Answer
-//   */
-//  @ConstMethod @Inline @InCpp("return success;")
-//  public boolean getSuccessful(@Const V v) {
-//      return v != null;
-//  }
-
     /**
      * @param key Key
      * @param value New Value

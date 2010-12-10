@@ -65,14 +65,6 @@ public class SharedBuffer extends UsedInC {
         return pointer;
     }
 
-//  public int getSize() {
-//      if (buffer != null) {
-//          return buffer.capacity();
-//      } else {
-//          return -1;
-//      }
-//  }
-
     protected void setPointer(long ptr) {
         pointer = ptr;
     }

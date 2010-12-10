@@ -214,18 +214,4 @@ public class IPAddress {
         return false;
     }
 
-//  public static SimpleList<IPAddress> getAllForThisHost() {
-//
-//
-//      Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
-//      while(e.hasMoreElements()) {
-//          NetworkInterface ni = e.nextElement();
-//          Enumeration<InetAddress> e2 = ni.getInetAddresses();
-//          while(e2.hasMoreElements()) {
-//              InetAddress ia = e2.nextElement();
-//              if (ia.)
-//              if (ia.)
-//          }
-//      }
-//  }
 }

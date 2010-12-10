@@ -186,11 +186,6 @@ public class ArrayWrapper<T> {
         System.arraycopy(from.backend, 0, backend, 0, size);
     }
 
-//  @Override
-//  public void finalDelete() {
-//      //Cpp delete beckend...
-//  }
-
     /**
      * Set element to new value
      *

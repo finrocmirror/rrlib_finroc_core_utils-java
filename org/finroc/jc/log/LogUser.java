@@ -43,7 +43,6 @@ import org.finroc.log.LogLevel;
  *
  * Furthermore, objects can have (debug) logging turned on and off for every instance separately
  */
-//@HPrepend("typedef rrlib::logging::eLogLevel eLogLevel;")
 @HAppend( {"inline std::ostream& operator << (std::ostream& output, const LogUser* lu) {",
            "    output << typeid(*lu).name() << \" (\" << ((void*)lu) << \")\";",
            "    return output;",

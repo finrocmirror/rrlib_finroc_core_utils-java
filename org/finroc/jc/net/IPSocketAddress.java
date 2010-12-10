@@ -75,22 +75,6 @@ public class IPSocketAddress {
     private IPSocketAddress() {
     }
 
-//    /**
-//     * Creates a socket address where the IP address is the wildcard address
-//     * and the port number a specified value.
-//     * <p>
-//     * A valid port value is between 0 and 65535.
-//     * A port number of <code>zero</code> will let the system pick up an
-//     * ephemeral port in a <code>bind</code> operation.
-//     * <p>
-//     * @param   port    The port number
-//     * @throws IllegalArgumentException if the port parameter is outside the specified
-//     * range of valid port values.
-//     */
-//    public IPSocketAddress(int port) {
-//        this(InetAddress.anyLocalAddress(), port);
-//    }
-
     /**
      *
      * Creates a socket address from an IP address and a port number.
@@ -232,41 +216,6 @@ public class IPSocketAddress {
     public final IPAddress getAddress() {
         return addr;
     }
-
-//    /**
-//     * Gets the <code>hostname</code>.
-//     * Note: This method may trigger a name service reverse lookup if the
-//     * address was created with a literal IP address.
-//     *
-//     * @return  the hostname part of the address.
-//     */
-//    public final String getHostName() {
-//        if (hostname != null)
-//            return hostname;
-//        if (addr != null)
-//            return addr.getHostName();
-//        return null;
-//    }
-//
-//    /**
-//     * Returns the hostname, or the String form of the address if it
-//     * doesn't have a hostname (it was created using a literal).
-//     * This has the benefit of <b>not</b> attemptimg a reverse lookup.
-//     *
-//     * @return the hostname, or String representation of the address.
-//     * @since 1.7
-//     */
-//    public final String getHostString() {
-//        if (hostname != null)
-//            return hostname;
-//        if (addr != null) {
-//            if (addr.hostName != null)
-//                return addr.hostName;
-//            else
-//                return addr.getHostAddress();
-//        }
-//        return null;
-//    }
 
     /**
      * Checks whether the address has been resolved or not.

@@ -162,17 +162,6 @@ public class JNICalls {
     @InCpp("return strlen((char*)ptr);")
     public static native int strlen(long ptr);
 
-
-//  public static Class<?> findClass(long name) {
-//      System.out.println("JNICalls.findClass(...): Trying to find class " + new CString(name).toString());
-//      try {
-//          return Thread.currentThread().getClass().getClassLoader().loadClass(new CString(name).toString());
-//      } catch (Exception e) {
-//          e.printStackTrace();
-//          return null;
-//      }
-//  }
-
     // Getters and setters for all elementary data types (ptr is memory address) - anywhere in memory
     @InCpp("return *((jbyte*)ptr);")
     public static native byte getByte(long ptr);

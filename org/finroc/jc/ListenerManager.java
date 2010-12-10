@@ -53,21 +53,10 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
     /** Mutex for list - Since we call garbage collector lock for list needs to be before in order */
     public final MutexLockOrder objMutex = new MutexLockOrder(Integer.MAX_VALUE - 40);
 
-//  /** Only relevant for C++ - Delete all listeners when listener manager is deleted? */
-//  private boolean deleteListenersOnDestruction;
-
     @Init("listenerList(NULL)")
     public ListenerManager() {
         //this(false);
     }
-
-//  /**
-//   * @param deleteListenersOnDestruction2 Only relevant for C++ - Delete all listeners when listener manager is deleted?
-//   */
-//  @Init("listenerList(NULL)")
-//  public ListenerManager(boolean deleteListenersOnDestruction2) {
-//      deleteListenersOnDestruction = deleteListenersOnDestruction2;
-//  }
 
     /*Cpp
     virtual ~ListenerManager() {
