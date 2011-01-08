@@ -24,6 +24,7 @@ package org.finroc.jc.net;
 import java.net.Socket;
 import java.net.SocketException;
 
+import org.finroc.jc.annotation.CppPrepend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.IncludeClass;
@@ -52,6 +53,7 @@ import org.finroc.log.LogLevel;
 @IncludeClass( {BufferInfo.class, FixedBuffer.class})
 @Include( {"<boost/asio/ip/tcp.hpp>", "<boost/asio/error.hpp>", "<boost/asio/completion_condition.hpp>", "<boost/asio/read.hpp>" })
 @SharedPtr @Superclass( {Object.class, Source.class, Sink.class})
+@CppPrepend("const size_t NetSocket::BUFSIZE;")
 public class NetSocket {
 
     /*Cpp
@@ -208,7 +210,7 @@ public class NetSocket {
         boost::asio::mutable_buffers_1 buf(buffer.getPointer() + offset, len);
         boost::system::error_code ec;
         __attribute__((unused))
-        size_t read = boost::asio::_read(wrapped, buf, boost::asio::transfer_at_least(Math::min(len, remaining)), ec);
+        size_t read = boost::asio::_read(wrapped, buf, boost::asio::transfer_at_least(std::_min(len, remaining)), ec);
         assert(read == len);
         if (ec == boost::asio::error::eof) {
             throw EOFException();
@@ -232,7 +234,7 @@ public class NetSocket {
         if (len <= 0) {
             read = wrapped._receive(buf, 0, ec);
         } else {
-            read = boost::asio::_read(wrapped, buf, boost::asio::transfer_at_least(Math::min(BUFSIZE, len)), ec);
+            read = boost::asio::_read(wrapped, buf, boost::asio::transfer_at_least(std::_min(BUFSIZE, len)), ec);
         }
         if (ec == boost::asio::error::eof) {
             throw EOFException();

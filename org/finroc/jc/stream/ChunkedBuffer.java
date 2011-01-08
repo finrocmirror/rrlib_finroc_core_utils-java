@@ -28,10 +28,13 @@ import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppUnused;
 import org.finroc.jc.annotation.Friend;
+import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
+import org.finroc.jc.annotation.PostProcess;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.annotation.Unsigned;
 import org.finroc.jc.container.ReusablesPoolCR;
 
 /**
@@ -71,7 +74,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     protected final boolean blockingReaders;
 
     /** Number of written bytes - only set by reader - increases monotonically with every "official" commit */
-    protected volatile long writtenBytes = 0;
+    @Unsigned protected volatile long writtenBytes = 0;
 
     /** "Destructive source" */
     @PassByValue protected DestructiveSource destructiveSource = new DestructiveSource();
@@ -165,7 +168,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
         BufferChunk bc = (BufferChunk)buffer.customData;
 
         // any changes? if not, wait for change...
-        long written = writtenBytes;
+        @Unsigned long written = writtenBytes;
         if (bc.virtualPosition + buffer.position + len > written) {
             assert(bc.virtualPosition + buffer.position <= written) : "Programming error as it seems";
 
@@ -200,7 +203,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
 
             // Keep buffer and perform size increase
             @SizeT int currentWritePosInBuffer = (int)(written - bc.virtualPosition);
-            buffer.end = Math.min(curSize, currentWritePosInBuffer);
+            buffer.end = minSizeT(curSize, currentWritePosInBuffer);
             assert(curSize - buffer.position >= len) : "Minimal buffer size increase causes problem - probably incorrectly aligned data (eliminating obsolete flushes might also help)?";
         } else {
 
@@ -215,7 +218,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
 //          }
             bc = next;
             buffer.buffer = bc.buffer;
-            @SizeT int nextSize = Math.min(bc.curSize.getVal2(), (int)(written - bc.virtualPosition));
+            @SizeT int nextSize = minSizeT(bc.curSize.getVal2(), (int)(written - bc.virtualPosition));
             buffer.setRange(0, nextSize);
             buffer.customData = bc;
             buffer.position = 0;
@@ -228,7 +231,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     @Override
     public void reset(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
         buffer.buffer = first.buffer;
-        buffer.setRange(0, Math.min(first.curSize.getVal2(), (int)(writtenBytes - first.virtualPosition)));
+        buffer.setRange(0, minSizeT(first.curSize.getVal2(), (int)(writtenBytes - first.virtualPosition)));
         buffer.position = 0;
         buffer.customData = first;
     }
@@ -335,7 +338,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
         current = first;
         first.virtualPosition = 0;
         for (int i = 0; i < chunkCount; i++) {
-            int read = Math.min(size - ((int)current.virtualPosition), BufferChunk.CHUNK_SIZE);
+            int read = minSizeT(size - ((int)current.virtualPosition), BufferChunk.CHUNK_SIZE);
             is.readFully(current.buffer, 0, read);
             current.curSize.set(current.next == null ? 0 : 1, read);
             if (current.next == null) {
@@ -360,7 +363,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
 
         // write first chunk
         int firstPos = (int)(relevantPos - first.virtualPosition);
-        int write = Math.min(size, first.curSize.getVal2() - firstPos);
+        int write = minSizeT(size, first.curSize.getVal2() - firstPos);
         os.write(first.buffer, firstPos, write);
         size -= write;
 
@@ -368,7 +371,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
         BufferChunk bc = first;
         while (size > 0) {
             bc = bc.next;
-            write = Math.min(size, bc.curSize.getVal2());
+            write = minSizeT(size, bc.curSize.getVal2());
             os.write(bc.buffer, 0, write);
             size -= write;
         }
@@ -451,9 +454,17 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
             assert(user == null);
             user = inputStreamBuffer;
             buffer.buffer = first.buffer;
-            buffer.setRange((int)(readPos - first.virtualPosition), Math.min(first.curSize.getVal2(), (int)(writtenBytes - first.virtualPosition)));
+            buffer.setRange((int)(readPos - first.virtualPosition), minSizeT(first.curSize.getVal2(), (int)(writtenBytes - first.virtualPosition)));
             buffer.position = buffer.start;
             buffer.customData = first;
         }
+    }
+
+    /**
+     * Helper function for convenience (without, we have all these casting issues...)
+     */
+    @PostProcess("") @JavaOnly
+    private static @SizeT int minSizeT(@SizeT int a, @SizeT int b) {
+        return Math.min(a, b);
     }
 }
