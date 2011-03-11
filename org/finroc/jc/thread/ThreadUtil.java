@@ -74,7 +74,7 @@ public class ThreadUtil {
      * @return Shared pointer to thread
      */
     @InCpp( {"t->setAutoDelete(); // we want AutoDelete semantics now",
-             "return std::tr1::static_pointer_cast<T>(t->getSharedPtr());"
+             "return std::static_pointer_cast<T>(t->getSharedPtr());"
             })
     public static @SharedPtr <T extends Thread> T getThreadSharedPtr(@Managed @Ptr T t) {
         return t;

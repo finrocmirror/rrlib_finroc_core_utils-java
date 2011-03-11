@@ -1,8 +1,7 @@
 /**
- * You received this file as part of an advanced experimental
- * robotics framework prototype ('finroc')
+ * You received this file as part of RRLib serialization
  *
- * Copyright (C) 2007-2010 Max Reichardt,
+ * Copyright (C) 2009-2010 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,23 +18,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.stream;
+package org.finroc.serialization;
 
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Inline;
+import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.NoSuperclass;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
 import org.finroc.jc.annotation.Struct;
+import org.finroc.jc.annotation.VoidPtr;
 
 /**
  * Buffer information
  * (can be passed to and modified by Manager (by reference))
  */
 @NoSuperclass @Struct @NoCpp @Inline
+@Include("<cstddef>")
 public class BufferInfo {
 
     /** Buffer that read view currently operates on */
@@ -51,7 +54,7 @@ public class BufferInfo {
     public @SizeT int position = 0;
 
     /** Custom data that can be filled by source/sink that manages this buffer */
-    @Ptr public Object customData = null;
+    @VoidPtr public Object customData = null;
 
     /**
      * @param other Other Buffer Info to copy values from
@@ -100,6 +103,7 @@ public class BufferInfo {
         this.end = end;
     }
 
+    @JavaOnly
     public String toString() {
         if (buffer == null) {
             return "no buffer backend";

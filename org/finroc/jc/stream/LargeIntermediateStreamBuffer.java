@@ -24,6 +24,11 @@ package org.finroc.jc.stream;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.SharedPtr;
+import org.finroc.serialization.BufferInfo;
+import org.finroc.serialization.FixedBuffer;
+import org.finroc.serialization.MemoryBuffer;
+import org.finroc.serialization.OutputStreamBuffer;
+import org.finroc.serialization.Sink;
 
 /**
  * @author max
@@ -37,7 +42,7 @@ public class LargeIntermediateStreamBuffer extends MemoryBuffer {
 
     /*Cpp
     // for "locking" object sink as long as this buffer exists
-    std::tr1::shared_ptr<const Interface> sinkLock;
+    std::shared_ptr<const rrlib::serialization::Sink> sinkLock;
     */
 
     /** Sink for intermediate buffer */

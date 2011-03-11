@@ -26,7 +26,9 @@ import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
+import org.finroc.jc.annotation.SizeT;
 import org.finroc.jc.container.Reusable;
+import org.finroc.serialization.FixedBuffer;
 
 /**
  * @author max
@@ -37,7 +39,7 @@ import org.finroc.jc.container.Reusable;
 public class BufferChunk extends Reusable {
 
     /** Size of a single buffer chunk */
-    public static final int CHUNK_SIZE = 8192;
+    @SizeT public static final int CHUNK_SIZE = 8192;
 
     /** Next chunk in singly-linked list */
     public volatile BufferChunk next = null;

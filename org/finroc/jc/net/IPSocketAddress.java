@@ -32,8 +32,8 @@ import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.PassByValue;
-import org.finroc.jc.stream.InputStreamBuffer;
-import org.finroc.jc.stream.OutputStreamBuffer;
+import org.finroc.serialization.InputStreamBuffer;
+import org.finroc.serialization.OutputStreamBuffer;
 
 /**
 *

@@ -35,14 +35,14 @@ import org.finroc.jc.annotation.Superclass;
 import org.finroc.jc.annotation.Virtual;
 import org.finroc.jc.log.LogDefinitions;
 import org.finroc.jc.net.IOException;
-import org.finroc.jc.stream.BufferInfo;
-import org.finroc.jc.stream.FixedBuffer;
-import org.finroc.jc.stream.InputStreamSource;
-import org.finroc.jc.stream.OutputStreamSink;
-import org.finroc.jc.stream.Sink;
-import org.finroc.jc.stream.Source;
 import org.finroc.log.LogDomain;
 import org.finroc.log.LogLevel;
+import org.finroc.serialization.BufferInfo;
+import org.finroc.serialization.FixedBuffer;
+import org.finroc.serialization.InputStreamSource;
+import org.finroc.serialization.OutputStreamSink;
+import org.finroc.serialization.Sink;
+import org.finroc.serialization.Source;
 
 /**
  * @author max
@@ -59,7 +59,7 @@ public class NetSocket {
     /*Cpp
 
     // shared pointer to this
-    std::tr1::weak_ptr<NetSocket> thizz;
+    std::weak_ptr<NetSocket> thizz;
 
     // has input/output stream been closed?
     //bool inputClosed, outputClosed;
@@ -68,7 +68,7 @@ public class NetSocket {
     static const size_t BUFSIZE = 8192;
 
     // inputStream and outputStream buffers
-    FixedBuffer inputStreamBuf, outputStreamBuf;
+    rrlib::serialization::FixedBuffer inputStreamBuf, outputStreamBuf;
 
      */
 
@@ -128,8 +128,8 @@ public class NetSocket {
     }
 
     /*Cpp
-    static std::tr1::shared_ptr<NetSocket> createInstance() {
-        std::tr1::shared_ptr<NetSocket> tmp(new NetSocket());
+    static std::shared_ptr<NetSocket> createInstance() {
+        std::shared_ptr<NetSocket> tmp(new NetSocket());
         tmp->thizz = tmp;
         return tmp;
     }
@@ -171,7 +171,7 @@ public class NetSocket {
     /**
      * @return Returns Source for this socket
      */
-    @InCpp( {"assert (!thizz._expired());", "return ::std::tr1::shared_ptr<Source>(thizz);"})
+    @InCpp( {"assert (!thizz._expired());", "return std::shared_ptr<Source>(thizz);"})
     public @SharedPtr Source getSource() throws IOException {
         try {
             return new InputStreamSource(wrapped.getInputStream());
@@ -183,7 +183,7 @@ public class NetSocket {
     /**
      * @return Returns Sink for this socket
      */
-    @InCpp( {"assert (!thizz._expired());", "return ::std::tr1::shared_ptr<Sink>(thizz);"})
+    @InCpp( {"assert (!thizz._expired());", "return std::shared_ptr<Sink>(thizz);"})
     public @SharedPtr Sink getSink() throws IOException {
         try {
             return new OutputStreamSink(wrapped.getOutputStream());
@@ -196,7 +196,7 @@ public class NetSocket {
 
     // Source implementation
 
-    virtual void close(InputStreamBuffer* inputStreamBuffer, BufferInfo& buffer) {
+    virtual void close(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
         buffer.reset();
     //      inputClosed = true;
     //      if (inputClosed && outputClosed) {
@@ -204,7 +204,7 @@ public class NetSocket {
     //      }
     }
 
-    virtual void directRead(InputStreamBuffer* inputStreamBuffer, FixedBuffer& buffer, size_t offset, size_t len) {
+    virtual void directRead(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t len) {
         size_t remaining = buffer.capacity() - offset;
         assert(len <= remaining);
         boost::asio::mutable_buffers_1 buf(buffer.getPointer() + offset, len);
@@ -223,11 +223,11 @@ public class NetSocket {
         return true;
     }
 
-    virtual bool moreDataAvailable(InputStreamBuffer* inputStreamBuffer, BufferInfo& buffer) {
+    virtual bool moreDataAvailable(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
         return wrapped._available() > 0;
     }
 
-    virtual void read(InputStreamBuffer* inputStreamBuffer, BufferInfo& buffer, size_t len = 0) {
+    virtual void read(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer, size_t len = 0) {
         boost::asio::mutable_buffers_1 buf(buffer.buffer->getPointer(), BUFSIZE);
         boost::system::error_code ec;
         size_t read = 0;
@@ -245,7 +245,7 @@ public class NetSocket {
         buffer.position = 0;
     }
 
-    virtual void reset(InputStreamBuffer* inputStreamBuffer, BufferInfo& buffer) {
+    virtual void reset(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
         buffer.buffer = &inputStreamBuf;
         buffer.position = 0;
         buffer.setRange(0, 0);
@@ -253,7 +253,7 @@ public class NetSocket {
 
     // Sink implementation
 
-    virtual void close(OutputStreamBuffer* outputStreamBuffer, BufferInfo& buffer) {
+    virtual void close(rrlib::serialization::OutputStream* outputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
         buffer.reset();
     //      outputClosed = true;
     //      if (inputClosed && outputClosed) {
@@ -261,7 +261,7 @@ public class NetSocket {
     //      }
     }
 
-    virtual void directWrite(OutputStreamBuffer* outputStreamBuffer, const FixedBuffer& buffer, size_t offset, size_t len) {
+    virtual void directWrite(rrlib::serialization::OutputStream* outputStreamBuffer, const rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t len) {
         while(len > 0) {
             boost::asio::const_buffers_1 buf(buffer.getPointer() + offset, len);
             //boost::system::error_code ec;
@@ -271,7 +271,7 @@ public class NetSocket {
         }
     }
 
-    virtual void flush(OutputStreamBuffer* outputStreamBuffer, const BufferInfo& buffer) {
+    virtual void flush(rrlib::serialization::OutputStream* outputStreamBuffer, const rrlib::serialization::BufferInfo& buffer) {
         // do nothing... flushing should be done automatically by boost
     }
 
@@ -279,13 +279,13 @@ public class NetSocket {
         return true;
     }
 
-    virtual void reset(OutputStreamBuffer* outputStreamBuffer, BufferInfo& buffer) {
+    virtual void reset(rrlib::serialization::OutputStream* outputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
         buffer.buffer = &outputStreamBuf;
         buffer.position = 0;
         buffer.setRange(0, BUFSIZE);
     }
 
-    virtual bool write(OutputStreamBuffer* outputStreamBuffer, BufferInfo& buffer, int writeSizeHint) {
+    virtual bool write(rrlib::serialization::OutputStream* outputStreamBuffer, rrlib::serialization::BufferInfo& buffer, int writeSizeHint) {
         size_t len = buffer.position;
         size_t offset = 0;
         while(len > 0) {
@@ -300,7 +300,7 @@ public class NetSocket {
         return true;
     }
 
-    virtual int read(FixedBuffer& buffer, size_t offset) {
+    virtual int read(rrlib::serialization::FixedBuffer& buffer, size_t offset) {
         size_t remaining = buffer.capacity() - offset;
         boost::asio::mutable_buffers_1 buf(buffer.getPointer() + offset, remaining);
         boost::system::error_code ec;
@@ -313,7 +313,7 @@ public class NetSocket {
         return read;
     }
 
-    virtual void readFully(FixedBuffer& buffer, size_t offset, size_t len) {
+    virtual void readFully(rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t len) {
         size_t remaining = buffer.capacity() - offset;
         assert(len <= remaining);
         boost::asio::mutable_buffers_1 buf(buffer.getPointer() + offset, remaining);
@@ -327,7 +327,7 @@ public class NetSocket {
         }
     }
 
-    virtual void write(const FixedBuffer& buffer, size_t offset, size_t length) {
+    virtual void write(const rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t length) {
         while(length > 0) {
             boost::asio::const_buffers_1 buf(buffer.getPointer() + offset, length);
             boost::system::error_code ec;

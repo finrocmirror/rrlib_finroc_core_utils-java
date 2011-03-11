@@ -1,8 +1,7 @@
 /**
- * You received this file as part of an advanced experimental
- * robotics framework prototype ('finroc')
+ * You received this file as part of RRLib serialization
  *
- * Copyright (C) 2007-2010 Max Reichardt,
+ * Copyright (C) 2007-2011 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,18 +18,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.stream;
+package org.finroc.serialization;
 
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppDefault;
+import org.finroc.jc.annotation.CppType;
+import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
+import org.finroc.jc.annotation.InCppFile;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.annotation.Virtual;
 import org.finroc.jc.log.LogDefinitions;
-import org.finroc.jc.log.LogUser;
 import org.finroc.log.LogDomain;
 import org.finroc.log.LogLevel;
 
@@ -44,7 +47,22 @@ import org.finroc.log.LogLevel;
  *
  * Writing and reading concurrently is not supported - due to resize.
  */
-public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSerialization, HasDestructor {
+@HAppend( {
+    "/*!",
+    " * memory buffer with initial buffer allocated from stack (with size SIZE)",
+    " */",
+    "template <size_t _SIZE>",
+    "class StackMemoryBuffer : public MemoryBuffer {",
+    "    char initialBuffer[_SIZE];",
+    "    FixedBuffer buffer;",
+    "public:",
+    "    StackMemoryBuffer(float resizeFactor = DEFAULT_RESIZE_FACTOR) : MemoryBuffer(0, resizeFactor), initialBuffer(), buffer(initialBuffer, _SIZE) { backend = &buffer; }",
+    "",
+    "    virtual void deleteOldBackend(FixedBuffer* b) { if (b != &buffer) { delete b; } }",
+    "};"
+})
+@Include("rrlib/logging/definitions.h")
+public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Copyable<MemoryBuffer>, GenericChangeable<MemoryBuffer> {
 
     /** Size of temporary array */
     @Const @SizeT public final static int TEMP_ARRAY_SIZE = 2048;
@@ -65,8 +83,11 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
     @SizeT protected int curSize;
 
     /** Log domain for this class */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"stream\");")
-    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("stream");
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"serialization\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("serialization");
+
+    /** Data type of this class */
+    @Const public final static DataTypeBase TYPE = new DataType<MemoryBuffer>(MemoryBuffer.class);
 
     @JavaOnly
     public MemoryBuffer() {
@@ -118,7 +139,10 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
 
     @Override
     public void directRead(InputStreamBuffer inputStreamBuffer, FixedBuffer buffer, int offset, int len) {
+        //JavaOnlyBlock
         throw new RuntimeException("Unsupported - shouldn't be called");
+
+        //Cpp throw std::logic_error("Unsupported - shouldn't be called");
     }
 
     @Override
@@ -130,7 +154,10 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
     public void read(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, int len) {
         buffer.setRange(0, curSize);
         if (buffer.position >= curSize) {
+            //JavaOnlyBlock
             throw new RuntimeException("Attempt to read outside of buffer");
+
+            //Cpp throw std::out_of_range("Attempt to read outside of buffer");
         }
     }
 
@@ -151,7 +178,11 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
 
     @Override
     public void directWrite(OutputStreamBuffer outputStreamBuffer, FixedBuffer buffer, int offset, int len) {
+
+        //JavaOnlyBlock
         throw new RuntimeException("Unsupported - shouldn't be called");
+
+        //Cpp throw std::logic_error("Unsupported - shouldn't be called");
     }
 
     @Override
@@ -176,14 +207,24 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
      */
     protected void ensureCapacity(int newSize, boolean keepContents, @SizeT int oldSize) {
         if (resizeReserveFactor <= 1) {
+            //JavaOnlyBlock
             throw new RuntimeException("Attempt to write outside of buffer");
+
+            //Cpp throw std::out_of_range("Attempt to write outside of buffer");
         }
         if (resizeReserveFactor <= 1.2) {
             //System.out.println("warning: small resizeReserveFactor");
-            log(LogLevel.LL_DEBUG_WARNING, logDomain, "warning: small resizeReserveFactor");
+            logDomain.log(LogLevel.LL_DEBUG_WARNING, getDescription(), "warning: small resizeReserveFactor");
         }
 
         reallocate(newSize, keepContents, oldSize);
+    }
+
+    /**
+     * @return description
+     */
+    public @Const @CppType("char*") String getDescription() {
+        return "MemoryBuffer";
     }
 
     @Override
@@ -219,8 +260,19 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
             newBuffer.put(0, backend, 0, oldSize);
         }
 
-        //Cpp delete backend;
+        deleteOldBackend(backend);
         backend = newBuffer;
+    }
+
+    /**
+     * Delete old backend buffer
+     * (may be overriden by subclass)
+     *
+     * @param b Buffer to delete
+     */
+    @Virtual
+    protected void deleteOldBackend(@Ptr FixedBuffer b) {
+        //Cpp delete b;
     }
 
     // CustomSerializable implementation
@@ -234,7 +286,7 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
         curSize = size;
     }
 
-    @Override
+    @Override @InCppFile
     public void serialize(OutputStreamBuffer sb) {
         sb.writeInt(curSize);
         sb.write(backend, 0, curSize);
@@ -273,12 +325,12 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
     }
 
     //! returns pointer to buffer backend - with specified offset in bytes
-    inline int8* getBufferPointer(int offset) {
+    inline char* getBufferPointer(int offset) {
         return getBuffer()->getPointer() + offset;
     }
 
     //! returns pointer to buffer backend - with specified offset in bytes
-    inline const int8* getBufferPointer(int offset) const {
+    inline const char* getBufferPointer(int offset) const {
         return getBuffer()->getPointer() + offset;
     }
      */
@@ -298,5 +350,21 @@ public class MemoryBuffer extends LogUser implements ConstSource, Sink, CustomSe
     @JavaOnly
     public void dumpToFile(String filename) {
         backend.dumpToFile(filename, curSize);
+    }
+
+    @Override
+    public void applyChange(MemoryBuffer t, long offset, long dummy) {
+        ensureCapacity((int)(t.getSize() + offset), true, getSize());
+        backend.put((int)offset, t.backend, 0, t.getSize());
+        @InCpp("size_t requiredSize = static_cast<size_t>(offset + t.getSize());")
+        int requiredSize = (int)offset + t.getSize();
+        curSize = Math.max(curSize, requiredSize);
+    }
+
+    @Override
+    public void copyFrom(MemoryBuffer source) {
+        ensureCapacity(source.getSize(), false, getSize());
+        backend.put(0, source.backend, 0, source.getSize());
+        curSize = source.getSize();
     }
 }

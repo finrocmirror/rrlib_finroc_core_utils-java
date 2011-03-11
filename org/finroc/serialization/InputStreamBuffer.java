@@ -1,8 +1,7 @@
 /**
- * You received this file as part of an advanced experimental
- * robotics framework prototype ('finroc')
+ * You received this file as part of RRLib serialization
  *
- * Copyright (C) 2007-2010 Max Reichardt,
+ * Copyright (C) 2009-2011 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,14 +18,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.stream;
+package org.finroc.serialization;
 
 import org.finroc.jc.HasDestructor;
-import org.finroc.jc.IntArrayWrapper;
 import org.finroc.jc.annotation.Const;
+import org.finroc.jc.annotation.CppDefault;
+import org.finroc.jc.annotation.CppFilename;
+import org.finroc.jc.annotation.CppInclude;
+import org.finroc.jc.annotation.CppName;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.Friend;
+import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
+import org.finroc.jc.annotation.InCppFile;
+import org.finroc.jc.annotation.Include;
+import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
@@ -45,12 +51,39 @@ import org.finroc.jc.annotation.Virtual;
  * A manager class customizes its behaviour (whether it reads from file, memory block, chunked buffer, etc.)
  * It handles, where the data blocks actually come from.
  */
+@CppName("InputStream") @CppFilename("InputStream")
 @Friend(OutputStreamBuffer.class)
+@HAppend( {
+    "inline InputStream& operator>> (InputStream& is, char& t) { t = is.readNumber<char>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, int8_t& t) { t = is.readNumber<int8_t>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, int16_t& t) { t = is.readNumber<int16_t>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, int32_t& t) { t = is.readNumber<int32_t>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, long int& t) { t = static_cast<long int>(is.readNumber<int64_t>()); /* for 32/64-bit safety */ return is; }",
+    "inline InputStream& operator>> (InputStream& is, long long int& t) { t = is.readNumber<long long int>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, uint8_t& t) { t = is.readNumber<uint8_t>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, uint16_t& t) { t = is.readNumber<uint16_t>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, uint32_t& t) { t = is.readNumber<uint32_t>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, long unsigned int& t) { t = static_cast<long unsigned int>(is.readNumber<uint64_t>()); /* for 32/64-bit safety */ return is; }",
+    "inline InputStream& operator>> (InputStream& is, long long unsigned int& t) { t = is.readNumber<long long unsigned int>(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, float& t) { t = is.readFloat(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, double& t) { t = is.readDouble(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, std::string& t) { t = is.readString(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, Serializable& t) { t.deserialize(is); return is; }",
+    "template <typename T>",
+    "inline InputStream& operator>> (InputStream& is, std::vector<T>& t) { is.readSTLContainer<std::vector<T>, T>(t); return is; }",
+    "template <typename T>",
+    "inline InputStream& operator>> (InputStream& is, std::list<T>& t) { is.readSTLContainer<std::list<T>, T>(t); return is; }",
+    "template <typename T>",
+    "inline InputStream& operator>> (InputStream& is, std::deque<T>& t) { is.readSTLContainer<std::deque<T>, T>(t); return is; }",
+})
+@IncludeClass(RRLibSerializableImpl.class)
+@Include( {"detail/tListElemInfo.h", "<vector>", "<list>", "<deque>", "<endian.h>"})
+@CppInclude("<unistd.h>")
 public class InputStreamBuffer implements Source, HasDestructor {
 
     /*Cpp
     // for "locking" object source as long as this buffer exists
-    std::tr1::shared_ptr<const Interface> sourceLock;
+    std::shared_ptr<const void> sourceLock;
     */
 
     /** Buffer that is managed by source */
@@ -86,13 +119,40 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /** timeout for blocking calls (<= 0 when disabled) */
     protected int timeout = -1;
 
-    @Init("sourceLock()")
+    /** Default Factory to use for creating objects. */
+    protected @PassByValue DefaultFactory defaultFactory = new DefaultFactory();;
+
+    /** Factory to use for creating objects. */
+    protected @Ptr Factory factory = defaultFactory;
+
+    /** Data type encoding */
+    enum TypeEncoding {
+        LocalUids, // use local uids. fastest. Can, however, only be used with streams encoded by this runtime.
+        Names, // use names. Can be decoded in any runtime that knows types.
+        SubClass // use method that subclass possibly provides
+    }
+
+    /** Data type encoding that is used */
+    protected TypeEncoding encoding;
+
+    @JavaOnly
     public InputStreamBuffer() {
-        boundaryBuffer.buffer = boundaryBufferBackend;
+        this(TypeEncoding.LocalUids);
+    }
+
+    @JavaOnly
+    public InputStreamBuffer(@CppType("const ConstSource") @OrgWrapper @SharedPtr ConstSource source_) {
+        this(source_, TypeEncoding.LocalUids);
     }
 
     @Init("sourceLock()")
-    public InputStreamBuffer(@CppType("const ConstSource")  @OrgWrapper @SharedPtr ConstSource source_) {
+    public InputStreamBuffer(@CppDefault("_eLocalUids") TypeEncoding encoding) {
+        boundaryBuffer.buffer = boundaryBufferBackend;
+    }
+
+    //Cpp template <typename T>
+    @Init("sourceLock()") @Inline
+    public InputStreamBuffer(@PassByValue @CppType("T") ConstSource source_, @CppDefault("_eLocalUids") TypeEncoding encoding) {
         boundaryBuffer.buffer = boundaryBufferBackend;
 
         // JavaOnlyBlock
@@ -104,6 +164,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @param source Source that handles, where the data blocks come from etc.
      */
+    @JavaOnly
     @Init("sourceLock()")
     public InputStreamBuffer(@OrgWrapper @SharedPtr Source source_) {
         boundaryBuffer.buffer = boundaryBufferBackend;
@@ -145,17 +206,8 @@ public class InputStreamBuffer implements Source, HasDestructor {
     }
 
     /*Cpp
-    void reset(std::tr1::shared_ptr<ConstSource> source) {
-        sourceLock = source;
-        reset(source._get());
-    }
-
-    void reset(std::tr1::shared_ptr<const ConstSource> source) {
-        sourceLock = source;
-        reset(source._get());
-    }
-
-    void reset(std::tr1::shared_ptr<Source> source) {
+    template <typename T>
+    void reset(std::shared_ptr<T> source) {
         sourceLock = source;
         reset(source._get());
     }
@@ -255,11 +307,23 @@ public class InputStreamBuffer implements Source, HasDestructor {
      *
      * @return String
      */
-    @Inline
-    public String readString() {
+    @InCppFile
+    public @CppType("std::string") String readString() {
+        @CppType("StringOutputStream")
         StringBuilder sb = new StringBuilder(); // no shortcut in C++, since String could be in this chunk only partly
-        readString(sb);
+        readStringImpl(sb);
         return sb.toString();
+    }
+
+    /**
+     * Read null-terminated string (8 Bit Characters - Suited for ASCII)
+     *
+     * @param sb StringOutputStream object to write result to
+     */
+    @InCpp("sb.clear(); readStringImpl(sb);") @InCppFile
+    public void readString(@Ref StringOutputStream sb) {
+        sb.clear();
+        readStringImpl(sb.wrapped);
     }
 
     /**
@@ -267,8 +331,19 @@ public class InputStreamBuffer implements Source, HasDestructor {
      *
      * @param sb StringBuilder object to write result to
      */
+    @JavaOnly
     public void readString(@Ref StringBuilder sb) {
-        sb.delete(0, sb.length());
+        sb.delete(0, sb.length() - 1);
+        readStringImpl(sb);
+    }
+
+    /**
+     * Read null-terminated string (8 Bit Characters - Suited for ASCII)
+     *
+     * @param sb StringBuilder object to write result to
+     */
+    @Inline
+    public <T extends StringBuilder> void readStringImpl(@Ref T sb) {
         while (true) {
             byte b = readByte();
             if (b == 0) {
@@ -284,8 +359,8 @@ public class InputStreamBuffer implements Source, HasDestructor {
      * @param length Length of string to read (including possible termination)
      * @return String
      */
-    public String readString(@SizeT int length) {
-        StringBuilder sb = new StringBuilder(); // no shortcut in C++, since String could be in this chunk only partly
+    public @CppType("std::string") String readString(@SizeT int length) {
+        StringOutputStream sb = new StringOutputStream(); // no shortcut in C++, since String could be in this chunk only partly
         readString(sb, length);
         return sb.toString();
     }
@@ -296,7 +371,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
      * @param sb StringBuilder object to write result to
      * @param length Length of string to read (including possible termination)
      */
-    public void readString(@Ref StringBuilder sb, @SizeT int length) {
+    public void readString(@Ref StringOutputStream sb, @SizeT int length) {
         @SizeT int count = 0;
         while (true) {
             byte b = readByte();
@@ -370,12 +445,21 @@ public class InputStreamBuffer implements Source, HasDestructor {
             int slept = 0; // timeout-related
             while (timeout > 0 && (!(source != null ? source.moreDataAvailable(this, sourceBuffer) : constSource.moreDataAvailable(this, sourceBuffer)))) {
                 initialSleep *= 2;
+
+                //JavaOnlyBlock
                 try {
                     Thread.sleep(initialSleep);
                 } catch (InterruptedException e) {}
+
+                //Cpp _usleep(initialSleep * 1000);
+
                 slept += initialSleep;
                 if (slept > timeout) {
+
+                    //JavaOnlyBlock
                     throw new RuntimeException("Read Timeout");
+
+                    //Cpp throw std::runtime_error("Read Timeout");
                 }
             }
         }
@@ -429,6 +513,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return 16 bit character
      */
+    @JavaOnly
     public char readChar() {
         ensureAvailable(2);
         char c = curBuffer.buffer.getChar(curBuffer.position);
@@ -468,6 +553,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
      *
      * @param b destination array
      */
+    @JavaOnly
     public void readFully(@Ref byte[] b) {
         readFully(b, 0, b.length);
     }
@@ -482,6 +568,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     @InCpp( {"FixedBuffer fb(b.getPointer(), b.length);",
              "readFully(fb, off, len);"
             }) // may avoid unnecessary copying in C++
+    @JavaOnly
     public void readFully(@Ref byte[] b, @SizeT int off, @SizeT int len) {
         while (true) {
             int read = Math.min(curBuffer.remaining(), len);
@@ -545,6 +632,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return 32 bit integer
      */
+    @InCpp("return readNumber<int32_t>();")
     public int readInt() {
         ensureAvailable(4);
         int i = curBuffer.buffer.getInt(curBuffer.position);
@@ -555,8 +643,8 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return String/Line from stream (ends either at line delimiter or 0-character)
      */
-    public String readLine() {
-        StringBuilder sb = new StringBuilder();
+    public @CppType("std::string") String readLine() {
+        StringOutputStream sb = new StringOutputStream();
         while (true) {
             byte b = readByte();
             if (b == 0 || b == '\n') {
@@ -570,6 +658,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return 8 byte integer
      */
+    @InCpp("return readNumber<int64_t>();")
     public long readLong() {
         ensureAvailable(8);
         long l = curBuffer.buffer.getLong(curBuffer.position);
@@ -580,6 +669,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return 2 byte integer
      */
+    @InCpp("return readNumber<int16_t>();")
     public short readShort() {
         ensureAvailable(2);
         short s = curBuffer.buffer.getShort(curBuffer.position);
@@ -590,6 +680,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return unsigned 1 byte integer
      */
+    @InCpp("return readNumber<uint8_t>();")
     public int readUnsignedByte() {
         ensureAvailable(1);
         int i = curBuffer.buffer.getUnsignedByte(curBuffer.position);
@@ -600,6 +691,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return unsigned 2 byte integer
      */
+    @InCpp("return readNumber<uint16_t>();")
     public int readUnsignedShort() {
         ensureAvailable(2);
         int i = curBuffer.buffer.getUnsignedShort(curBuffer.position);
@@ -629,11 +721,24 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /*Cpp
     // stream operator
     template <typename T>
-    InputStreamBuffer& operator>>(T& t) {
+    T readNumber() {
         ensureAvailable(sizeof(T));
-        t = curBuffer->buffer->getImpl<T>(curBuffer->position);
+        T t = curBuffer->buffer->getImpl<T>(curBuffer->position);
         curBuffer->position += sizeof(T);
-        return *this;
+
+    #if __BYTE_ORDER == __ORDER_BIG_ENDIAN
+        T tmp = t;
+        char* dest = reinterpret_cast<char*>(&t);
+        char* src = reinterpret_cast<char*>(&tmp);
+        src += sizeof(T);
+        for (size_t i = 0; i < sizeof(T); i++) {
+            src--;
+            *dest = *src;
+            dest++;
+        }
+    #endif
+
+        return t;
     }
      */
 
@@ -643,19 +748,6 @@ public class InputStreamBuffer implements Source, HasDestructor {
         readFully(buffer, offset, size);
         return size;
     }*/
-
-    /**
-     * Read IntArrayWrapper from stream
-     *
-     * @param array Array to fill
-     */
-    public void read(@Ref IntArrayWrapper array) {
-        array.setSize(0);
-        int size = readInt();
-        for (int i = 0; i < size; i++) {
-            array.add(readInt());
-        }
-    }
 
     /**
      * Read "skip offset" at current position and store it internally
@@ -670,8 +762,9 @@ public class InputStreamBuffer implements Source, HasDestructor {
      * Move to target of last read skip offset
      */
     public void toSkipTarget() {
-        assert(curSkipOffsetTarget >= absoluteReadPos + curBuffer.position);
-        skip((int)(curSkipOffsetTarget - absoluteReadPos - curBuffer.position));
+        long pos = curBuffer.position;
+        assert(curSkipOffsetTarget >= absoluteReadPos + pos);
+        skip((int)(curSkipOffsetTarget - absoluteReadPos - pos));
         curSkipOffsetTarget = 0;
     }
 
@@ -707,6 +800,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
         return source != null ? source.directReadSupport() : constSource.directReadSupport();
     }
 
+    @JavaOnly
     public String toString() {
         if (curBuffer.buffer != null) {
             return "InputStreamBuffer - position: " + curBuffer.position + " start: " + curBuffer.start + " end: " + curBuffer.end;
@@ -754,5 +848,84 @@ public class InputStreamBuffer implements Source, HasDestructor {
      */
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+
+    /*Cpp
+    // Deserialize STL container (must either have pass-by-value type or shared pointers)
+    template <typename C, typename T>
+    void readSTLContainer(C& container) {
+        typedef detail::ListElemInfo<T> info;
+
+        size_t size = readInt();
+        bool constType = readBoolean();
+        if (constType == info::isSharedPtr) {
+            throw std::runtime_error("Wrong list type");
+        }
+        container._resize(size);
+        typename C::iterator it;
+        for (it = container._begin(); it != container._end(); it++) {
+            if (!constType) {
+                DataTypeBase needed = readType();
+                DataTypeBase current = info::getType(*it);
+                if (needed != current) {
+                    if (needed == NULL) {
+                        info::reset(*it);
+                    } else {
+                        info::changeBufferType(factory, *it, needed);
+                    }
+                }
+                if (needed != info::getTypeT()) {
+                    needed.deserialize(*this, &info::getElem(*it));
+                    continue;
+                }
+            }
+            *this >> info::getElem(*it);
+        }
+    }
+     */
+
+    /**
+     * @return Reads type from stream
+     */
+    public DataTypeBase readType() {
+        if (encoding == TypeEncoding.LocalUids) {
+            return DataTypeBase.getType(readShort());
+        } else if (encoding == TypeEncoding.Names) {
+            return DataTypeBase.findType(readString());
+        } else {
+            return readTypeSpecialization();
+        }
+    }
+
+    /**
+     * May be overridden by subclass to realize custom type serialization
+     *
+     * @return Data type that was read
+     */
+    @Virtual
+    protected DataTypeBase readTypeSpecialization() {
+        //Cpp throw std::logic_error("This should not be called");
+
+        //JavaOnlyBlock
+        throw new RuntimeException("This should not be called");
+    }
+
+    /**
+     * @return Factory to use for creating objects.
+     */
+    public Factory getFactory() {
+        return factory;
+    }
+
+    /**
+     * When deserializing pointer list, for example, buffers are needed.
+     * This factory provides them.
+     *
+     * It may be reset for more efficient buffer management.
+     *
+     * @param factory Factory to use for creating objects.
+     */
+    public void setFactory(Factory factory) {
+        this.factory = factory;
     }
 }

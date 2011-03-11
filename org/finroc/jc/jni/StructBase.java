@@ -22,7 +22,7 @@
 package org.finroc.jc.jni;
 
 import org.finroc.jc.annotation.JavaOnly;
-import org.finroc.jc.stream.FixedBuffer;
+import org.finroc.serialization.FixedBuffer;
 
 @JavaOnly
 public abstract class StructBase {
@@ -46,7 +46,9 @@ public abstract class StructBase {
 
     /** for inner structs */
     protected final StructBase rootStruct;
-    protected final int rootOffset, rootOffset32, rootOffset64;
+    protected int rootOffset;
+    protected boolean mode64Bit;
+    protected final int  rootOffset32, rootOffset64;
 
     /** size on 32 bit systems */
     public abstract int getSize32();
@@ -71,7 +73,7 @@ public abstract class StructBase {
         rootStruct = parentStruct.rootStruct;
         rootOffset32 = parentStruct.rootOffset32 + offset32;
         rootOffset64 = parentStruct.rootOffset64 + offset64;
-        rootOffset = JNIInfo.is64BitPlatform() ? rootOffset64 : rootOffset32;
+        set64Bit(JNIInfo.is64BitPlatform());
     }
 
     /** Field of class - variant that always takes a pointer */
@@ -155,6 +157,16 @@ public abstract class StructBase {
     }
 
     /**
+     * Set mode of struct
+     *
+     * @param b64 interpret as 64 bit?
+     */
+    private void set64Bit(boolean b64) {
+        rootOffset = b64 ? rootOffset64 : rootOffset32;
+        mode64Bit = b64;
+    }
+
+    /**
      * Set Buffers of specified structs
      *
      * @param b Buffer
@@ -163,6 +175,20 @@ public abstract class StructBase {
     public static void setBuffer(FixedBuffer b, StructBase... structs) {
         for (StructBase struct : structs) {
             struct.setBuffer(b);
+        }
+    }
+
+    /**
+     * Set Buffers of specified structs
+     *
+     * @param b Buffer
+     * @param b64 interpret as 64 bit?
+     * @param structs Structs to set buffer of
+     */
+    public static void setBuffer(FixedBuffer b, boolean b64, StructBase... structs) {
+        for (StructBase struct : structs) {
+            struct.setBuffer(b);
+            struct.set64Bit(b64);
         }
     }
 }

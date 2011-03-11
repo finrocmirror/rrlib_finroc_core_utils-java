@@ -32,10 +32,10 @@ import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.log.LogDefinitions;
-import org.finroc.jc.stream.InputStreamBuffer;
-import org.finroc.jc.stream.OutputStreamBuffer;
 import org.finroc.log.LogDomain;
 import org.finroc.log.LogLevel;
+import org.finroc.serialization.InputStreamBuffer;
+import org.finroc.serialization.OutputStreamBuffer;
 
 /**
  * @author max
@@ -45,7 +45,7 @@ import org.finroc.log.LogLevel;
  */
 @PassByValue
 @Include( {"<boost/asio/ip/tcp.hpp>", "TCPUtil.h"})
-@CppInclude( {"<sstream>", "stream/InputStreamBuffer.h", "stream/OutputStreamBuffer.h"}) @Friend( {NetSocket.class, IPSocketAddress.class})
+@CppInclude( {"<sstream>", "serialization/InputStream.h", "serialization/OutputStream.h"}) @Friend( {NetSocket.class, IPSocketAddress.class})
 public class IPAddress {
 
     /*Cpp

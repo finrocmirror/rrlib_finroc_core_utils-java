@@ -104,7 +104,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
     }
 
     public static @SharedPtr AllocationRegister getInstance() {
-        //Cpp static ::std::tr1::shared_ptr<AllocationRegister> instance(new AllocationRegister());
+        //Cpp static std::shared_ptr<AllocationRegister> instance(new AllocationRegister());
         //Cpp rawInstance = instance._get();
 
         //JavaOnlyBlock

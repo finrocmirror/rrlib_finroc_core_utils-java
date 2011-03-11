@@ -25,17 +25,31 @@ import org.finroc.jc.AutoDeleter;
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.MutexLockOrder;
 import org.finroc.jc.annotation.AtFront;
+import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
+import org.finroc.jc.annotation.CppDefault;
+import org.finroc.jc.annotation.CppPrepend;
 import org.finroc.jc.annotation.CppUnused;
 import org.finroc.jc.annotation.Friend;
+import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.PostProcess;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
-import org.finroc.jc.annotation.Unsigned;
 import org.finroc.jc.container.ReusablesPoolCR;
+import org.finroc.serialization.BufferInfo;
+import org.finroc.serialization.Clearable;
+import org.finroc.serialization.ConstSource;
+import org.finroc.serialization.DataType;
+import org.finroc.serialization.DataTypeBase;
+import org.finroc.serialization.FixedBuffer;
+import org.finroc.serialization.InputStreamBuffer;
+import org.finroc.serialization.OutputStreamBuffer;
+import org.finroc.serialization.RRLibSerializableImpl;
+import org.finroc.serialization.Sink;
+import org.finroc.serialization.Source;
 
 /**
  * @author max
@@ -62,7 +76,12 @@ import org.finroc.jc.container.ReusablesPoolCR;
  * in buffer an exception is thrown. So check with available() whether data is available
  * and only commit complete chunks.
  */
-public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, HasDestructor {
+@CppPrepend("const size_t BufferChunk::CHUNK_SIZE;")
+@HAppend( {"namespace rrlib { namespace serialization { namespace clear {",
+           "inline void clear(finroc::util::ChunkedBuffer* buf) { buf->clear(); }",
+           "}}}"
+          })
+public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Clearable {
 
     /** First chunk in buffer - only changed by reader - next ones can be determined following links through "next"-attributes*/
     @Ptr protected BufferChunk first;
@@ -74,7 +93,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     protected final boolean blockingReaders;
 
     /** Number of written bytes - only set by reader - increases monotonically with every "official" commit */
-    @Unsigned protected volatile long writtenBytes = 0;
+    protected volatile long writtenBytes = 0;
 
     /** "Destructive source" */
     @PassByValue protected DestructiveSource destructiveSource = new DestructiveSource();
@@ -83,12 +102,20 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     @SuppressWarnings("unused")
     private static final MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 160);
 
+    /** Data type of Chunked Buffer */
+    @Const public final static DataTypeBase TYPE = new DataType<ChunkedBuffer>(ChunkedBuffer.class);
+
     public static void staticInit() {
         chunks = new ReusablesPoolCR<BufferChunk>();
         AutoDeleter.addStatic(chunks);
     }
 
-    public ChunkedBuffer(boolean blockingReaders) {
+    @JavaOnly
+    public ChunkedBuffer() {
+        this(false);
+    }
+
+    public ChunkedBuffer(@CppDefault("false") boolean blockingReaders) {
         first = getUnusedChunk();
         first.virtualPosition = 0;
 //      last = first;
@@ -168,9 +195,9 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
         BufferChunk bc = (BufferChunk)buffer.customData;
 
         // any changes? if not, wait for change...
-        @Unsigned long written = writtenBytes;
-        if (bc.virtualPosition + buffer.position + len > written) {
-            assert(bc.virtualPosition + buffer.position <= written) : "Programming error as it seems";
+        long written = writtenBytes;
+        if ((long)(bc.virtualPosition + buffer.position + len) > written) {
+            assert((long)(bc.virtualPosition + buffer.position) <= written) : "Programming error as it seems";
 
             if (!blockingReaders) {
                 throw new RuntimeException("Attempt to read outside of buffer with non-blocking readers");
@@ -178,7 +205,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
                 synchronized (this) {
                     while (true) {
                         written = writtenBytes;
-                        if (bc.virtualPosition + buffer.position + len <= written) {
+                        if ((long)(bc.virtualPosition + buffer.position + len) <= written) {
                             break;
                         }
                         try {
@@ -240,7 +267,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     public boolean moreDataAvailable(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
         BufferChunk bc = (BufferChunk)buffer.customData;
         //System.out.println(bc.virtualPosition +" + " + buffer.position +" < "+ writtenBytes);
-        return (bc.virtualPosition + buffer.end < writtenBytes);
+        return ((long)(bc.virtualPosition + buffer.end) < writtenBytes);
     }
 
     // Sink implementation
@@ -278,7 +305,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
         if (buffer.remaining() > 8) {
 
             // keep buffer, but commit new write position
-            assert(writtenBytes <= bc.virtualPosition + buffer.position);
+            assert(writtenBytes <= (long)(bc.virtualPosition + buffer.position));
             bc.curSize.set(0, buffer.position);
             return true;
         }
@@ -432,7 +459,7 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
         public boolean moreDataAvailable(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
             assert(inputStreamBuffer == user);
             BufferChunk bc = (BufferChunk)buffer.customData;
-            return bc.virtualPosition + buffer.end < writtenBytes;
+            return (long)(bc.virtualPosition + buffer.end) < writtenBytes;
         }
 
         @Override
@@ -466,5 +493,10 @@ public class ChunkedBuffer implements ConstSource, Sink, CustomSerialization, Ha
     @PostProcess("") @JavaOnly
     private static @SizeT int minSizeT(@SizeT int a, @SizeT int b) {
         return Math.min(a, b);
+    }
+
+    @Override @JavaOnly
+    public void clearObject() {
+        clear();
     }
 }

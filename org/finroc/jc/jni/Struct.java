@@ -22,7 +22,7 @@
 package org.finroc.jc.jni;
 
 import org.finroc.jc.annotation.JavaOnly;
-import org.finroc.jc.stream.FixedBuffer;
+import org.finroc.serialization.FixedBuffer;
 
 /**
  * @author max

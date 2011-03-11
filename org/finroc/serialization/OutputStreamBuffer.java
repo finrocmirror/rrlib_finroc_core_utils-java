@@ -1,8 +1,7 @@
 /**
- * You received this file as part of an advanced experimental
- * robotics framework prototype ('finroc')
+ * You received this file as part of RRLib serialization
  *
- * Copyright (C) 2007-2010 Max Reichardt,
+ * Copyright (C) 2009-2011 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,13 +18,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.stream;
+package org.finroc.serialization;
 
 import org.finroc.jc.HasDestructor;
-import org.finroc.jc.IntArrayWrapper;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
+import org.finroc.jc.annotation.CppDefault;
+import org.finroc.jc.annotation.CppFilename;
+import org.finroc.jc.annotation.CppName;
 import org.finroc.jc.annotation.CppType;
+import org.finroc.jc.annotation.HAppend;
+import org.finroc.jc.annotation.InCpp;
+import org.finroc.jc.annotation.Include;
+import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.OrgWrapper;
@@ -34,6 +39,7 @@ import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.annotation.Virtual;
 
 /**
  * @author Max Reichardt
@@ -62,11 +68,38 @@ import org.finroc.jc.annotation.SizeT;
  *  1) flush immediately
  *  2) flush when requested or full
  */
+@CppName("OutputStream") @CppFilename("OutputStream")
+@HAppend( {
+    "inline OutputStream& operator<< (OutputStream& os, char t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, int8_t t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, int16_t t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, int t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, long int t) { os.writeNumber<int64_t>(t); /* for 32/64-bit safety */ return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, long long int t) { os.writeNumber<int64_t>(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, uint8_t t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, uint16_t t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, uint32_t t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, long unsigned int t) { os.writeNumber<uint64_t>(t); /* for 32/64-bit safety */ return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, long long unsigned int t) { os.writeNumber(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, float t) { os.writeFloat(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, double t) { os.writeDouble(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, const char* t) { os.writeString(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, const std::string& t) { os.writeString(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, const Serializable& t) { t.serialize(os); return os; }",
+    "template <typename T>",
+    "inline OutputStream& operator<< (OutputStream& os, const std::vector<T>& t) { os.writeSTLContainer<std::vector<T>, T>(t); return os; }",
+    "template <typename T>",
+    "inline OutputStream& operator<< (OutputStream& os, const std::list<T>& t) { os.writeSTLContainer<std::list<T>, T>(t); return os; }",
+    "template <typename T>",
+    "inline OutputStream& operator<< (OutputStream& os, const std::deque<T>& t) { os.writeSTLContainer<std::deque<T>, T>(t); return os; }",
+})
+@IncludeClass(RRLibSerializableImpl.class)
+@Include( {"detail/tListElemInfo.h", "<vector>", "<list>", "<deque>", "<endian.h>"})
 public class OutputStreamBuffer implements Sink, HasDestructor {
 
     /*Cpp
     // for "locking" object sink as long as this buffer exists
-    std::tr1::shared_ptr<const Interface> sinkLock;
+    std::shared_ptr<const Sink> sinkLock;
     */
 
     /** Committed buffers are buffered/copied (not forwarded directly), when smaller than 1/(2^n) of buffer capacity */
@@ -93,9 +126,39 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /** Is direct write support available with this sink? */
     protected boolean directWriteSupport = false;
 
-    public OutputStreamBuffer() {}
+    /** Data type encoding */
+    enum TypeEncoding {
+        LocalUids, // use local uids. fastest. Can, however, only be decoded in this runtime.
+        Names, // use names. Can be decoded in any runtime that knows types.
+        SubClass // use method that subclass possibly provides
+    }
 
+    /** Data type encoding that is used */
+    protected TypeEncoding encoding;
+
+    @JavaOnly
+    public OutputStreamBuffer() {
+        this(TypeEncoding.LocalUids);
+    }
+
+    @JavaOnly
     public OutputStreamBuffer(@OrgWrapper @SharedPtr Sink sink_) {
+        this(sink_, TypeEncoding.LocalUids);
+    }
+
+    /**
+     * @param encoding Data type encoding that is used
+     */
+    public OutputStreamBuffer(@CppDefault("_eLocalUids") TypeEncoding encoding) {
+        this.encoding = encoding;
+    }
+
+    /**
+     * @param sink_ Sink to write to
+     * @param encoding Data type encoding that is used
+     */
+    public OutputStreamBuffer(@OrgWrapper @SharedPtr Sink sink_, @CppDefault("_eLocalUids") TypeEncoding encoding) {
+        this.encoding = encoding;
 
         //JavaOnlyBlock
         reset(sink_);
@@ -123,7 +186,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     }
 
     /*Cpp
-    void reset(std::tr1::shared_ptr<Sink> sink) {
+    void reset(std::shared_ptr<Sink> sink) {
         sinkLock = sink;
         reset(sink._get());
     }
@@ -167,12 +230,18 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         }
     }
 
+    /*Cpp
+    void writeString(const char* s) {
+        write(const_cast<char*>(s), strlen(s) + 1);
+    }
+     */
+
     /**
      * Write null-terminated string (8 Bit Characters - Suited for ASCII)
      *
      * @param s String
      */
-    @Inline public void writeString(@CppType("AbstractString") @Const @Ref String s) {
+    @Inline public void writeString(@CppType("std::string") @Const @Ref String s) {
         writeString(s, true);
     }
 
@@ -192,7 +261,8 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      * @param s String
      * @param terminate Terminate string with zero?
      */
-    public void writeString(@CppType("AbstractString") @Const @Ref String s, boolean terminate) {
+    public void writeString(@CppType("std::string") @Const @Ref String s, boolean terminate) {
+
         // JavaOnlyBlock
         int len = s.length();
         for (int i = 0; i < len; i++) {
@@ -203,8 +273,8 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         }
 
         /*Cpp
-        size_t len = terminate ? (s.length() + 1) : s.length();
-        write(FixedBuffer((int8*)s.getCString(), len));
+        size_t len = terminate ? (s._size() + 1) : s._size();
+        write(FixedBuffer((char*)s.c_str(), len));
          */
     }
 
@@ -274,7 +344,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
 
     /*Cpp
     inline void write(void* address, size_t size) {
-        FixedBuffer fb((int8*)address, size);
+        FixedBuffer fb((char*)address, size);
         write(fb);
     }
      */
@@ -349,6 +419,28 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         }
     }
 
+    /*Cpp
+    template <typename T>
+    void writeNumber(T t) {
+        ensureAdditionalCapacity(sizeof(T));
+
+    #if __BYTE_ORDER == __ORDER_BIG_ENDIAN
+        T tmp = t;
+        char* dest = reinterpret_cast<char*>(&t);
+        char* src = reinterpret_cast<char*>(&tmp);
+        src += sizeof(T);
+        for (size_t i = 0; i < sizeof(T); i++) {
+            src--;
+            *dest = *src;
+            dest++;
+        }
+    #endif
+
+        buffer.buffer->putImpl<T>(buffer.position, t);
+        buffer.position += sizeof(T);
+    }
+     */
+
     /**
      * @param v (1-byte) boolean
      */
@@ -359,16 +451,17 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /**
      * @param v 8 bit integer
      */
+    @InCpp("writeNumber(v);")
     @Inline public void writeByte(int v) {
         ensureAdditionalCapacity(1);
         buffer.buffer.putByte(buffer.position, v);
         buffer.position++;
     }
 
-
     /**
      * @param v Character
      */
+    @JavaOnly
     @Inline public void writeChar(char v) {
         ensureAdditionalCapacity(2);
         buffer.buffer.putChar(buffer.position, v);
@@ -378,6 +471,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /**
      * @param v 32 bit integer
      */
+    @InCpp("writeNumber(v);")
     @Inline public void writeInt(int v) {
         ensureAdditionalCapacity(4);
         buffer.buffer.putInt(buffer.position, v);
@@ -387,6 +481,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /**
      * @param v 64 bit integer
      */
+    @InCpp("writeNumber(v);")
     @Inline public void writeLong(long v) {
         ensureAdditionalCapacity(8);
         buffer.buffer.putLong(buffer.position, v);
@@ -396,6 +491,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /**
      * @param v 16 bit integer
      */
+    @InCpp("writeNumber(v);")
     @Inline public void writeShort(int v) {
         ensureAdditionalCapacity(2);
         buffer.buffer.putShort(buffer.position, (short)v);
@@ -425,7 +521,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      *
      * @param s Line to print
      */
-    public void println(@Const @Ref String s) {
+    public void println(@Const @Ref @CppType("std::string") String s) {
         writeString(s, false);
         writeByte('\n');
         checkFlush();
@@ -436,11 +532,12 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      *
      * @param s Line to print
      */
-    public void print(@Const @Ref String s) {
+    public void print(@Const @Ref @CppType("std::string") String s) {
         writeString(s, false);
         checkFlush();
     }
 
+    @JavaOnly
     public String toString() {
         return "OutputStreamBuffer - " + buffer.toString();
     }
@@ -454,13 +551,6 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         closed = true;
     }
 
-    public void write(@Const @Ref IntArrayWrapper array) {
-        writeInt(array.size());
-        for (int i = 0, n = array.size(); i < n; i++) {
-            writeInt(array.get(i));
-        }
-    }
-
     /**
      * A "skip offset" will be written to this position in the stream.
      *
@@ -472,7 +562,11 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     public void writeSkipOffsetPlaceholder() {
         assert(curSkipOffsetPlaceholder < 0);
         curSkipOffsetPlaceholder = buffer.position;
+
+        //JavaOnlyBlock
         writeInt(Integer.MIN_VALUE);
+
+        //Cpp writeInt(0x80000000);
     }
 
     /**
@@ -527,8 +621,67 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         }
     }
 
+
+    /*Cpp
+    // Serialize STL container (must either have pass-by-value type or shared pointers)
+    template <typename C, typename T>
+    void writeSTLContainer(const C& container) {
+        typedef detail::ListElemInfo<T> info;
+
+        writeInt(container._size());
+        const bool constType = !info::isSharedPtr;
+        writeBoolean(constType); // const type?
+        typename C::const_iterator it;
+        for (it = container._begin(); it != container._end(); it++) {
+            if (!constType) {
+                DataTypeBase type = info::getType(*it);
+                writeType(type);
+                if (type == NULL) {
+                    continue;
+                }
+                if (type != info::getTypeT()) {
+                    type.serialize(*this, &info::getElem(*it));
+                    continue;
+                }
+            }
+            *this << info::getElem(*it);
+        }
+    }
+     */
+
     @Override
     public void flush(OutputStreamBuffer outputStreamBuffer, BufferInfo info) {
         flush();
+    }
+
+    /**
+     * @param type Data type to write/reference (using encoding specified in constructor)
+     */
+    public void writeType(DataTypeBase type) {
+
+        //JavaOnlyBlock
+        type = type == null ? DataTypeBase.getNullType() : type;
+
+        if (encoding == TypeEncoding.LocalUids) {
+            writeShort(type.getUid());
+        } else if (encoding == TypeEncoding.Names) {
+            writeString(type.getName());
+        } else {
+            writeTypeSpecialization(type);
+        }
+    }
+
+    /**
+     * May be overridden by subclass to realize custom type serialization
+     *
+     * @param type Data type to write/reference
+     */
+    @Virtual
+    protected void writeTypeSpecialization(@Const @Ref DataTypeBase type) {
+
+        //JavaOnlyBlock
+        throw new RuntimeException("This should not be called");
+
+        //Cpp throw std::logic_error("This should not be called");
     }
 }

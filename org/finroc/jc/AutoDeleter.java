@@ -73,19 +73,42 @@ public class AutoDeleter {
     public void add(@Ptr Object del) {}
 
     /*Cpp
+
+    // Helper for classes which are not derived from tSafeDestructible
+    class Any {
+
+        class AnyDeleter : public SafeDestructible {
+        public:
+            std::shared_ptr<void> sp;
+            AnyDeleter(void* p) : sp(p) {}
+        };
+
+    public:
+        AnyDeleter* wrapped;
+
+        template <typename T>
+        Any(T* t) : wrapped(new AnyDeleter(t)) {}
+    };
+
+
     // same as below - helps with multiple inheritance problem
     inline static void addStaticImpl(Object* del) {
         addStatic(static_cast<SafeDestructible*>(del));
+    }
+
+    // same as below - helps with multiple inheritance problem
+    inline static void addStaticImpl(Any del) {
+        addStatic(del.wrapped);
     }
      */
 
     @InCppFile
     @InCpp( {
         "// 'Lock' to allocation register - ensures that report will be printed after static auto-deleter has been deleted",
-        "static ::std::tr1::shared_ptr<AllocationRegister> allocationRegisterLock(AllocationRegister::getInstance());",
+        "static std::shared_ptr<AllocationRegister> allocationRegisterLock(AllocationRegister::getInstance());",
         "// This 'lock' ensures that Thread info is deallocated after static auto-deleter has been deleted",
         "static util::ThreadInfoLock threadInfoLock = util::Thread::getThreadInfoLock();",
-        "static ::std::tr1::shared_ptr<AutoDeleter> instance(new AutoDeleter());",
+        "static std::shared_ptr<AutoDeleter> instance(new AutoDeleter());",
         "return instance;"
     })
     public static @SharedPtr AutoDeleter getStaticInstance() {

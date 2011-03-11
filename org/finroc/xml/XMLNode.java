@@ -20,10 +20,9 @@
  */
 package org.finroc.xml;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.finroc.jc.annotation.PassByValue;
+import org.finroc.jc.annotation.CppName;
+import org.finroc.jc.annotation.PostProcess;
+import org.finroc.jc.annotation.Ptr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -72,28 +71,28 @@ public class XMLNode {
         return node.getTagName();
     }
 
-    /**
-     * Get the children of this node
-     *
-     * Within the DOM tree, each node can have a list of children. Access
-     * to this list is provided by this method. The internal vector the
-     * method returns a reference to is not created before the first call
-     * to this method (lazy evaluation)
-     *
-     * @return A reference to the node's vector containing its children
-     * (hint: wrap in simple list to use in Java and C++)
-     */
-    public @PassByValue List<XMLNode> getChildren() {
-        ArrayList<XMLNode> result = new ArrayList<XMLNode>();
-        NodeList nl = node.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node n = nl.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                result.add(new XMLNode(doc, (Element)n));
-            }
-        }
-        return result;
-    }
+//    /**
+//     * Get the children of this node
+//     *
+//     * Within the DOM tree, each node can have a list of children. Access
+//     * to this list is provided by this method. The internal vector the
+//     * method returns a reference to is not created before the first call
+//     * to this method (lazy evaluation)
+//     *
+//     * @return A reference to the node's vector containing its children
+//     * (hint: wrap in simple list to use in Java and C++)
+//     */
+//    public @PassByValue List<XMLNode> getChildren() {
+//        ArrayList<XMLNode> result = new ArrayList<XMLNode>();
+//        NodeList nl = node.getChildNodes();
+//        for (int i = 0; i < nl.getLength(); i++) {
+//            Node n = nl.item(i);
+//            if (n.getNodeType() == Node.ELEMENT_NODE) {
+//                result.add(new XMLNode(doc, (Element)n));
+//            }
+//        }
+//        return result;
+//    }
 
     /**
      * Add a child to this node
@@ -179,7 +178,7 @@ public class XMLNode {
      *
      * @param content   The new plain text content of this node
      */
-    public void setTextContent(String content) throws XML2WrapperException {
+    public void setContent(String content) throws XML2WrapperException {
         NodeList nl = node.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node n = nl.item(i);
@@ -460,5 +459,69 @@ public class XMLNode {
      */
     public void removeAttribute(String name) {
         node.removeAttribute(name);
+    }
+
+    /**
+     * @return An iterator to the first of this node's children which are XMLNodes themselves
+     */
+    public ConstChildIterator getChildrenBegin() {
+        return new ConstChildIterator();
+    }
+
+    /**
+     * @return An end-iterator mark to mark the end of children traversal
+     */
+    public @Ptr XMLNode getChildrenEnd() {
+        return null;
+    }
+
+    /**
+     * ChildIterator.
+     *
+     * Iteration should look like this:
+     *  for (ConstChildIterator it = node.getChildrenBegin(); it.get() != node.getChildrenEnd(); it.next())
+     */
+    @CppName("const_iterator")
+    public class ConstChildIterator {
+
+        private XMLNode current = getNextNode(node.getFirstChild());
+
+        private XMLNode getNextNode(Node nextNode) {
+            while (nextNode != null) {
+                if (nextNode.getNodeType() == Node.ELEMENT_NODE) {
+                    return new XMLNode(doc, (Element)nextNode);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * @return Current node
+         */
+        @PostProcess("org.finroc.j2c.XMLIterator")
+        public @Ptr XMLNode get() {
+            return current;
+        }
+
+        /**
+         * Advance to next node
+         */
+        @PostProcess("org.finroc.j2c.XMLIterator")
+        public void next() {
+            current = getNextNode(current.node.getNextSibling());
+        }
+
+    }
+
+    /**
+     * @return Number of children
+     */
+    @PostProcess("org.finroc.j2c.XMLIterator")
+    public int childCount() {
+        int i = 0;
+        for (ConstChildIterator it = getChildrenBegin(); it.get() != getChildrenEnd(); it.next()) {
+            i++;
+        }
+        return i;
     }
 };

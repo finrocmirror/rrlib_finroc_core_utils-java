@@ -2,7 +2,7 @@
  * You received this file as part of an advanced experimental
  * robotics framework prototype ('finroc')
  *
- * Copyright (C) 2007-2010 Max Reichardt,
+ * Copyright (C) 2010 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,29 +19,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.finroc.jc.stream;
+package org.finroc.serialization;
 
-import org.finroc.jc.annotation.ConstMethod;
-import org.finroc.jc.annotation.Ref;
+import org.finroc.jc.annotation.JavaOnly;
 
 /**
  * @author max
  *
- * Classes that implement this interface can be  serialized and deserialized from
- * a stream very efficiently (without unnecessary object allocation)
+ * Marks classes that should be notified when recycled
  */
-public interface CustomSerialization {
+@JavaOnly
+public interface Clearable {
 
     /**
-     * @param oos Stream to serialize object to
+     * Clears object and
+     * releases any shared resources
      */
-    @ConstMethod public void serialize(@Ref OutputStreamBuffer oos);
-
-    /**
-     * Deserialize object. Object has to already exists.
-     * Should be suited for reusing old objects.
-     *
-     * @param readView Stream to deserialize from
-     */
-    public void deserialize(@Ref InputStreamBuffer readView);
+    public void clearObject();
 }

@@ -27,6 +27,7 @@ import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppInclude;
 import org.finroc.jc.annotation.HAppend;
+import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
 import org.finroc.jc.annotation.Init;
 import org.finroc.jc.annotation.JavaOnly;
@@ -91,7 +92,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      * @param deleteElemsWithList Delete elements when List is deleted? (relevant for C++ only)
      */
     @SuppressWarnings("unchecked")
-    @Init( {"currentBackend(initialSize > 0 ? new ArrayWrapper<T>(0u, initialSize) : &(ArrayWrapper<T>::getEmpty()))"})
+    @Init( {"currentBackend(initialSize > 0 ? new ArrayWrapper<T>((size_t)0, initialSize) : &(ArrayWrapper<T>::getEmpty()))"})
     public SafeConcurrentlyIterableListBase(@SizeT int initialSize) {
         objMutex = new MutexLockOrder(Integer.MAX_VALUE - 20);
         currentBackend = initialSize > 0 ? new ArrayWrapper<T>(0, initialSize) : ArrayWrapper.getEmpty();
@@ -125,6 +126,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
             backend.add(element);
         } else {
             @Ptr ArrayWrapper<T> old = currentBackend;
+            @InCpp("ArrayWrapper<T>* newBackend = new ArrayWrapper<T>((size_t)0, std::_max<size_t>(1, backend->getCapacity()) * getResizeFactor());")
             @Ptr ArrayWrapper<T> newBackend = new ArrayWrapper<T>(0, Math.max(1, backend.getCapacity()) * getResizeFactor());
             newBackend.copyAllFrom(backend);
             newBackend.add(element);

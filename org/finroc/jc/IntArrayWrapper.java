@@ -24,13 +24,16 @@ package org.finroc.jc;
 
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.serialization.InputStreamBuffer;
+import org.finroc.serialization.OutputStreamBuffer;
+import org.finroc.serialization.RRLibSerializableImpl;
 
 /**
  * Wraps an array
  */
 @JavaOnly
 
-public class IntArrayWrapper {
+public class IntArrayWrapper extends RRLibSerializableImpl {
 
     /** size of array... may be smaller than backend capacity */
     private int size;
@@ -130,5 +133,22 @@ public class IntArrayWrapper {
 
     public void setSize(@SizeT int i) {
         size = 0;
+    }
+
+    @Override
+    public void serialize(OutputStreamBuffer os) {
+        os.writeInt(size());
+        for (int i = 0, n = size(); i < n; i++) {
+            os.writeInt(get(i));
+        }
+    }
+
+    @Override
+    public void deserialize(InputStreamBuffer is) {
+        setSize(0);
+        int size = is.readInt();
+        for (int i = 0; i < size; i++) {
+            add(is.readInt());
+        }
     }
 }

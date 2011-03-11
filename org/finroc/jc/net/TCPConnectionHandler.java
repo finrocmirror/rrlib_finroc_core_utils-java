@@ -137,7 +137,7 @@ public class TCPConnectionHandler extends Thread {
     }
 
     /** Helper for simpler source code conversion */
-    @InCpp("return std::tr1::shared_ptr<TCPConnectionHandler>();")
+    @InCpp("return std::shared_ptr<TCPConnectionHandler>();")
     private static @SharedPtr TCPConnectionHandler getNullPtr() {
         return null;
     }
@@ -174,7 +174,7 @@ public class TCPConnectionHandler extends Thread {
             boost::system::error_code ec;
             acceptor_._listen();
             while(!close) {
-                std::tr1::shared_ptr<NetSocket> s = NetSocket::createInstance();
+                std::shared_ptr<NetSocket> s = NetSocket::createInstance();
                 acceptor_._accept(s->getSocket(), ec);
                 if (ec) {
                     //printf("NetSocket accept error: %s\n", ec._message()._c_str());
@@ -228,7 +228,7 @@ public class TCPConnectionHandler extends Thread {
         first = (byte)s.getSocket().getInputStream().read();
 
         /*Cpp
-        FixedBuffer tmp(1);
+        rrlib::serialization::FixedBuffer tmp(1);
         s->readFully(tmp, 0, 1);
         first = tmp.getByte(0);
          */
