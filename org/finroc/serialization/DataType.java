@@ -25,6 +25,7 @@ import java.lang.reflect.Modifier;
 import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.CppInclude;
+import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
 import org.finroc.jc.annotation.Include;
@@ -39,10 +40,18 @@ import org.finroc.jc.annotation.SkipArgs;
  *
  * Objects of this class contain info about the data type T
  */
-@Include( {"detail/tListInfo.h", "<boost/type_traits/has_virtual_destructor.hpp>", "CustomTypeInitialization.h"})
+@Include( {"detail/tListInfo.h", "<boost/type_traits/has_virtual_destructor.hpp>", "<boost/type_traits/remove_reference.hpp>", "CustomTypeInitialization.h", "StlContainerSuitable.h"})
 @IncludeClass(GenericObjectManager.class)
 @CppInclude("GenericObjectInstance.h")
 @RawTypeArgs
+@HAppend( {
+    "template <>",
+    "class DataType<detail::Nothing> : public DataTypeBase {",
+    "  public:",
+    "  DataType() : DataTypeBase(NULL) {}",
+    "  static DataTypeInfoRaw* getDataTypeInfo() { return NULL; }",
+    "};"
+})
 public class DataType<T> extends DataTypeBase {
 
     /**
@@ -81,29 +90,35 @@ public class DataType<T> extends DataTypeBase {
             rttiName = typeid(T).name();
             size = sizeof(T);
             name = detail::ListInfo<T>::getName();
-
-            init((T*)NULL);
             */
         }
 
         /*Cpp
-        void init(CustomTypeInitialization* d) {
+        void initImpl(CustomTypeInitialization* d) {
             T::customTypeInitialization(DataTypeBase(this), (T*)NULL);
         }
 
-        void init(void* d) {}
+        void initImpl(void* d) {}
 
-        void initRelatedTypes()
+        template <bool B>
+        typename boost::enable_if_c<B, DataTypeBase::DataTypeInfoRaw*>::type getListTypeInfo() {
+            return DataType<typename detail::ListInfo<T>::ListType>::getDataTypeInfo();
+        }
+
+        template <bool B>
+        typename boost::disable_if_c<B, DataTypeBase::DataTypeInfoRaw*>::type getListTypeInfo() {
+            return NULL;
+        }
+
+        virtual void init()
         {
             if (type == ePLAIN) {
-                DataType<typename detail::ListInfo<T>::ListType> l;
-                listType = l.getInfo();
-                DataType<typename detail::ListInfo<T>::SharedPtrListType> sl;
-                sharedPtrListType = sl.getInfo();
+                listType = getListTypeInfo<StlContainerSuitable<T>::value >();
+                sharedPtrListType = DataType<typename detail::ListInfo<T>::SharedPtrListType>::getDataTypeInfo();
             } else {
-                DataType<typename detail::ListInfo<T>::ElementType> e;
-                elementType = e.getInfo();
+                elementType = DataType<typename detail::ListInfo<T>::ElementType>::getDataTypeInfo();
             }
+            initImpl((T*)NULL);
         }
         */
 
@@ -151,14 +166,34 @@ public class DataType<T> extends DataTypeBase {
             "    else if (managerSize <= 24) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<24> >(); }",
             "    else if (managerSize <= 32) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<32> >(); }",
             "    else if (managerSize <= 40) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<40> >(); }",
-            "    else { throw std::invalid_argument(\"Management info larger than 40 bytes not allowed\"); }",
+            "    else if (managerSize <= 48) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<48> >(); }",
+            "    else if (managerSize <= 56) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<56> >(); }",
+            "    else if (managerSize <= 64) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<64> >(); }",
+            "    else if (managerSize <= 72) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<72> >(); }",
+            "    else if (managerSize <= 80) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<80> >(); }",
+            "    else if (managerSize <= 88) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<88> >(); }",
+            "    else if (managerSize <= 96) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<96> >(); }",
+            "    else if (managerSize <= 104) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<104> >(); }",
+            "    else if (managerSize <= 112) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<112> >(); }",
+            "    else if (managerSize <= 120) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<120> >(); }",
+            "    else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }",
             "} else {",
             "    if (managerSize <= 8) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<8> >(); }",
             "    else if (managerSize <= 16) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<16> >(); }",
             "    else if (managerSize <= 24) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<24> >(); }",
             "    else if (managerSize <= 32) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<32> >(); }",
             "    else if (managerSize <= 40) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<40> >(); }",
-            "    else { throw std::invalid_argument(\"Management info larger than 40 bytes not allowed\"); }",
+            "    else if (managerSize <= 48) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<48> >(); }",
+            "    else if (managerSize <= 56) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<56> >(); }",
+            "    else if (managerSize <= 64) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<64> >(); }",
+            "    else if (managerSize <= 72) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<72> >(); }",
+            "    else if (managerSize <= 80) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<80> >(); }",
+            "    else if (managerSize <= 88) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<88> >(); }",
+            "    else if (managerSize <= 96) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<96> >(); }",
+            "    else if (managerSize <= 104) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<104> >(); }",
+            "    else if (managerSize <= 112) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<112> >(); }",
+            "    else if (managerSize <= 120) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<120> >(); }",
+            "    else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }",
             "}"
         })
         public GenericObject createInstanceGeneric(int placement, int managerSize) {
@@ -242,12 +277,6 @@ public class DataType<T> extends DataTypeBase {
 
     /*Cpp
 
-    // \return DataTypeInfo for this type T
-    static DataTypeInfoRaw* getDataTypeInfo() {
-        static DataTypeInfo info;
-        return &info;
-    }
-
     public:
     DataType() : DataTypeBase(getDataTypeInfo()) {}
 
@@ -266,6 +295,12 @@ public class DataType<T> extends DataTypeBase {
             return DataType();
         }
         return DataTypeBase::findTypeByRtti(rttiName);
+    }
+
+    // \return DataTypeInfo for this type T
+    static DataTypeInfoRaw* getDataTypeInfo() {
+        static DataTypeInfo info;
+        return &info;
     }
     */
 

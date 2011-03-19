@@ -223,7 +223,7 @@ public class Serialization {
      */
     @HAppend( {})
     @InCpp( {"DefaultFactory df;",
-             "deepcopy::copy(src, dest, f != NULL ? f : (Factory*)&df);"
+             "detail::deepCopy(src, dest, f != NULL ? f : (Factory*)&df);"
             })
     public static <T extends RRLibSerializable> void deepCopy(@Const @Ref T src, @Ref T dest, @CppDefault("NULL") @Ptr Factory f) {
         MemoryBuffer buf = buffer.get();
@@ -301,6 +301,17 @@ public class Serialization {
             }
         }
         return true;
+    }
+
+    /**
+     * Resize vector (also works for vectors with noncopyable types)
+     *
+     * @param vector Vector to resize
+     * @param newSize New Size
+     */
+    @InCpp("detail::Resize<std::vector<T>, !boost::is_base_of<boost::noncopyable, T>::value>::resize(vector, newSize);") @HAppend( {})
+    static public <T> void resizeVector(@CppType("std::vector<T>") @Ref PortDataList<?> vector, @SizeT int newSize) {
+        vector.resize(newSize);
     }
 
     /*Cpp

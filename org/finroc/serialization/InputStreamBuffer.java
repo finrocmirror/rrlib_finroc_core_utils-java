@@ -861,7 +861,15 @@ public class InputStreamBuffer implements Source, HasDestructor {
         if (constType == info::isSharedPtr) {
             throw std::runtime_error("Wrong list type");
         }
-        container._resize(size);
+
+        // container.resize(size);
+        while(container._size() < size) {
+          container.emplace_back();
+        }
+        while(container._size() > size) {
+          container.pop_back();
+        }
+
         typename C::iterator it;
         for (it = container._begin(); it != container._end(); it++) {
             if (!constType) {

@@ -29,9 +29,12 @@ import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
 import org.finroc.jc.annotation.Include;
+import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
+import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.annotation.Superclass2;
 import org.finroc.jc.annotation.Virtual;
 import org.finroc.jc.log.LogDefinitions;
 import org.finroc.log.LogDomain;
@@ -58,10 +61,18 @@ import org.finroc.log.LogLevel;
     "public:",
     "    StackMemoryBuffer(float resizeFactor = DEFAULT_RESIZE_FACTOR) : MemoryBuffer(0, resizeFactor), initialBuffer(), buffer(initialBuffer, _SIZE) { backend = &buffer; }",
     "",
+    "    virtual ~StackMemoryBuffer() { if (backend == &buffer) { backend = NULL; } }",
+    "",
     "    virtual void deleteOldBackend(FixedBuffer* b) { if (b != &buffer) { delete b; } }",
-    "};"
+    "};",
+    "",
+    "namespace deepcopy {",
+    "    inline void copy(const MemoryBuffer& src, MemoryBuffer& dest, Factory* f) { dest.copyFrom(src); }",
+    "}"
 })
-@Include("rrlib/logging/definitions.h")
+@IncludeClass( {RRLibSerializableImpl.class, ConstSource.class, Sink.class, GenericChangeable.class})
+@Include( {"rrlib/logging/definitions.h", "StlContainerSuitable.h"})
+@Superclass2( {"Serializable", "ConstSource", "Sink", "GenericChangeable<MemoryBuffer>", "boost::noncopyable", "StlSuitable"})
 public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Copyable<MemoryBuffer>, GenericChangeable<MemoryBuffer> {
 
     /** Size of temporary array */
@@ -98,6 +109,26 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     public MemoryBuffer(@SizeT int size) {
         this(size, DEFAULT_RESIZE_FACTOR);
     }
+
+    /*Cpp
+    MemoryBuffer(MemoryBuffer&& o) :
+        backend(NULL),
+        resizeReserveFactor(DEFAULT_RESIZE_FACTOR),
+        curSize(0)
+    {
+        std::_swap(backend, o.backend);
+        std::_swap(resizeReserveFactor, o.resizeReserveFactor);
+        std::_swap(curSize, o.curSize);
+    }
+
+    MemoryBuffer& operator=(MemoryBuffer&& o)
+    {
+        std::_swap(backend, o.backend);
+        std::_swap(resizeReserveFactor, o.resizeReserveFactor);
+        std::_swap(curSize, o.curSize);
+        return *this;
+    }
+     */
 
     /**
      * @param size Initial buffer size
@@ -362,7 +393,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     }
 
     @Override
-    public void copyFrom(MemoryBuffer source) {
+    public void copyFrom(@Const @Ref MemoryBuffer source) {
         ensureCapacity(source.getSize(), false, getSize());
         backend.put(0, source.backend, 0, source.getSize());
         curSize = source.getSize();

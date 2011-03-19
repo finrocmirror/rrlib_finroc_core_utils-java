@@ -38,6 +38,7 @@ import org.finroc.jc.annotation.PostProcess;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.annotation.Superclass2;
 import org.finroc.jc.container.ReusablesPoolCR;
 import org.finroc.serialization.BufferInfo;
 import org.finroc.serialization.Clearable;
@@ -81,6 +82,7 @@ import org.finroc.serialization.Source;
            "inline void clear(finroc::util::ChunkedBuffer* buf) { buf->clear(); }",
            "}}}"
           })
+@Superclass2( {"rrlib::serialization::Serializable", "rrlib::serialization::ConstSource", "rrlib::serialization::Sink", "boost::noncopyable"})
 public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Clearable {
 
     /** First chunk in buffer - only changed by reader - next ones can be determined following links through "next"-attributes*/

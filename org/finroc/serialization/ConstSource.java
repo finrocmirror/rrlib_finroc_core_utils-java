@@ -22,6 +22,7 @@ package org.finroc.serialization;
 
 import org.finroc.jc.annotation.ConstMethod;
 import org.finroc.jc.annotation.CppDefault;
+import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
@@ -37,7 +38,7 @@ import org.finroc.jc.annotation.SizeT;
  * Same as source, but with const-methods.
  * Typically, only const-sources allow concurrent reading
  */
-@Ptr
+@Ptr @Include("<cstddef>")
 public interface ConstSource {
 
     /**

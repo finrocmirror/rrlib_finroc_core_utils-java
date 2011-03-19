@@ -38,6 +38,9 @@ import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
 import org.finroc.jc.annotation.VoidPtr;
+import org.finroc.jc.log.LogDefinitions;
+import org.finroc.log.LogDomain;
+import org.finroc.log.LogLevel;
 
 /**
  * @author max
@@ -55,7 +58,7 @@ import org.finroc.jc.annotation.VoidPtr;
  */
 @PassByValue
 @ForwardDecl(GenericObjectManager.class)
-@Include( {"<boost/type_traits/is_base_of.hpp>", "<boost/thread/recursive_mutex.hpp>", "<boost/thread/locks.hpp>"})
+@Include( {"<boost/type_traits/is_base_of.hpp>", "<boost/thread/recursive_mutex.hpp>", "<boost/thread/locks.hpp>", "rrlib/logging/definitions.h"})
 @CppInclude( {"<cstring>", "sSerialization.h"})
 public class DataTypeBase {
 
@@ -137,6 +140,8 @@ public class DataTypeBase {
             relatedType(NULL)
         {
         }
+
+        virtual void init() {}
          */
 
         /**
@@ -215,6 +220,10 @@ public class DataTypeBase {
     /** Null type */
     @JavaOnly private static DataTypeBase NULL_TYPE = new DataTypeBase(null);
 
+    /** Log domain for this class */
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"serialization\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("serialization");
+
     /**
      * @param name Name of data type
      */
@@ -231,6 +240,7 @@ public class DataTypeBase {
             /*Cpp
             ::boost::unique_lock<boost::recursive_mutex>(getMutex());
             addType(info_);
+            info_->init();
              */
         }
     }
@@ -242,6 +252,13 @@ public class DataTypeBase {
         nfo.uid = (short)getTypes().size();
         getTypes().add(this);
         nfo.newInfo = false;
+        @InCpp("std::string msg(\"Adding data type \"); msg += getName();")
+        String msg = "Adding data type " + getName();
+        logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, getLogDescription(), msg);
+    }
+
+    private @PassByValue @CppType("const char*") String getLogDescription() {
+        return "DataTypeBase";
     }
 
     /**
@@ -612,7 +629,7 @@ public class DataTypeBase {
 
         // remove ::
         long int lastPos = -1;
-        for (size_t i = demangled._size() - 1; i >= 0; i--) {
+        for (long int i = demangled._size() - 1; i >= 0; i--) {
             char c = demangled[i];
             if (lastPos == -1) {
                 if (c == ':') {

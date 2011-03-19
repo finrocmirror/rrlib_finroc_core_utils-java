@@ -41,7 +41,7 @@ public interface Factory {
     // Create buffer and place it in provided shared pointer
     template <typename T>
     void createBuffer(std::shared_ptr<T>& ptr, DataTypeBase dt) {
-        ptr = std::dynamic_pointer_cast<T>(createBuffer(dt));
+        ptr = std::static_pointer_cast<T>(createBuffer(dt));
     }
      */
 
