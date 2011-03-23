@@ -24,6 +24,7 @@ package org.finroc.jc.thread;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Managed;
 import org.finroc.jc.annotation.NoCpp;
+import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Prefix;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
@@ -89,7 +90,7 @@ public class ThreadUtil {
      * @param t Thread to make real-time
      */
     @InCpp("t->setRealtime();")
-    public static void makeThreadRealtime(@SharedPtr Thread t) {
+    public static void makeThreadRealtime(@PassByValue @SharedPtr Thread t) {
         t.setPriority(Thread.MAX_PRIORITY);
     }
 }

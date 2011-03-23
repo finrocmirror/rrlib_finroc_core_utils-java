@@ -142,7 +142,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     }
 
     @JavaOnly
-    public OutputStreamBuffer(@OrgWrapper @SharedPtr Sink sink_) {
+    public OutputStreamBuffer(@OrgWrapper @PassByValue @SharedPtr Sink sink_) {
         this(sink_, TypeEncoding.LocalUids);
     }
 
@@ -157,7 +157,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      * @param sink_ Sink to write to
      * @param encoding Data type encoding that is used
      */
-    public OutputStreamBuffer(@OrgWrapper @SharedPtr Sink sink_, @CppDefault("_eLocalUids") TypeEncoding encoding) {
+    public OutputStreamBuffer(@OrgWrapper @PassByValue @SharedPtr Sink sink_, @CppDefault("_eLocalUids") TypeEncoding encoding) {
         this.encoding = encoding;
 
         //JavaOnlyBlock
