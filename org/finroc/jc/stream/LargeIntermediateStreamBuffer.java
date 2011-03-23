@@ -57,7 +57,7 @@ public class LargeIntermediateStreamBuffer extends MemoryBuffer {
      */
 
     @Init("sinkLock(sink_)")
-    public LargeIntermediateStreamBuffer(@SharedPtr Sink sink) {
+    public LargeIntermediateStreamBuffer(@PassByValue @SharedPtr Sink sink) {
         this.sink = sink;
     }
 
