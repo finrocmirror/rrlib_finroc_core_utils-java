@@ -82,13 +82,21 @@ public class WonderQueueFastCR<T extends Queueable> extends RawWonderQueueFast {
             if (r == null) {
                 break;
             }
+
+            //JavaOnlyBlock
             r.delete();
+
+            //Cpp r->customDelete(false);
         }
 
         // delete last element
         @Ptr Queueable last = this.nextCR.get();
         if (last != Queueable.terminator && last != this) {
+
+            //JavaOnlyBlock
             last.delete();
+
+            //Cpp last->customDelete(false);
         }
     }
 }

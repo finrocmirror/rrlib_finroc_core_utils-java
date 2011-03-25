@@ -120,8 +120,12 @@ public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T
     }
 
     /*Cpp
-    virtual void autoDelete() {
-        controlledDelete();
+    virtual void customDelete(bool calledFromGc) {
+        if (calledFromGc) {
+            SafeDestructible::customDelete(calledFromGc);
+        } else {
+            controlledDelete();
+        }
     }
     */
 

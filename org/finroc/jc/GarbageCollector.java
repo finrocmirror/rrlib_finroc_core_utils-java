@@ -132,6 +132,12 @@ public class GarbageCollector extends LoopThread {
         } catch (Exception e) {
             logDomain.log(LogLevel.LL_DEBUG_WARNING, getLogDescription(), e);
         }
+
+        // possibly some thread-local objects of Garbage Collector thread
+        while (!tasks.isEmpty()) {
+            tasks.dequeue().execute();
+        }
+
         instance = null;
     }
 
@@ -240,7 +246,7 @@ public class GarbageCollector extends LoopThread {
         if (gc == null) {
             assert(started == NO || ThreadUtil.getCurrentThreadId() == deleterThreadId);
             // safe to delete object now
-            //Cpp delete elementToDelete;
+            //Cpp elementToDelete->customDelete(true);
             return;
         }
 
@@ -279,7 +285,7 @@ public class GarbageCollector extends LoopThread {
             }
 
             /*Cpp
-            delete elementToDelete;
+            elementToDelete->customDelete(true);
              */
 
             elementToDelete = null;

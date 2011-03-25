@@ -148,7 +148,11 @@ public class WonderQueueTL<T extends Queueable> extends RawWonderQueueTL {
             if (r == null) {
                 break;
             }
+
+            //JavaOnlyBlock
             r.delete();
+
+            //Cpp r->customDelete(false);
         }
     }
 

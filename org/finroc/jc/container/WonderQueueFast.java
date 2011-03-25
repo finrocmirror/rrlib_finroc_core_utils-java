@@ -182,12 +182,20 @@ public class WonderQueueFast<T extends Queueable> extends RawWonderQueueFast {
             if (r == null) {
                 break;
             }
+
+            //JavaOnlyBlock
             r.delete();
+
+            //Cpp r->customDelete(false);
         }
 
         // delete last element
         if ((this.next != Queueable.terminator) && this.next != this) {
+
+            //JavaOnlyBlock
             this.next.delete();
+
+            //Cpp this->next->customDelete(false);
         }
     }
 }

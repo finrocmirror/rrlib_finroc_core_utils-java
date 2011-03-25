@@ -21,8 +21,6 @@
  */
 package org.finroc.jc.container;
 
-import org.finroc.jc.GarbageCollector;
-import org.finroc.jc.annotation.Friend;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Protected;
@@ -35,7 +33,6 @@ import org.finroc.jc.annotation.Virtual;
  *
  * This is the static thread-local ("TL")/not-thread-safe variant of ReusablesPoolTL.
  */
-@Friend(GarbageCollector.class)
 @Ptr @RawTypeArgs
 @Include("definitions.h")
 public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool<T> {

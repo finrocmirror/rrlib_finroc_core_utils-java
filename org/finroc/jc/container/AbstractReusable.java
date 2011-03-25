@@ -27,6 +27,7 @@ import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
+import org.finroc.jc.annotation.Virtual;
 
 /**
  * @author max
@@ -150,12 +151,27 @@ public abstract class AbstractReusable extends Queueable {
          */
     }
 
+    /*Cpp
+    virtual void customDelete(bool calledFromGc) {
+        deleteThis();
+    }
+     */
 
     /**
      * @return Index in reusable register
      */
     public int getRegisterIndex() {
         return registerIndex;
+    }
+
+    /**
+     * Deletes this object.
+     * Called when this object is no longer needed.
+     * May be overridden.
+     */
+    @Virtual
+    protected void deleteThis() {
+        this.delete();
     }
 
     /**

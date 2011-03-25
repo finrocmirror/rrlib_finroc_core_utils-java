@@ -26,7 +26,6 @@ import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.NonVirtual;
 import org.finroc.jc.annotation.Ptr;
-import org.finroc.jc.annotation.Virtual;
 
 /**
  * @author max
@@ -57,15 +56,5 @@ public class Reusable extends AbstractReusable {
 
             deleteThis(); // hehe... taking everything into account, this seems a good and safe choice (IMPORTANT: last statement in method)
         }
-    }
-
-    /**
-     * Deletes this object.
-     * Called when this object is no longer needed.
-     * May be overridden.
-     */
-    @Virtual
-    protected void deleteThis() {
-        this.delete();
     }
 }

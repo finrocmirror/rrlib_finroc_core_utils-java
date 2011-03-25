@@ -25,7 +25,6 @@ import org.finroc.jc.annotation.Friend;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.Ptr;
-import org.finroc.jc.annotation.Virtual;
 
 /**
  * @author max
@@ -53,15 +52,5 @@ public class ReusableTL extends AbstractReusable {
         assert(stateChange((byte)(Reusable.UNKNOWN | Reusable.USED | POST_QUEUED), Reusable.RECYCLED, owner));
         assert(owner != null); // method should only be callable while owner exists (?)
         owner.enqueueRaw(this);
-    }
-
-    /**
-     * Deletes this object.
-     * Called when this object is no longer needed.
-     * May be overridden.
-     */
-    @Virtual
-    protected void deleteThis() {
-        this.delete();
     }
 }

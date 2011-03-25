@@ -54,7 +54,7 @@ public class AutoDeleter {
 
         // delete in reverse order
         for (int i = ((int)deletables._size()) - 1; i >= 0; i--) {
-            deletables[i]->autoDelete();
+            deletables[i]->customDelete(false);
         }
     }
 
@@ -80,14 +80,14 @@ public class AutoDeleter {
         class AnyDeleter : public SafeDestructible {
         public:
             std::shared_ptr<void> sp;
-            AnyDeleter(void* p) : sp(p) {}
+            AnyDeleter(std::shared_ptr<void> p) : sp(p) {}
         };
 
     public:
         AnyDeleter* wrapped;
 
         template <typename T>
-        Any(T* t) : wrapped(new AnyDeleter(t)) {}
+        Any(T* t) : wrapped(new AnyDeleter(std::shared_ptr<T>(t))) {}
     };
 
 
