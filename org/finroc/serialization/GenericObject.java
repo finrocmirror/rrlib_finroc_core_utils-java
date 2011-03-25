@@ -107,22 +107,11 @@ public abstract class GenericObject extends TypedObjectImpl {
         //Cpp deepCopyFrom(source->wrapped, f);
     }
 
-//    /**
-//     * Deep copy source object to this object
-//     * (types MUST match)
-//     *
-//     * @param source Source object
-//     */
-//    @Inline
-//    public <T extends RRLibSerializable> void deepCopyFrom(@Const @Ptr T source, @CppDefault("NULL") @Ptr Factory f) {
-//
-//        //JavaOnlyBlock
-//        assert(source.getClass() == type.getJavaClass());
-//        deepCopyFrom((Object)source, f);
-//
-//        //Cpp assert(typeid(T).name() == type.getRttiName());
-//        //Cpp deepCopyFrom((void*)source);
-//    }
+    /*Cpp
+    #if __SIZEOF_POINTER__ == 4
+    int fill_dummy; // fill 4 byte to ensure that managers are 8-byte-aligned on 32 bit platforms
+    #endif
+     */
 
     /**
      * Deep copy source object to this object
