@@ -72,7 +72,7 @@ public class Time extends LoopThread {
     }
 
     public void stopThread() {
-        logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Stopping time caching thread");
+        logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, getLogDescription(), "Stopping time caching thread");
         super.stopThread();
     }
 

@@ -451,7 +451,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /**
      * @param v 8 bit integer
      */
-    @InCpp("writeNumber(v);")
+    @InCpp("writeNumber<int8_t>(static_cast<int8_t>(v));")
     @Inline public void writeByte(int v) {
         ensureAdditionalCapacity(1);
         buffer.buffer.putByte(buffer.position, v);
@@ -491,7 +491,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /**
      * @param v 16 bit integer
      */
-    @InCpp("writeNumber(v);")
+    @InCpp("writeNumber<int16_t>(static_cast<int16_t>(v));")
     @Inline public void writeShort(int v) {
         ensureAdditionalCapacity(2);
         buffer.buffer.putShort(buffer.position, (short)v);

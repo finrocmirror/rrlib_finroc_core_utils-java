@@ -35,7 +35,7 @@ import org.finroc.jc.annotation.Virtual;
  * Abstract base class for all reusables
  */
 @Ptr @Inline
-@Include("definitions.h")
+@Include( {"definitions.h", "rrlib/serialization/DataTypeBase.h"})
 public abstract class AbstractReusable extends Queueable {
 
     /** Index in reusable register */
@@ -180,11 +180,11 @@ public abstract class AbstractReusable extends Queueable {
     public void printTrace(@Ref @CppType("rrlib::logging::LogStream") Object output, long startTime) {
         /*Cpp
         #ifdef __JC_DETAILED_REUSABLE_TRACING_ENABLED__
-        output << "  trace: (recycle count: " << recycleCount << ")" << std::endl;
+        output << "   trace: (recycle count: " << recycleCount << ")" << std::endl;
         //printf("  trace: (recycle count: %d)\n", recycleCount);
         for (size_t i = 0; i < trace.size(); i++) {
             TraceEntry re = trace.get(i);
-            output << "    state: " << getStateString(re.state) << "  by/with " << re.partnerObjectClassName << " " << re.partnerObject << " (Thread: " << re.threadId << ", Time: " << (re.timestamp - startTime) << " ms)" << std::endl;
+            output << "    state: " << getStateString(re.state) << "  by/with " << rrlib::serialization::DataTypeBase::getDataTypeNameFromRtti(re.partnerObjectClassName) << " " << re.partnerObject << " (Thread: " << re.threadId << ", Time: " << (re.timestamp - startTime) << " ms)" << std::endl;
             //printf("    state: %s  by/with %s %p (Thread: %lld, Time: %lld ms)\n", getStateString(re.state), re.partnerObjectClassName, re.partnerObject, re.threadId, re.timestamp - startTime);
         }
         #endif

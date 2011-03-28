@@ -125,11 +125,11 @@ public class DataType<T> extends DataTypeBase {
         @SuppressWarnings("rawtypes")
         @Override
         @InCpp( {
-            "if (placement != NULL) {",
-            "    return _new (placement) T();",
-            "} else {",
-            "    return _new T();",
-            "}"
+            "if (placement == NULL) {",
+            "    placement = operator _new(sizeof(T));",
+            "}",
+            "_memset(placement, 0, sizeof(T)); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
+            "return _new (placement) T();"
         })
         public Object createInstance(int placement) {
             Object result = null;
@@ -160,41 +160,28 @@ public class DataType<T> extends DataTypeBase {
         @SuppressWarnings( { "unchecked", "rawtypes" })
         @Override @InCppFile
         @InCpp( {
-            "if (placement != NULL) {",
-            "    if (managerSize <= 8) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<8> >(); }",
-            "    else if (managerSize <= 16) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<16> >(); }",
-            "    else if (managerSize <= 24) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<24> >(); }",
-            "    else if (managerSize <= 32) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<32> >(); }",
-            "    else if (managerSize <= 40) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<40> >(); }",
-            "    else if (managerSize <= 48) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<48> >(); }",
-            "    else if (managerSize <= 56) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<56> >(); }",
-            "    else if (managerSize <= 64) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<64> >(); }",
-            "    else if (managerSize <= 72) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<72> >(); }",
-            "    else if (managerSize <= 80) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<80> >(); }",
-            "    else if (managerSize <= 88) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<88> >(); }",
-            "    else if (managerSize <= 96) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<96> >(); }",
-            "    else if (managerSize <= 104) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<104> >(); }",
-            "    else if (managerSize <= 112) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<112> >(); }",
-            "    else if (managerSize <= 120) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<120> >(); }",
-            "    else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }",
-            "} else {",
-            "    if (managerSize <= 8) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<8> >(); }",
-            "    else if (managerSize <= 16) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<16> >(); }",
-            "    else if (managerSize <= 24) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<24> >(); }",
-            "    else if (managerSize <= 32) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<32> >(); }",
-            "    else if (managerSize <= 40) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<40> >(); }",
-            "    else if (managerSize <= 48) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<48> >(); }",
-            "    else if (managerSize <= 56) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<56> >(); }",
-            "    else if (managerSize <= 64) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<64> >(); }",
-            "    else if (managerSize <= 72) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<72> >(); }",
-            "    else if (managerSize <= 80) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<80> >(); }",
-            "    else if (managerSize <= 88) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<88> >(); }",
-            "    else if (managerSize <= 96) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<96> >(); }",
-            "    else if (managerSize <= 104) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<104> >(); }",
-            "    else if (managerSize <= 112) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<112> >(); }",
-            "    else if (managerSize <= 120) { return _new GenericObjectInstance<T, GenericObjectManagerPlaceHolder<120> >(); }",
-            "    else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }",
-            "}"
+            "int size = ((sizeof(GenericObjectInstance<T, GenericObjectManagerPlaceHolder<8> >) + managerSize + 7 - 8) >> 3) << 3;",
+            "assert(size % 8 == 0);",
+            "if (placement == NULL) {",
+            "    placement = operator _new(size);",
+            "}",
+            "_memset(placement, 0, size); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
+            "if (managerSize <= 8) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<8> >(); }",
+            "else if (managerSize <= 16) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<16> >(); }",
+            "else if (managerSize <= 24) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<24> >(); }",
+            "else if (managerSize <= 32) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<32> >(); }",
+            "else if (managerSize <= 40) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<40> >(); }",
+            "else if (managerSize <= 48) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<48> >(); }",
+            "else if (managerSize <= 56) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<56> >(); }",
+            "else if (managerSize <= 64) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<64> >(); }",
+            "else if (managerSize <= 72) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<72> >(); }",
+            "else if (managerSize <= 80) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<80> >(); }",
+            "else if (managerSize <= 88) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<88> >(); }",
+            "else if (managerSize <= 96) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<96> >(); }",
+            "else if (managerSize <= 104) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<104> >(); }",
+            "else if (managerSize <= 112) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<112> >(); }",
+            "else if (managerSize <= 120) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<120> >(); }",
+            "else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }",
         })
         public GenericObject createInstanceGeneric(int placement, int managerSize) {
             return new GenericObjectInstance((RRLibSerializable)createInstance(placement), dataType, null);

@@ -244,7 +244,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
 
         for (size_t i = 0; i < trackedReusables.size(); i++) {
             AbstractReusable* ar = trackedReusables.get(i);
-            output << "  " << typeid(*ar).name() << " " << ar << std::endl;
+            output << "  " << ar << std::endl;
             //printf("%s %p \n", typeid(*ar).name(), ar);
             ar->printTrace(output, startTime);
         }
