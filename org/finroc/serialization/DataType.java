@@ -25,6 +25,7 @@ import java.lang.reflect.Modifier;
 import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.CppInclude;
+import org.finroc.jc.annotation.CppPrepend;
 import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
@@ -51,6 +52,18 @@ import org.finroc.jc.annotation.SkipArgs;
     "  DataType() : DataTypeBase(NULL) {}",
     "  static DataTypeInfoRaw* getDataTypeInfo() { return NULL; }",
     "};"
+})
+@CppPrepend( {
+    "namespace detail {",
+    "template <typename T, size_t _MSIZE>",
+    "GenericObject* createInstanceGeneric(void* placement) {",
+    "  size_t size = sizeof(GenericObjectInstance<T, GenericObjectManagerPlaceHolder<_MSIZE> >);",
+    "  if (placement == NULL) {",
+    "    placement = operator _new(size);",
+    "  }",
+    "  _memset(placement, 0, size); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
+    "  return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<_MSIZE> >();",
+    "}}"
 })
 public class DataType<T> extends DataTypeBase {
 
@@ -160,27 +173,21 @@ public class DataType<T> extends DataTypeBase {
         @SuppressWarnings( { "unchecked", "rawtypes" })
         @Override @InCppFile
         @InCpp( {
-            "int size = ((sizeof(GenericObjectInstance<T, GenericObjectManagerPlaceHolder<8> >) + managerSize + 7 - 8) >> 3) << 3;",
-            "assert(size % 8 == 0);",
-            "if (placement == NULL) {",
-            "    placement = operator _new(size);",
-            "}",
-            "_memset(placement, 0, size); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
-            "if (managerSize <= 8) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<8> >(); }",
-            "else if (managerSize <= 16) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<16> >(); }",
-            "else if (managerSize <= 24) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<24> >(); }",
-            "else if (managerSize <= 32) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<32> >(); }",
-            "else if (managerSize <= 40) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<40> >(); }",
-            "else if (managerSize <= 48) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<48> >(); }",
-            "else if (managerSize <= 56) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<56> >(); }",
-            "else if (managerSize <= 64) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<64> >(); }",
-            "else if (managerSize <= 72) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<72> >(); }",
-            "else if (managerSize <= 80) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<80> >(); }",
-            "else if (managerSize <= 88) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<88> >(); }",
-            "else if (managerSize <= 96) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<96> >(); }",
-            "else if (managerSize <= 104) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<104> >(); }",
-            "else if (managerSize <= 112) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<112> >(); }",
-            "else if (managerSize <= 120) { return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<120> >(); }",
+            "if (managerSize <= 8) { return detail::createInstanceGeneric<T, 8>(placement); }",
+            "else if (managerSize <= 16) { return detail::createInstanceGeneric<T, 16>(placement); }",
+            "else if (managerSize <= 24) { return detail::createInstanceGeneric<T, 24>(placement); }",
+            "else if (managerSize <= 32) { return detail::createInstanceGeneric<T, 32>(placement); }",
+            "else if (managerSize <= 40) { return detail::createInstanceGeneric<T, 40>(placement); }",
+            "else if (managerSize <= 48) { return detail::createInstanceGeneric<T, 48>(placement); }",
+            "else if (managerSize <= 56) { return detail::createInstanceGeneric<T, 56>(placement); }",
+            "else if (managerSize <= 64) { return detail::createInstanceGeneric<T, 64>(placement); }",
+            "else if (managerSize <= 72) { return detail::createInstanceGeneric<T, 72>(placement); }",
+            "else if (managerSize <= 80) { return detail::createInstanceGeneric<T, 80>(placement); }",
+            "else if (managerSize <= 88) { return detail::createInstanceGeneric<T, 88>(placement); }",
+            "else if (managerSize <= 96) { return detail::createInstanceGeneric<T, 96>(placement); }",
+            "else if (managerSize <= 104) { return detail::createInstanceGeneric<T, 104>(placement); }",
+            "else if (managerSize <= 112) { return detail::createInstanceGeneric<T, 112>(placement); }",
+            "else if (managerSize <= 120) { return detail::createInstanceGeneric<T, 120>(placement); }",
             "else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }",
         })
         public GenericObject createInstanceGeneric(int placement, int managerSize) {
