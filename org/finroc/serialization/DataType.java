@@ -51,7 +51,8 @@ import org.finroc.jc.annotation.SkipArgs;
     "  public:",
     "  DataType() : DataTypeBase(NULL) {}",
     "  static DataTypeInfoRaw* getDataTypeInfo() { return NULL; }",
-    "};"
+    "};\n",
+    "extern template class DataType<MemoryBuffer>;"
 })
 @CppPrepend( {
     "namespace detail {",
@@ -107,7 +108,8 @@ public class DataType<T> extends DataTypeBase {
         }
 
         /*Cpp
-        void initImpl(CustomTypeInitialization* d) {
+        template <typename Q = T>
+        void InitImpl(typename boost::enable_if_c<boost::is_base_of<CustomTypeInitialization, Q>::value, CustomTypeInitialization*>::type d) {
             T::customTypeInitialization(DataTypeBase(this), (T*)NULL);
         }
 
