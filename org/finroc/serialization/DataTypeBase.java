@@ -227,7 +227,7 @@ public class DataTypeBase {
     /**
      * @param name Name of data type
      */
-    public DataTypeBase(@Ptr DataTypeInfoRaw info) {
+    public DataTypeBase(@Ptr @CppDefault("NULL") DataTypeInfoRaw info) {
         this.info = info;
 
         if (info != null && info.newInfo == true) {
