@@ -21,17 +21,12 @@
 package org.finroc.serialization;
 
 import org.finroc.jc.annotation.Attribute;
-import org.finroc.jc.annotation.Const;
-import org.finroc.jc.annotation.CppDefault;
-import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.PassByValue;
-import org.finroc.jc.annotation.Ptr;
-import org.finroc.xml.XMLNode;
 
 /**
  * @author max
@@ -40,7 +35,7 @@ import org.finroc.xml.XMLNode;
  */
 @Inline @NoCpp @Include("clear.h")
 @IncludeClass( {StringInputStream.class, StringOutputStream.class})
-public class GenericObjectInstance <T extends RRLibSerializable, M extends GenericObjectManager> extends GenericObject {
+public class GenericObjectInstance <T extends RRLibSerializable, M extends GenericObjectManager> extends GenericObjectBaseImpl<T> {
 
     /** Manager */
     @SuppressWarnings("unused")
@@ -48,6 +43,7 @@ public class GenericObjectInstance <T extends RRLibSerializable, M extends Gener
     @PassByValue private final M manager;
 
     /** Instantiated data */
+    @SuppressWarnings("unused")
     @Attribute("aligned(8)")
     @PassByValue private final T data;
 
@@ -57,77 +53,18 @@ public class GenericObjectInstance <T extends RRLibSerializable, M extends Gener
      */
     @JavaOnly
     public GenericObjectInstance(T wrappedObject, DataTypeBase dt, M manager) {
-        super(dt);
+        super(wrappedObject, dt);
         data = wrappedObject;
-        wrapped = data;
         this.jmanager = manager;
         this.manager = null;
     }
 
     /*Cpp
-    GenericObjectInstance() : GenericObject(DataType<T>()), manager(), data() {
-        assert((reinterpret_cast<char*>(&manager) - reinterpret_cast<char*>(this)) == MANAGER_OFFSET && "Manager offset invalid");
-        wrapped = &data;
+    public:
+    GenericObjectInstance() : GenericObjectBaseImpl<T>(), manager(), data() {
+        assert((reinterpret_cast<char*>(&manager) - reinterpret_cast<char*>(this)) == this->MANAGER_OFFSET && "Manager offset invalid");
+        this->wrapped = &data;
     }
      */
 
-    @Override
-    @InCpp("os << data;")
-    public void serialize(OutputStreamBuffer os) {
-        getData().serialize(os);
-    }
-
-    @Override
-    @InCpp("is >> data;")
-    public void deserialize(InputStreamBuffer is) {
-        getData().deserialize(is);
-    }
-
-    @Override
-    @InCpp("os << data;")
-    public void serialize(StringOutputStream os) {
-        getData().serialize(os);
-    }
-
-    @Override
-    @InCpp("is >> data;")
-    public void deserialize(StringInputStream is) throws Exception {
-        getData().deserialize(is);
-    }
-
-    @Override
-    @InCpp("node << data;")
-    public void serialize(XMLNode node) throws Exception {
-        getData().serialize(node);
-    }
-
-    @Override
-    @InCpp("node >> data;")
-    public void deserialize(XMLNode node) throws Exception {
-        getData().deserialize(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    @InCpp("deepCopyFromImpl(*static_cast<const T*>(source), f);")
-    protected void deepCopyFrom(Object source, @CppDefault("NULL") @Ptr Factory f) {
-        deepCopyFromImpl((T)source, f);
-    }
-
-    /**
-     * Deep copy source object to this object
-     *
-     * @param source Source object
-     */
-    public void deepCopyFromImpl(@Const T source, @CppDefault("NULL") @Ptr Factory f) {
-        Serialization.deepCopy(source, data, f);
-    }
-
-    @InCpp("clear::clear(&data);")
-    @Override
-    public void clear() {
-        if (data instanceof Clearable) {
-            ((Clearable)data).clearObject();
-        }
-    }
 }

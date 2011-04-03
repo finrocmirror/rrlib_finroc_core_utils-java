@@ -21,9 +21,6 @@
 package org.finroc.serialization;
 
 import org.finroc.jc.annotation.Attribute;
-import org.finroc.jc.annotation.Const;
-import org.finroc.jc.annotation.CppDefault;
-import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Inline;
@@ -31,9 +28,7 @@ import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
-import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SkipArgs;
-import org.finroc.xml.XMLNode;
 
 /**
  * @author max
@@ -42,7 +37,7 @@ import org.finroc.xml.XMLNode;
  */
 @Inline @NoCpp @Include("clear.h")
 @IncludeClass( {StringInputStream.class, StringOutputStream.class})
-public class GenericObjectWrapper <T extends RRLibSerializable, M extends GenericObjectManager> extends GenericObject {
+public class GenericObjectWrapper <T extends RRLibSerializable, M extends GenericObjectManager> extends GenericObjectBaseImpl<T> {
 
     /** Manager */
     @SuppressWarnings("unused")
@@ -55,77 +50,16 @@ public class GenericObjectWrapper <T extends RRLibSerializable, M extends Generi
      */
     @JavaOnly @SkipArgs("2")
     public GenericObjectWrapper(@Ptr T wrappedObject, DataTypeBase dt, M manager) {
-        super(dt);
-        wrapped = wrappedObject;
+        super(wrappedObject, dt);
         this.jmanager = manager;
         this.manager = null;
     }
 
     /*Cpp
-    GenericObjectWrapper(T* wrappedObject) : GenericObject(DataType<T>()), manager() {
-        assert((reinterpret_cast<char*>(&manager) - reinterpret_cast<char*>(this)) == MANAGER_OFFSET && "Manager offset invalid");
-        wrapped = wrappedObject;
+    public:
+    GenericObjectWrapper(T* wrappedObject) : GenericObjectBaseImpl<T>(), manager() {
+        assert((reinterpret_cast<char*>(&manager) - reinterpret_cast<char*>(this)) == this->MANAGER_OFFSET && "Manager offset invalid");
+        this->wrapped = wrappedObject;
     }
      */
-
-    @Override
-    @InCpp("os << *getData<T>();")
-    public void serialize(OutputStreamBuffer os) {
-        getData().serialize(os);
-    }
-
-    @Override
-    @InCpp("is >> *getData<T>();")
-    public void deserialize(InputStreamBuffer is) {
-        getData().deserialize(is);
-    }
-
-    @Override
-    @InCpp("os << *getData<T>();")
-    public void serialize(StringOutputStream os) {
-        getData().serialize(os);
-    }
-
-    @Override
-    @InCpp("is >> *getData<T>();")
-    public void deserialize(StringInputStream is) throws Exception {
-        getData().deserialize(is);
-    }
-
-    @Override
-    @InCpp("node << *getData<T>();")
-    public void serialize(XMLNode node) throws Exception {
-        getData().serialize(node);
-    }
-
-    @Override
-    @InCpp("node >> *getData<T>();")
-    public void deserialize(XMLNode node) throws Exception {
-        getData().deserialize(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    @InCpp("deepCopyFromImpl(*static_cast<const T*>(source), f);")
-    protected void deepCopyFrom(Object source, @CppDefault("NULL") @Ptr Factory f) {
-        deepCopyFromImpl((T)source, f);
-    }
-
-    /**
-     * Deep copy source object to this object
-     *
-     * @param source Source object
-     */
-    @InCpp("_sSerialization::deepCopy(source, *getData<T>(), f);")
-    public void deepCopyFromImpl(@Const @Ref T source, @CppDefault("NULL") @Ptr Factory f) {
-        Serialization.deepCopy(source, getData(), f);
-    }
-
-    @InCpp("clear::clear(getData<T>());")
-    @Override
-    public void clear() {
-        if (getData() instanceof Clearable) {
-            ((Clearable)getData()).clearObject();
-        }
-    }
 }

@@ -75,7 +75,7 @@ public abstract class GenericObject extends TypedObjectImpl {
      * @return Wrapped object (type T must match original type)
      */
     @SuppressWarnings("unchecked")
-    @Ptr public <T extends RRLibSerializable> T getData() {
+    @Ptr @Inline public <T extends RRLibSerializable> T getData() {
 
         //JavaOnlyBlock
         return (T)wrapped;
