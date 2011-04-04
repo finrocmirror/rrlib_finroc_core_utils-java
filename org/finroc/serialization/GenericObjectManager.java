@@ -20,7 +20,6 @@
  */
 package org.finroc.serialization;
 
-import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.NonVirtual;
@@ -40,14 +39,6 @@ import org.finroc.jc.annotation.Superclass;
  */
 @Superclass( {}) @Ptr
 @IncludeClass(GenericObject.class)
-@HAppend( {
-    "/*! Helper class for factory */",
-    "template <size_t _SIZE>",
-    "class GenericObjectManagerPlaceHolder : public GenericObjectManager {",
-    "    // placeholder for actual manager object",
-    "    char storage[_SIZE - sizeof(GenericObjectManager)];",
-    "};"
-})
 public interface GenericObjectManager {
 
     /**

@@ -25,7 +25,6 @@ import java.lang.reflect.Modifier;
 import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.CppInclude;
-import org.finroc.jc.annotation.CppPrepend;
 import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.InCppFile;
@@ -41,7 +40,7 @@ import org.finroc.jc.annotation.SkipArgs;
  *
  * Objects of this class contain info about the data type T
  */
-@Include( {"detail/tListInfo.h", "<boost/type_traits/has_virtual_destructor.hpp>", "<boost/type_traits/remove_reference.hpp>", "CustomTypeInitialization.h", "StlContainerSuitable.h"})
+@Include( {"detail/tListInfo.h", "<boost/type_traits/has_virtual_destructor.hpp>", "<boost/type_traits/remove_reference.hpp>", "CustomTypeInitialization.h", "StlContainerSuitable.h", "<cstring>"})
 @IncludeClass(GenericObjectManager.class)
 @CppInclude("GenericObjectInstance.h")
 @RawTypeArgs
@@ -52,19 +51,19 @@ import org.finroc.jc.annotation.SkipArgs;
     "  DataType() : DataTypeBase(NULL) {}",
     "  static DataTypeInfoRaw* getDataTypeInfo() { return NULL; }",
     "};\n",
-    "extern template class DataType<MemoryBuffer>;"
-})
-@CppPrepend( {
-    "namespace detail {",
-    "template <typename T, size_t _MSIZE>",
-    "GenericObject* createInstanceGeneric(void* placement) {",
-    "  size_t size = sizeof(GenericObjectInstance<T, GenericObjectManagerPlaceHolder<_MSIZE> >);",
-    "  if (placement == NULL) {",
-    "    placement = operator _new(size);",
-    "  }",
-    "  _memset(placement, 0, size); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
-    "  return _new (placement) GenericObjectInstance<T, GenericObjectManagerPlaceHolder<_MSIZE> >();",
-    "}}"
+    "extern template class DataType<MemoryBuffer>;",
+    "extern template class DataType<int8_t>;",
+    "extern template class DataType<int16_t>;",
+    "extern template class DataType<int>;",
+    "extern template class DataType<long int>;",
+    "extern template class DataType<long long int>;",
+    "extern template class DataType<uint8_t>;",
+    "extern template class DataType<uint16_t>;",
+    "extern template class DataType<unsigned int>;",
+    "extern template class DataType<unsigned long int>;",
+    "extern template class DataType<unsigned long long int>;",
+    "extern template class DataType<double>;",
+    "extern template class DataType<float>;",
 })
 public class DataType<T> extends DataTypeBase {
 
@@ -175,22 +174,17 @@ public class DataType<T> extends DataTypeBase {
         @SuppressWarnings( { "unchecked", "rawtypes" })
         @Override @InCppFile
         @InCpp( {
-            "if (managerSize <= 8) { return detail::createInstanceGeneric<T, 8>(placement); }",
-            "else if (managerSize <= 16) { return detail::createInstanceGeneric<T, 16>(placement); }",
-            "else if (managerSize <= 24) { return detail::createInstanceGeneric<T, 24>(placement); }",
-            "else if (managerSize <= 32) { return detail::createInstanceGeneric<T, 32>(placement); }",
-            "else if (managerSize <= 40) { return detail::createInstanceGeneric<T, 40>(placement); }",
-            "else if (managerSize <= 48) { return detail::createInstanceGeneric<T, 48>(placement); }",
-            "else if (managerSize <= 56) { return detail::createInstanceGeneric<T, 56>(placement); }",
-            "else if (managerSize <= 64) { return detail::createInstanceGeneric<T, 64>(placement); }",
-            "else if (managerSize <= 72) { return detail::createInstanceGeneric<T, 72>(placement); }",
-            "else if (managerSize <= 80) { return detail::createInstanceGeneric<T, 80>(placement); }",
-            "else if (managerSize <= 88) { return detail::createInstanceGeneric<T, 88>(placement); }",
-            "else if (managerSize <= 96) { return detail::createInstanceGeneric<T, 96>(placement); }",
-            "else if (managerSize <= 104) { return detail::createInstanceGeneric<T, 104>(placement); }",
-            "else if (managerSize <= 112) { return detail::createInstanceGeneric<T, 112>(placement); }",
-            "else if (managerSize <= 120) { return detail::createInstanceGeneric<T, 120>(placement); }",
-            "else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }"
+            "assert(sizeof(GenericObjectInstance<T>) <= GenericObject::MANAGER_OFFSET);",
+            "while (managerSize %8 != 0) { managerSize++; }",
+            "size_t obj_offset = GenericObject::MANAGER_OFFSET + managerSize;",
+            "size_t size = obj_offset + sizeof(T);",
+            "if (placement == NULL) {",
+            "  placement = operator _new(size);",
+            "}",
+            "char* obj_addr = ((char*)placement) + obj_offset;",
+            "_memset(obj_addr, 0, sizeof(T)); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
+            "T* data_new = _new (obj_addr) T();",
+            "return _new (placement) GenericObjectInstance<T>(data_new);"
         })
         public GenericObject createInstanceGeneric(int placement, int managerSize) {
             return new GenericObjectInstance((RRLibSerializable)createInstance(placement), dataType, null);

@@ -20,51 +20,42 @@
  */
 package org.finroc.serialization;
 
-import org.finroc.jc.annotation.Attribute;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.NoCpp;
-import org.finroc.jc.annotation.PassByValue;
 
 /**
  * @author max
  *
  * Used for initially creating/instantiating GenericObject.
+ *
+ * This class should only be instantiated by tDataType !
  */
 @Inline @NoCpp @Include("clear.h")
 @IncludeClass( {StringInputStream.class, StringOutputStream.class})
-public class GenericObjectInstance <T extends RRLibSerializable, M extends GenericObjectManager> extends GenericObjectBaseImpl<T> {
-
-    /** Manager */
-    @SuppressWarnings("unused")
-    @Attribute("aligned(8)")
-    @PassByValue private final M manager;
-
-    /** Instantiated data */
-    @SuppressWarnings("unused")
-    @Attribute("aligned(8)")
-    @PassByValue private final T data;
+public class GenericObjectInstance <T extends RRLibSerializable> extends GenericObjectBaseImpl<T> {
 
     /**
      * @param wrappedObject Wrapped object
      * @param dt Data type of wrapped object
      */
     @JavaOnly
-    public GenericObjectInstance(T wrappedObject, DataTypeBase dt, M manager) {
+    public GenericObjectInstance(T wrappedObject, DataTypeBase dt, GenericObjectManager manager) {
         super(wrappedObject, dt);
-        data = wrappedObject;
         this.jmanager = manager;
-        this.manager = null;
     }
 
     /*Cpp
     public:
-    GenericObjectInstance() : GenericObjectBaseImpl<T>(), manager(), data() {
-        assert((reinterpret_cast<char*>(&manager) - reinterpret_cast<char*>(this)) == this->MANAGER_OFFSET && "Manager offset invalid");
-        this->wrapped = &data;
+    GenericObjectInstance(T* wrappedObject) : GenericObjectBaseImpl<T>() {
+        this->wrapped = wrappedObject;
+    }
+
+    virtual ~GenericObjectInstance() {
+        T* t = GenericObject::getData<T>();
+        t->~T();
     }
      */
-
 }

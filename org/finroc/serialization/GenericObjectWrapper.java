@@ -36,7 +36,7 @@ import org.finroc.jc.annotation.SkipArgs;
  * Allows wrapping any object as GenericObject
  */
 @Inline @NoCpp @Include("clear.h")
-@IncludeClass( {StringInputStream.class, StringOutputStream.class})
+@IncludeClass( {StringInputStream.class, StringOutputStream.class, GenericObjectManager.class})
 public class GenericObjectWrapper <T extends RRLibSerializable, M extends GenericObjectManager> extends GenericObjectBaseImpl<T> {
 
     /** Manager */
