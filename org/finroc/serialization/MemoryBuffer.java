@@ -66,10 +66,6 @@ import org.finroc.log.LogLevel;
     "",
     "    virtual void deleteOldBackend(FixedBuffer* b) { if (b != &buffer) { delete b; } }",
     "};",
-    "",
-    "namespace deepcopy {",
-    "    inline void copy(const MemoryBuffer& src, MemoryBuffer& dest, Factory* f) { dest.copyFrom(src); }",
-    "}"
 })
 @IncludeClass( {RRLibSerializableImpl.class, ConstSource.class, Sink.class, GenericChangeable.class})
 @Include( {"rrlib/logging/definitions.h", "StlContainerSuitable.h"})
