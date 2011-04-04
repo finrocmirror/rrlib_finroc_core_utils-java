@@ -190,7 +190,7 @@ public class DataType<T> extends DataTypeBase {
             "else if (managerSize <= 104) { return detail::createInstanceGeneric<T, 104>(placement); }",
             "else if (managerSize <= 112) { return detail::createInstanceGeneric<T, 112>(placement); }",
             "else if (managerSize <= 120) { return detail::createInstanceGeneric<T, 120>(placement); }",
-            "else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }",
+            "else { throw std::invalid_argument(\"Management info larger than 120 bytes not allowed\"); }"
         })
         public GenericObject createInstanceGeneric(int placement, int managerSize) {
             return new GenericObjectInstance((RRLibSerializable)createInstance(placement), dataType, null);

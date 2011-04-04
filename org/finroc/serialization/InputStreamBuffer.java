@@ -74,7 +74,7 @@ import org.finroc.jc.annotation.Virtual;
     "template <typename T>",
     "inline InputStream& operator>> (InputStream& is, std::list<T>& t) { is.readSTLContainer<std::list<T>, T>(t); return is; }",
     "template <typename T>",
-    "inline InputStream& operator>> (InputStream& is, std::deque<T>& t) { is.readSTLContainer<std::deque<T>, T>(t); return is; }",
+    "inline InputStream& operator>> (InputStream& is, std::deque<T>& t) { is.readSTLContainer<std::deque<T>, T>(t); return is; }"
 })
 @IncludeClass(RRLibSerializableImpl.class)
 @Include( {"detail/tListElemInfo.h", "<vector>", "<list>", "<deque>", "<endian.h>"})

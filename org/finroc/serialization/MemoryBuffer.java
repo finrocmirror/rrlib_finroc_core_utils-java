@@ -65,7 +65,7 @@ import org.finroc.log.LogLevel;
     "    virtual ~StackMemoryBuffer() { if (backend == &buffer) { backend = NULL; } }",
     "",
     "    virtual void deleteOldBackend(FixedBuffer* b) { if (b != &buffer) { delete b; } }",
-    "};",
+    "};"
 })
 @IncludeClass( {RRLibSerializableImpl.class, ConstSource.class, Sink.class, GenericChangeable.class})
 @Include( {"rrlib/logging/definitions.h", "StlContainerSuitable.h"})
