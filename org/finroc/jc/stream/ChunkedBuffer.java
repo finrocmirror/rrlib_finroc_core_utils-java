@@ -34,6 +34,7 @@ import org.finroc.jc.annotation.Friend;
 import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
+import org.finroc.jc.annotation.PostInclude;
 import org.finroc.jc.annotation.PostProcess;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
@@ -77,11 +78,13 @@ import org.finroc.serialization.Source;
  * in buffer an exception is thrown. So check with available() whether data is available
  * and only commit complete chunks.
  */
-@CppPrepend("const size_t BufferChunk::CHUNK_SIZE;")
+@CppPrepend( {"const size_t BufferChunk::CHUNK_SIZE;", "}} template class rrlib::serialization::DataType<finroc::util::ChunkedBuffer>; namespace finroc { namespace util {"})
 @HAppend( {"namespace rrlib { namespace serialization { namespace clear {",
            "inline void clear(finroc::util::ChunkedBuffer* buf) { buf->clear(); }",
-           "}}}"
+           "}}}\n",
+           "extern template class rrlib::serialization::DataType<finroc::util::ChunkedBuffer>;"
           })
+@PostInclude("rrlib/serialization/DataType.h")
 @Superclass2( {"rrlib::serialization::Serializable", "rrlib::serialization::ConstSource", "rrlib::serialization::Sink", "boost::noncopyable"})
 public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Clearable {
 

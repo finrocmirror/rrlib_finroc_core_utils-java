@@ -124,11 +124,22 @@ public class DataType<T> extends DataTypeBase {
             return NULL;
         }
 
+        template <bool B>
+        typename boost::enable_if_c<B, DataTypeBase::DataTypeInfoRaw*>::type getSharedPtrListTypeInfo() {
+            return DataType<typename detail::ListInfo<T>::SharedPtrListType>::getDataTypeInfo();
+        }
+
+        template <bool B>
+        typename boost::disable_if_c<B, DataTypeBase::DataTypeInfoRaw*>::type getSharedPtrListTypeInfo() {
+            return NULL;
+        }
+
+
         virtual void init()
         {
             if (type == ePLAIN) {
                 listType = getListTypeInfo<StlContainerSuitable<T>::value >();
-                sharedPtrListType = DataType<typename detail::ListInfo<T>::SharedPtrListType>::getDataTypeInfo();
+                sharedPtrListType = getSharedPtrListTypeInfo<CreateSharedPtrListType<T>::value >();
             } else {
                 elementType = DataType<typename detail::ListInfo<T>::ElementType>::getDataTypeInfo();
             }
