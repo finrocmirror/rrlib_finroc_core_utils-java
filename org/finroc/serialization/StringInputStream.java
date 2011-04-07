@@ -61,6 +61,7 @@ import org.finroc.jc.annotation.SizeT;
     "inline StringInputStream& operator>> (StringInputStream& is, unsigned long long int& t) { is.wrapped  >> t; return is;  }",
     "inline StringInputStream& operator>> (StringInputStream& is, float& t) { is.wrapped  >> t; return is;  }",
     "inline StringInputStream& operator>> (StringInputStream& is, double& t) { is.wrapped  >> t; return is;  }",
+    "inline StringInputStream& operator>> (StringInputStream& is, bool& t) { is.wrapped  >> t; return is;  }",
     "inline StringInputStream& operator>> (StringInputStream& is, std::string& t) { t = is.readLine(); return is;  }",
     "inline StringInputStream& operator>> (StringInputStream& is, Serializable& t) { t.deserialize(is); return is;  }"
 })

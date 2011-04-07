@@ -67,6 +67,7 @@ import org.finroc.jc.annotation.Virtual;
     "inline InputStream& operator>> (InputStream& is, long long unsigned int& t) { t = is.readNumber<long long unsigned int>(); return is; }",
     "inline InputStream& operator>> (InputStream& is, float& t) { t = is.readFloat(); return is; }",
     "inline InputStream& operator>> (InputStream& is, double& t) { t = is.readDouble(); return is; }",
+    "inline InputStream& operator>> (InputStream& is, bool& t) { t = is.readBoolean(); return is; }",
     "inline InputStream& operator>> (InputStream& is, std::string& t) { t = is.readString(); return is; }",
     "inline InputStream& operator>> (InputStream& is, Serializable& t) { t.deserialize(is); return is; }",
     "template <typename T>",

@@ -52,6 +52,7 @@ import org.finroc.jc.annotation.PostInclude;
     "inline StringOutputStream& operator<< (StringOutputStream& os, unsigned long long int t) { os.wrapped << t; return os; }",
     "inline StringOutputStream& operator<< (StringOutputStream& os, float t) { os.wrapped << t; return os; }",
     "inline StringOutputStream& operator<< (StringOutputStream& os, double t) { os.wrapped << t; return os; }",
+    "inline StringOutputStream& operator<< (StringOutputStream& os, bool t) { os.wrapped << t; return os; }",
     "inline StringOutputStream& operator<< (StringOutputStream& os, const char* t) { os.wrapped << t; return os; }",
     "inline StringOutputStream& operator<< (StringOutputStream& os, const std::string& t) { os.wrapped << t; return os; }",
     "inline StringOutputStream& operator<< (StringOutputStream& os, const Serializable& t) { t.serialize(os); return os; }"

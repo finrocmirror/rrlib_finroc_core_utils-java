@@ -64,6 +64,7 @@ import org.finroc.jc.annotation.SkipArgs;
     "extern template class DataType<unsigned long long int>;",
     "extern template class DataType<double>;",
     "extern template class DataType<float>;",
+    "extern template class DataType<bool>;",
 })
 public class DataType<T> extends DataTypeBase {
 

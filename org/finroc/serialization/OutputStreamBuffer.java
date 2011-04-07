@@ -83,6 +83,7 @@ import org.finroc.jc.annotation.Virtual;
     "inline OutputStream& operator<< (OutputStream& os, long long unsigned int t) { os.writeNumber(t); return os; }",
     "inline OutputStream& operator<< (OutputStream& os, float t) { os.writeFloat(t); return os; }",
     "inline OutputStream& operator<< (OutputStream& os, double t) { os.writeDouble(t); return os; }",
+    "inline OutputStream& operator<< (OutputStream& os, bool t) { os.writeBoolean(t); return os; }",
     "inline OutputStream& operator<< (OutputStream& os, const char* t) { os.writeString(t); return os; }",
     "inline OutputStream& operator<< (OutputStream& os, const std::string& t) { os.writeString(t); return os; }",
     "inline OutputStream& operator<< (OutputStream& os, const Serializable& t) { t.serialize(os); return os; }",
