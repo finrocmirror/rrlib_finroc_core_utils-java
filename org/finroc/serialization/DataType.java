@@ -280,11 +280,18 @@ public class DataType<T> extends DataTypeBase {
     /*Cpp
 
     public:
-    DataType() : DataTypeBase(getDataTypeInfo()) {}
+    DataType() : DataTypeBase(getDataTypeInfo()) {
+        this->getElementType();
+        this->getListType();
+        this->getSharedPtrListType();
+    }
 
     // \param name Name data type should get (if different from default)
     DataType(const std::string& name) : DataTypeBase(getDataTypeInfo()) {
         getDataTypeInfo()->setName(name);
+        this->getElementType();
+        this->getListType();
+        this->getSharedPtrListType();
     }
 
     // Lookup data type by rtti name

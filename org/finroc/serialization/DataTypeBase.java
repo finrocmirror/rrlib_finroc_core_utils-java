@@ -163,6 +163,15 @@ public class DataTypeBase {
 
             defaultName = false;
             name = newName;
+
+            /*Cpp
+            if (listType != NULL) {
+                listType->name = std::_string("List<") + name + ">";
+            }
+            if (sharedPtrListType != NULL) {
+                sharedPtrListType->name = std::_string("List<") + name + "*>";
+            }
+             */
         }
 
         /**
@@ -692,7 +701,7 @@ public class DataTypeBase {
         if (getType() == Type.UNKNOWN || dataType.getType() == Type.UNKNOWN) {
             return false;
         }
-        if ((info.javaClass != null) == (dataType.info.javaClass != null)) {
+        if ((info.javaClass != null) && (dataType.info.javaClass != null)) {
             return dataType.getInfo().javaClass.isAssignableFrom(info.javaClass);
         }
         return false;
