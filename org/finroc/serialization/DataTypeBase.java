@@ -701,6 +701,9 @@ public class DataTypeBase {
         if (getType() == Type.UNKNOWN || dataType.getType() == Type.UNKNOWN) {
             return false;
         }
+        if (getType() == Type.LIST && dataType.getType() == Type.LIST) {
+            return getElementType().isConvertibleTo(dataType.getElementType());
+        }
         if ((info.javaClass != null) && (dataType.info.javaClass != null)) {
             return dataType.getInfo().javaClass.isAssignableFrom(info.javaClass);
         }
