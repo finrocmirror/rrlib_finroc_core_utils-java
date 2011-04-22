@@ -334,7 +334,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
      */
     @JavaOnly
     public void readString(@Ref StringBuilder sb) {
-        sb.delete(0, sb.length() - 1);
+        sb.delete(0, sb.length());
         readStringImpl(sb);
     }
 
