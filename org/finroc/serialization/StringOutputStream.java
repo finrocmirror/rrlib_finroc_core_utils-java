@@ -151,7 +151,7 @@ public class StringOutputStream {
 
     @NonVirtual @InCpp("return wrapped._str();") @CppType("std::string")
     public String toString() {
-        return super.toString();
+        return wrapped.toString();
     }
 
     /**
