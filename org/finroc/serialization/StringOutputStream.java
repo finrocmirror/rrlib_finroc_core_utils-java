@@ -65,7 +65,7 @@ public class StringOutputStream {
 
     /** Wrapped string stream */
     @CppType("std::ostringstream")
-    StringBuilder wrapped;
+    StringBuilder wrapped = new StringBuilder();
 
     /*Cpp
     template <typename T>
