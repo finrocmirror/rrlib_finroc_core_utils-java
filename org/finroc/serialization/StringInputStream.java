@@ -32,6 +32,7 @@ import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Init;
+import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.PostInclude;
 import org.finroc.jc.annotation.Ref;
@@ -80,6 +81,10 @@ public class StringInputStream {
     /** Map with flags of all 256 UTF Characters */
     @InCpp("static int8_t charMap[256];")
     private static byte[] charMap = new byte[256];
+
+    static {
+        initCharMap();
+    }
 
     @Init("wrapped(s)")
     public StringInputStream(@Const @Ref @CppType("std::string") String s) {
