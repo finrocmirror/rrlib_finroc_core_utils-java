@@ -244,16 +244,21 @@ public class DataType<T> extends DataTypeBase {
         this(c, null);
     }
 
-    @SuppressWarnings("rawtypes")
     @JavaOnly @SkipArgs( {"1"})
     public DataType(Class<?> c, String name) {
+        this(c, name, true);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @JavaOnly @SkipArgs( {"1"})
+    public DataType(Class<?> c, String name, boolean createListTypes) {
         super(getDataTypeInfo(c));
         if (name != null) {
             info.setName(name);
         }
         ((DataTypeInfo)info).dataType = this;
 
-        if (((DataTypeInfo)info).type == Type.PLAIN && info.listType == null) {
+        if (createListTypes && ((DataTypeInfo)info).type == Type.PLAIN && info.listType == null) {
             info.listType = new DataType(this, Type.LIST);
             info.sharedPtrListType = new DataType(this, Type.PTR_LIST);
         }

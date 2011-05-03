@@ -21,7 +21,9 @@
 package org.finroc.serialization;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import org.finroc.jc.AtomicInt;
 import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
@@ -29,14 +31,17 @@ import org.finroc.jc.annotation.CppDefault;
 import org.finroc.jc.annotation.CppInclude;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.ForwardDecl;
+import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
+import org.finroc.jc.annotation.Managed;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SizeT;
+import org.finroc.jc.annotation.SkipArgs;
 import org.finroc.jc.annotation.VoidPtr;
 import org.finroc.jc.log.LogDefinitions;
 import org.finroc.log.LogDomain;
@@ -57,9 +62,12 @@ import org.finroc.log.LogLevel;
  * This class is passed by value
  */
 @PassByValue
-@ForwardDecl(GenericObjectManager.class)
+@ForwardDecl( {GenericObjectManager.class, DataTypeAnnotation.class})
 @Include( {"<boost/type_traits/is_base_of.hpp>", "<boost/thread/recursive_mutex.hpp>", "<boost/thread/locks.hpp>", "rrlib/logging/definitions.h"})
 @CppInclude( {"<cstring>", "sSerialization.h"})
+@HAppend( {"template <typename T>",
+           "int DataTypeBase::AnnotationIndex<T>::index;"
+          })
 public class DataTypeBase {
 
     /** type of data type */
@@ -72,6 +80,14 @@ public class DataTypeBase {
         OTHER, // Other data type
         UNKNOWN // Unknown data type in current process
     }
+
+    /**
+     * Maximum number of annotations
+     */
+    @JavaOnly
+    private static final @SizeT int MAX_ANNOTATIONS = 10;
+
+    //Cpp static const size_t MAX_ANNOTATIONS = 10;
 
     /** Data type info */
     @AtFront @Ptr
@@ -116,9 +132,9 @@ public class DataTypeBase {
         @CppType("DataTypeInfoRaw") @Ptr
         public DataTypeBase sharedPtrListType;
 
-        /** Custom related type */
-        @CppType("DataTypeInfoRaw") @Ptr
-        public DataTypeBase relatedType;
+        /** Annotations to data type */
+        @InCpp("DataTypeAnnotation* annotations[MAX_ANNOTATIONS];")
+        public DataTypeAnnotation[] annotations = new DataTypeAnnotation[MAX_ANNOTATIONS];
 
         @JavaOnly
         public DataTypeInfoRaw() {
@@ -136,9 +152,11 @@ public class DataTypeBase {
             uid(-1),
             elementType(NULL),
             listType(NULL),
-            sharedPtrListType(NULL),
-            relatedType(NULL)
+            sharedPtrListType(NULL)
         {
+            for (size_t i = 0; i < MAX_ANNOTATIONS; i++) {
+                annotations[i] = NULL;
+            }
         }
 
         virtual void init() {}
@@ -233,6 +251,14 @@ public class DataTypeBase {
     @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"serialization\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("serialization");
 
+    /** Lookup for data type annotation index */
+    @JavaOnly
+    private static final HashMap < Class<?>, Integer > annotationIndexLookup = new HashMap < Class<?>, Integer > ();
+
+    /** Last annotation index that was used */
+    @JavaOnly
+    private static final AtomicInt lastAnnotationIndex = new AtomicInt(0);
+
     /**
      * @param name Name of data type
      */
@@ -266,6 +292,23 @@ public class DataTypeBase {
         logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, getLogDescription(), msg);
     }
 
+    /*Cpp
+    template <typename T>
+    struct AnnotationIndex {
+        static int index;
+    };
+
+    template <typename T>
+    bool annotationIndexValid(bool setValid = false) {
+        static bool valid = false;
+        if (setValid) {
+            assert(!valid);
+            valid = true;
+        }
+        return valid;
+    }
+     */
+
     private @PassByValue @CppType("const char*") String getLogDescription() {
         return "DataTypeBase";
     }
@@ -297,39 +340,6 @@ public class DataTypeBase {
             return info.uid;
         }
         return -1;
-    }
-
-    /**
-     * @return Related type
-     */
-    @ConstMethod @Inline public DataTypeBase getRelatedType() {
-        if (info != null) {
-
-            //JavaOnlyBlock
-            return info.relatedType;
-
-            //Cpp return DataTypeBase(info->relatedType);
-        }
-        return getNullType();
-    }
-
-    /**
-     * @param related Related Type
-     */
-    @Inline public void setRelatedType(DataTypeBase related) {
-        if (info != null) {
-
-            //JavaOnlyBlock
-            info.relatedType = related;
-
-            //Cpp const_cast<DataTypeInfoRaw*>(info)->relatedType = const_cast<DataTypeInfoRaw*>(related.info);
-        } else {
-
-            //JavaOnlyBlock
-            throw new RuntimeException("Nullptr");
-
-            //Cpp throw std::runtime_error("Null pointer !?");
-        }
     }
 
     /**
@@ -708,5 +718,79 @@ public class DataTypeBase {
             return dataType.getInfo().javaClass.isAssignableFrom(info.javaClass);
         }
         return false;
+    }
+
+    /**
+     * Add annotation to this data type
+     *
+     * @param ann Annotation
+     */
+    @Inline
+    public <T extends DataTypeAnnotation> void addAnnotation(@Managed T ann) {
+        //Cpp ::boost::unique_lock<boost::recursive_mutex>(getMutex());
+        //Cpp static size_t lastAnnotationIndex = 0;
+        if (info != null) {
+
+            assert(ann.annotatedType == null) : "Already used as annotation in other object. Not allowed (double deleteting etc.)";
+            ann.annotatedType = this;
+            @SizeT int annIndex = -1;
+
+            /*Cpp
+            if (!annotationIndexValid<T>()) {
+                lastAnnotationIndex++;
+                assert(lastAnnotationIndex < MAX_ANNOTATIONS);
+                AnnotationIndex<T>::index = lastAnnotationIndex;
+                annotationIndexValid<T>(true);
+            }
+            annIndex = AnnotationIndex<T>::index;
+             */
+
+            //JavaOnlyBlock
+            synchronized (types) {
+                Integer i = annotationIndexLookup.get(ann.getClass());
+                if (i == null) {
+                    i = lastAnnotationIndex.incrementAndGet();
+                    annotationIndexLookup.put(ann.getClass(), i);
+                }
+                annIndex = i;
+            }
+
+            assert(annIndex > 0 && annIndex < MAX_ANNOTATIONS);
+            assert(info.annotations[annIndex] == null);
+
+            //JavaOnlyBlock
+            info.annotations[annIndex] = ann;
+
+            //Cpp const_cast<DataTypeInfoRaw*>(info)->annotations[annIndex] = ann;
+        } else {
+
+            //JavaOnlyBlock
+            throw new RuntimeException("Nullptr");
+
+            //Cpp throw std::runtime_error("Null pointer !?");
+        }
+    }
+
+    /**
+     * Get annotation of specified class
+     *
+     * @param c Class of annotation we're looking for
+     * @return Annotation. Null if data type has no annotation of this type.
+     */
+    @SuppressWarnings("unchecked")
+    @SkipArgs("1") @Inline @Ptr
+    public <T extends DataTypeAnnotation> T getAnnotation(Class<T> c) {
+        if (info != null) {
+            //JavaOnlyBlock
+            return (T)info.annotations[annotationIndexLookup.get(c)];
+
+            //Cpp return static_cast<T*>(info->annotations[AnnotationIndex<T>::index]);
+        } else {
+
+            //JavaOnlyBlock
+            throw new RuntimeException("Nullptr");
+
+            //Cpp throw std::runtime_error("Null pointer !?");
+        }
     }
 }

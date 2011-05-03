@@ -105,6 +105,9 @@ public class IPAddress {
         boost::system::error_code ec;
         boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver._resolve(query, ec);
         if (ec) {
+            if (hostname.equals("localhost")) {
+                return IPAddress(boost::asio::ip::address_v4::_loopback());
+            }
             throw UnknownHostException();
         }
         boost::asio::ip::tcp::resolver::iterator end;

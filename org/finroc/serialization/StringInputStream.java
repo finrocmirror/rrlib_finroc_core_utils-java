@@ -32,7 +32,6 @@ import org.finroc.jc.annotation.InCpp;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Init;
-import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.PassByValue;
 import org.finroc.jc.annotation.PostInclude;
 import org.finroc.jc.annotation.Ref;
