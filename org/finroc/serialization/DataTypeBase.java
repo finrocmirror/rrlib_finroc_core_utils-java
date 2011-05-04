@@ -672,6 +672,12 @@ public class DataTypeBase {
         if (lastPos > 0) {
             demangled = demangled._substr(lastPos, demangled._size() - lastPos);
         }
+
+        // possibly cut off s or t prefix
+        if (_islower(demangled[0]) && _isupper(demangled[1])) {
+            demangled._erase(0, 1);
+        }
+
         return demangled;
 
          */
