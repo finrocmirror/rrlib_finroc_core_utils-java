@@ -78,7 +78,7 @@ import org.finroc.jc.annotation.Virtual;
     "inline InputStream& operator>> (InputStream& is, std::deque<T>& t) { is.readSTLContainer<std::deque<T>, T>(t); return is; }"
 })
 @IncludeClass(RRLibSerializableImpl.class)
-@Include( {"detail/tListElemInfo.h", "<vector>", "<list>", "<deque>", "<endian.h>"})
+@Include( {"detail/tListElemInfo.h", "<vector>", "<list>", "<deque>", "<endian.h>", "sStaticFactory.h"})
 @CppInclude("<unistd.h>")
 public class InputStreamBuffer implements Source, HasDestructor {
 
@@ -542,13 +542,6 @@ public class InputStreamBuffer implements Source, HasDestructor {
         return f;
     }
 
-    /*Cpp
-    void readFully(void* address, size_t size) {
-        ByteArray tmp((int8*)address, size);
-        readFully(tmp);
-    }
-     */
-
     /**
      * Fill destination array with the next n bytes (possibly blocks with streams)
      *
@@ -584,6 +577,13 @@ public class InputStreamBuffer implements Source, HasDestructor {
             fetchNextBytes(1);
         }
     }
+
+    /*Cpp
+    void readFully(void* address, size_t size) {
+        FixedBuffer tmp((char*)address, size);
+        readFully(tmp);
+    }
+     */
 
     /**
      * Fill destination buffer (complete buffer)
@@ -865,7 +865,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
 
         // container.resize(size);
         while(container._size() < size) {
-          container.emplace_back();
+          container.push_back(_sStaticFactory<T>::createByValue());
         }
         while(container._size() > size) {
           container.pop_back();

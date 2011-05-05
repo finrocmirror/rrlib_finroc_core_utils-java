@@ -307,10 +307,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     @Override
     public void deserialize(InputStreamBuffer rv) {
         int size = rv.readInt(); // Buffer size is limited to 2 GB
-        curSize = 0;
-        reallocate(size, false, -1);
-        rv.readFully(backend, 0, size);
-        curSize = size;
+        deserialize(rv, size);
     }
 
     @Override @InCppFile
@@ -393,5 +390,18 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
         ensureCapacity(source.getSize(), false, getSize());
         backend.put(0, source.backend, 0, source.getSize());
         curSize = source.getSize();
+    }
+
+    /**
+     * Reset this buffer and
+     * copy data from stream to it
+     *
+     * @param size Number of bytes to
+     */
+    public void deserialize(@Ref InputStreamBuffer rv, @SizeT int size) {
+        curSize = 0;
+        reallocate(size, false, -1);
+        rv.readFully(backend, 0, size);
+        curSize = size;
     }
 }

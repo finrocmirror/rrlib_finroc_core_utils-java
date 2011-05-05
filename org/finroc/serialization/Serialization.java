@@ -309,7 +309,7 @@ public class Serialization {
      * @param vector Vector to resize
      * @param newSize New Size
      */
-    @InCpp("detail::Resize<std::vector<T>, !boost::is_base_of<boost::noncopyable, T>::value>::resize(vector, newSize);") @HAppend( {})
+    @InCpp("detail::Resize<std::vector<T>, T, !boost::is_base_of<boost::noncopyable, T>::value>::resize(vector, newSize);") @HAppend( {})
     static public <T> void resizeVector(@CppType("std::vector<T>") @Ref PortDataList<?> vector, @SizeT int newSize) {
         vector.resize(newSize);
     }

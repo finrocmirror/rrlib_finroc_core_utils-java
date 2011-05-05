@@ -40,7 +40,7 @@ import org.finroc.jc.annotation.SkipArgs;
  *
  * Objects of this class contain info about the data type T
  */
-@Include( {"detail/tListInfo.h", "<boost/type_traits/has_virtual_destructor.hpp>", "<boost/type_traits/remove_reference.hpp>", "CustomTypeInitialization.h", "StlContainerSuitable.h", "<cstring>"})
+@Include( {"detail/tListInfo.h", "<boost/type_traits/has_virtual_destructor.hpp>", "<boost/type_traits/remove_reference.hpp>", "CustomTypeInitialization.h", "StlContainerSuitable.h", "<cstring>", "sStaticFactory.h"})
 @IncludeClass(GenericObjectManager.class)
 @CppInclude("GenericObjectInstance.h")
 @RawTypeArgs
@@ -155,7 +155,7 @@ public class DataType<T> extends DataTypeBase {
             "    placement = operator _new(sizeof(T));",
             "}",
             "_memset(placement, 0, sizeof(T)); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
-            "return _new (placement) T();"
+            "return _sStaticFactory<T>::create(placement);"
         })
         public Object createInstance(int placement) {
             Object result = null;
@@ -195,7 +195,7 @@ public class DataType<T> extends DataTypeBase {
             "}",
             "char* obj_addr = ((char*)placement) + obj_offset;",
             "_memset(obj_addr, 0, sizeof(T)); // set memory to 0 so that memcmp on class T can be performed cleanly for certain types",
-            "T* data_new = _new (obj_addr) T();",
+            "T* data_new = _sStaticFactory<T>::create(obj_addr);",
             "return _new (placement) GenericObjectInstance<T>(data_new);"
         })
         public GenericObject createInstanceGeneric(int placement, int managerSize) {
