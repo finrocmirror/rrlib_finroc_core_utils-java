@@ -22,6 +22,7 @@
 package org.finroc.serialization;
 
 import org.finroc.jc.annotation.Const;
+import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.Ref;
 
 /**
@@ -29,6 +30,7 @@ import org.finroc.jc.annotation.Ref;
  *
  * Interface for data types that can be changed using transactions T.
  */
+@JavaOnly
 public interface GenericChangeable<T> {
 
     /**

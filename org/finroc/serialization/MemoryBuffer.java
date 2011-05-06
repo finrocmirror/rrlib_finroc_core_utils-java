@@ -66,9 +66,9 @@ import org.finroc.log.LogLevel;
     "    virtual void deleteOldBackend(FixedBuffer* b) { if (b != &buffer) { delete b; } }",
     "};"
 })
-@IncludeClass( {RRLibSerializableImpl.class, ConstSource.class, Sink.class, GenericChangeable.class})
+@IncludeClass( {RRLibSerializableImpl.class, ConstSource.class, Sink.class})
 @Include( {"rrlib/logging/definitions.h", "StlContainerSuitable.h"})
-@Superclass2( {"Serializable", "ConstSource", "Sink", "GenericChangeable<MemoryBuffer>", "boost::noncopyable", "StlSuitable"})
+@Superclass2( {"Serializable", "ConstSource", "Sink", "boost::noncopyable", "StlSuitable"})
 public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Copyable<MemoryBuffer>, GenericChangeable<MemoryBuffer> {
 
     /** Size of temporary array */
@@ -377,7 +377,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     }
 
     @Override
-    public void applyChange(MemoryBuffer t, long offset, long dummy) {
+    public void applyChange(@Const @Ref MemoryBuffer t, long offset, long dummy) {
         ensureCapacity((int)(t.getSize() + offset), true, getSize());
         backend.put((int)offset, t.backend, 0, t.getSize());
         @InCpp("size_t requiredSize = static_cast<size_t>(offset + t.getSize());")
