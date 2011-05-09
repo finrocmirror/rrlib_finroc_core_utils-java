@@ -63,7 +63,7 @@ import org.finroc.log.LogLevel;
  */
 @PassByValue
 @ForwardDecl( {GenericObjectManager.class, DataTypeAnnotation.class})
-@Include( {"<boost/type_traits/is_base_of.hpp>", "<boost/thread/recursive_mutex.hpp>", "<boost/thread/locks.hpp>", "rrlib/logging/definitions.h"})
+@Include( {"<boost/type_traits/is_base_of.hpp>", "<mutex>", "rrlib/logging/definitions.h"})
 @CppInclude( {"<cstring>", "sSerialization.h"})
 @HAppend( {"template <typename T>",
            "int DataTypeBase::AnnotationIndex<T>::index;"
@@ -273,7 +273,7 @@ public class DataTypeBase {
             }
 
             /*Cpp
-            ::boost::unique_lock<boost::recursive_mutex>(getMutex());
+            std::unique_lock<std::recursive_mutex>(getMutex());
             addType(info_);
             info_->init();
              */
@@ -486,8 +486,8 @@ public class DataTypeBase {
     }
 
     /*Cpp
-    static boost::recursive_mutex& getMutex() {
-        static boost::recursive_mutex mutex;
+    static std::recursive_mutex& getMutex() {
+        static std::recursive_mutex mutex;
         return mutex;
     }
      */
@@ -733,7 +733,7 @@ public class DataTypeBase {
      */
     @Inline
     public <T extends DataTypeAnnotation> void addAnnotation(@Managed T ann) {
-        //Cpp ::boost::unique_lock<boost::recursive_mutex>(getMutex());
+        //Cpp std::unique_lock<std::recursive_mutex>(getMutex());
         //Cpp static size_t lastAnnotationIndex = 0;
         if (info != null) {
 
