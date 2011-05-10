@@ -104,7 +104,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     */
 
     /** Committed buffers are buffered/copied (not forwarded directly), when smaller than 1/(2^n) of buffer capacity */
-    @Const protected final static double BUFFER_COPY_FRACTION = 0.25;
+    @Const protected /*TODO gcc >= 4.5: final*/ static double BUFFER_COPY_FRACTION = 0.25;
 
     /** Source that determines where buffers that are written to come from and how they are handled */
     @Ptr protected Sink sink = null;

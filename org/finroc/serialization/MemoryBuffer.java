@@ -78,7 +78,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     @Const @SizeT public final static int DEFAULT_SIZE = 8192;
 
     /** Default factor for buffer size increase */
-    @Const public final static float DEFAULT_RESIZE_FACTOR = 2;
+    @Const public final static int DEFAULT_RESIZE_FACTOR = 2;
 
     /** Wrapped memory buffer */
     @Ptr protected FixedBuffer backend;
