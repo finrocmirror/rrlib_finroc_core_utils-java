@@ -216,6 +216,19 @@ public class Serialization {
     }
 
     /**
+     * Serializes generic object to string
+     * (convenience function)
+     *
+     * @param cs Serializable
+     * @return String
+     */
+    public static @CppType("std::string") String serialize(@Const @Ref GenericObject go) {
+        StringOutputStream os = new StringOutputStream();
+        go.serialize(os);
+        return os.toString();
+    }
+
+    /**
      * Creates deep copy of serializable object
      *
      * @param src Object to be copied
