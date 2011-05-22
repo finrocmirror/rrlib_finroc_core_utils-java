@@ -138,8 +138,12 @@ public class Serialization {
             @Unsigned byte b = src.readByte();
             @Unsigned int b1 = b >>> 4;
             @Unsigned int b2 = b & 0xF;
-            os.append(TO_HEX[b1]);
-            os.append(TO_HEX[b2]);
+            try {
+                os.append(TO_HEX[b1]);
+                os.append(TO_HEX[b2]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

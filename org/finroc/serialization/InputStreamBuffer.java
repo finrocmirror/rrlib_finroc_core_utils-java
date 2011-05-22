@@ -43,6 +43,7 @@ import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.annotation.SizeT;
 import org.finroc.jc.annotation.Virtual;
+import org.finroc.jc.annotation.VoidPtr;
 
 /**
  * @author max
@@ -127,14 +128,17 @@ public class InputStreamBuffer implements Source, HasDestructor {
     protected @Ptr Factory factory = defaultFactory;
 
     /** Data type encoding */
-    enum TypeEncoding {
+    public enum TypeEncoding {
         LocalUids, // use local uids. fastest. Can, however, only be used with streams encoded by this runtime.
         Names, // use names. Can be decoded in any runtime that knows types.
-        SubClass // use method that subclass possibly provides
+        Custom // use custom type codec
     }
 
     /** Data type encoding that is used */
     protected TypeEncoding encoding;
+
+    /** Custom type encoder */
+    protected @SharedPtr TypeEncoder customEncoder;
 
     @JavaOnly
     public InputStreamBuffer() {
@@ -149,18 +153,41 @@ public class InputStreamBuffer implements Source, HasDestructor {
     @Init("sourceLock()")
     public InputStreamBuffer(@CppDefault("_eLocalUids") TypeEncoding encoding) {
         boundaryBuffer.buffer = boundaryBufferBackend;
+        this.encoding = encoding;
+    }
+
+    @Init("sourceLock()")
+    public InputStreamBuffer(@PassByValue @SharedPtr TypeEncoder encoder) {
+        boundaryBuffer.buffer = boundaryBufferBackend;
+        customEncoder = encoder;
+        encoding = TypeEncoding.Custom;
     }
 
     //Cpp template <typename T>
     @Init("sourceLock()") @Inline
     public InputStreamBuffer(@PassByValue @CppType("T") ConstSource source_, @CppDefault("_eLocalUids") TypeEncoding encoding) {
         boundaryBuffer.buffer = boundaryBufferBackend;
+        this.encoding = encoding;
 
         // JavaOnlyBlock
         reset(source_);
 
         //Cpp reset(source_);
     }
+
+    //Cpp template <typename T>
+    @Init("sourceLock()") @Inline
+    public InputStreamBuffer(@PassByValue @CppType("T") ConstSource source_, @PassByValue @SharedPtr TypeEncoder encoder) {
+        boundaryBuffer.buffer = boundaryBufferBackend;
+        customEncoder = encoder;
+        encoding = TypeEncoding.Custom;
+
+        // JavaOnlyBlock
+        reset(source_);
+
+        //Cpp reset(source_);
+    }
+
 
     /**
      * @param source Source that handles, where the data blocks come from etc.
@@ -169,11 +196,19 @@ public class InputStreamBuffer implements Source, HasDestructor {
     @Init("sourceLock()")
     public InputStreamBuffer(@OrgWrapper @SharedPtr Source source_) {
         boundaryBuffer.buffer = boundaryBufferBackend;
-
-        // JavaOnlyBlock
         reset(source_);
+    }
 
-        //Cpp reset(source_);
+    /**
+     * @param source Source that handles, where the data blocks come from etc.
+     */
+    @JavaOnly
+    @Init("sourceLock()")
+    public InputStreamBuffer(@OrgWrapper @SharedPtr Source source_, @SharedPtr TypeEncoder encoder) {
+        boundaryBuffer.buffer = boundaryBufferBackend;
+        customEncoder = encoder;
+        encoding = TypeEncoding.Custom;
+        reset(source_);
     }
 
     public void delete() {
@@ -902,21 +937,8 @@ public class InputStreamBuffer implements Source, HasDestructor {
         } else if (encoding == TypeEncoding.Names) {
             return DataTypeBase.findType(readString());
         } else {
-            return readTypeSpecialization();
+            return customEncoder.readType(this);
         }
-    }
-
-    /**
-     * May be overridden by subclass to realize custom type serialization
-     *
-     * @return Data type that was read
-     */
-    @Virtual
-    protected DataTypeBase readTypeSpecialization() {
-        //Cpp throw std::logic_error("This should not be called");
-
-        //JavaOnlyBlock
-        throw new RuntimeException("This should not be called");
     }
 
     /**
@@ -932,9 +954,35 @@ public class InputStreamBuffer implements Source, HasDestructor {
      *
      * It may be reset for more efficient buffer management.
      *
-     * @param factory Factory to use for creating objects.
+     * @param factory Factory to use for creating objects. (will not be deleted by this class)
      */
     public void setFactory(Factory factory) {
-        this.factory = factory;
+        this.factory = factory == null ? defaultFactory : factory;
+    }
+
+    /**
+     * Deserialize object with yet unknown type from stream
+     * (should have been written to stream with OutputStream.WriteObject() before; typeencoder should be of the same type)
+     *
+     * @param inInterThreadContainer Deserialize "cheap copy" data in interthread container?
+     * @param expectedType expected type (optional, may be null)
+     * @param factoryParameter Custom parameter for possibly user defined factory
+     * @return Buffer with read object (caller needs to take care of deleting it)
+     */
+    public GenericObject readObject(@Const @Ref @CppDefault("NULL") DataTypeBase expectedType, @VoidPtr @CppDefault("NULL") Object factoryParameter) {
+        //readSkipOffset();
+        DataTypeBase dt = readType();
+        if (dt == null) {
+            return null;
+        }
+
+        //JavaOnlyBlock
+        if (expectedType != null && (!dt.isConvertibleTo(expectedType))) {
+            dt = expectedType; // fix to cope with mca2 legacy blackboards
+        }
+
+        GenericObject buffer = factory.createGenericObject(dt, factoryParameter);
+        buffer.deserialize(this);
+        return buffer;
     }
 }

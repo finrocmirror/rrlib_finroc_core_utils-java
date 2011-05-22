@@ -54,7 +54,15 @@ import org.finroc.jc.annotation.SizeT;
     "			SafeConcurrentlyIterableListBase<T>(initialSize) {}",
     "",
     "   virtual ~SafeConcurrentlyIterableList() {",
-    "       SafeConcurrentlyIterableListBase<T>::clear();",
+    "       clearAndDelete();",
+    "   }",
+    "",
+    "   virtual void clearAndDelete() {",
+    "       ArrayWrapper<T>* iterable = this->getIterable();",
+    "       for (size_t i = 0, n = iterable->size(); i < n; i++) {",
+    "           GarbageCollector::deleteDeferred(iterable->get(i));",
+    "       }",
+    "       this->clear();",
     "   }",
     "",
     "protected:",
@@ -66,6 +74,33 @@ import org.finroc.jc.annotation.SizeT;
     "	virtual bool deleteElemsWithList() {",
     "		return _DELETE_ELEMS_WITH_LIST;",
     "	}",
+    "",
+    "};",
+    "",
+    "//RESIZEFACTOR: Factor by which list is enlarged, when backend is too small",
+    "//DELETEELEMSWITHLIST: Delete elements when List is deleted? (relevant for C++ only)",
+    "template <typename T, size_t _RESIZE_FACTOR>",
+    "class SafeConcurrentlyIterableList<T, _RESIZE_FACTOR, false> : public SafeConcurrentlyIterableListBase<T> {",
+    "",
+    "public:",
+    "   // initialSize: Initial size of first backend",
+    "   // resizeFactor: Dummy in C++ - retained for Java compatibility",
+    "   SafeConcurrentlyIterableList(size_t initialSize, size_t resizeFactor = -1) :",
+    "           SafeConcurrentlyIterableListBase<T>(initialSize) {}",
+    "",
+    "   virtual ~SafeConcurrentlyIterableList() {",
+    "       this->clear();",
+    "   }",
+    "",
+    "protected:",
+    "",
+    "   virtual size_t getResizeFactor() {",
+    "       return _RESIZE_FACTOR;",
+    "   }",
+    "",
+    "   virtual bool deleteElemsWithList() {",
+    "       return false;",
+    "   }",
     "",
     "};"
 })
@@ -114,7 +149,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
         @Ptr ArrayWrapper<T> backend = currentBackend; // acquire non-volatile pointer
         if (!appendToBack) {
             for (int i = firstFreeFromHere, n = backend.size(); i < n; i++) {
-                if (backend.get(i) == null) {
+                if (backend.get(i) == getNullElement()) {
                     backend.set(i, element);
                     firstFreeFromHere = i + 1;
                     return;
@@ -145,6 +180,14 @@ abstract class SafeConcurrentlyIterableListBase<T> {
             GarbageCollector::deleteDeferred(b);
         }
         */
+    }
+
+    /**
+     * @return Null/empty element (marks free slots in array)
+     */
+    @InCpp("return (T)NULL;")
+    @ConstMethod private T getNullElement() {
+        return (T)null;
     }
 
     /**
@@ -198,14 +241,14 @@ abstract class SafeConcurrentlyIterableListBase<T> {
                 }
                 */
 
-                iterable.set(i, null);
+                iterable.set(i, getNullElement());
                 firstFreeFromHere = Math.min(firstFreeFromHere, i);
 
                 // Shrink list when last elements are deleted
                 if (i == size() - 1) {
                     iterable.setSize(size() - 1);
 
-                    while (size() > 0 && iterable.get(size() - 1) == null) {
+                    while (size() > 0 && iterable.get(size() - 1) == getNullElement()) {
                         iterable.setSize(size() - 1);
                     }
                 }
@@ -229,7 +272,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
         @Ptr ArrayWrapper<T> iterable = getIterable();
         int count = 0;
         for (@SizeT int i = 0, n = iterable.size(); i < n; i++) {
-            if (iterable.get(i) != null) {
+            if (iterable.get(i) != getNullElement()) {
                 count++;
             }
         }
@@ -240,15 +283,6 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      * @return Clear list
      */
     public synchronized void clear() {
-        /*Cpp
-        if (deleteElemsWithList()) {
-            ArrayWrapper<T>* iterable = getIterable();
-            for (size_t i = 0, n = iterable->size(); i < n; i++) {
-                GarbageCollector::deleteDeferred(iterable->get(i));
-            }
-            //getIterable.clearAndDelete();
-        }
-        */
         getIterable().clear();
         firstFreeFromHere = 0;
     }
@@ -259,7 +293,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     public boolean isEmpty() {
         @Ptr ArrayWrapper<T> iterable = getIterable();
         for (@SizeT int i = 0, n = iterable.size(); i < n; i++) {
-            if (iterable.get(i) != null) {
+            if (iterable.get(i) != getNullElement()) {
                 return false;
             }
         }

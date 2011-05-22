@@ -22,10 +22,12 @@ package org.finroc.serialization;
 
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.InCpp;
+import org.finroc.jc.annotation.IncludeClass;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
 import org.finroc.jc.annotation.NoCpp;
 import org.finroc.jc.annotation.Ref;
+import org.finroc.jc.annotation.VoidPtr;
 
 /**
  * @author max
@@ -34,6 +36,7 @@ import org.finroc.jc.annotation.Ref;
  * Simply allocates and deletes objects as needed on Heap.
  */
 @Inline @NoCpp
+@IncludeClass(GenericObjectManager.class)
 public class DefaultFactory implements Factory {
 
     @JavaOnly
@@ -43,5 +46,11 @@ public class DefaultFactory implements Factory {
     @Override
     public Object createBuffer(@Const @Ref DataTypeBase dt) {
         return dt.createInstance();
+    }
+
+    @Override
+    @InCpp("return dt.createInstanceGeneric<>();")
+    public GenericObject createGenericObject(DataTypeBase dt, @VoidPtr Object customParameter) {
+        return dt.createInstanceGeneric(null);
     }
 }

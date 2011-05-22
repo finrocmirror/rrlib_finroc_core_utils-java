@@ -39,7 +39,6 @@ import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.Ref;
 import org.finroc.jc.annotation.SharedPtr;
 import org.finroc.jc.annotation.SizeT;
-import org.finroc.jc.annotation.Virtual;
 
 /**
  * @author Max Reichardt
@@ -104,38 +103,41 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     */
 
     /** Committed buffers are buffered/copied (not forwarded directly), when smaller than 1/(2^n) of buffer capacity */
-    @Const protected /*TODO gcc >= 4.5: final*/ static double BUFFER_COPY_FRACTION = 0.25;
+    @Const private /*TODO gcc >= 4.5: final*/ static double BUFFER_COPY_FRACTION = 0.25;
 
     /** Source that determines where buffers that are written to come from and how they are handled */
-    @Ptr protected Sink sink = null;
+    @Ptr private Sink sink = null;
 
     /** Immediately flush buffer after printing? */
-    @Const protected final boolean immediateFlush = false;
+    @Const private final boolean immediateFlush = false;
 
     /** Has stream been closed? */
-    protected boolean closed = true;
+    private boolean closed = true;
 
     /** Buffer that is currently written to - is managed by sink */
-    @PassByValue protected BufferInfo buffer = new BufferInfo();
+    @PassByValue private BufferInfo buffer = new BufferInfo();
 
     /** -1 by default - buffer position when a skip offset placeholder has been set/written */
-    protected int curSkipOffsetPlaceholder = -1;
+    private int curSkipOffsetPlaceholder = -1;
 
     /** hole Buffers are only buffered/copied, when they are smaller than this */
-    protected @SizeT int bufferCopyFraction;
+    private @SizeT int bufferCopyFraction;
 
     /** Is direct write support available with this sink? */
-    protected boolean directWriteSupport = false;
+    private boolean directWriteSupport = false;
 
     /** Data type encoding */
-    enum TypeEncoding {
+    public enum TypeEncoding {
         LocalUids, // use local uids. fastest. Can, however, only be decoded in this runtime.
         Names, // use names. Can be decoded in any runtime that knows types.
-        SubClass // use method that subclass possibly provides
+        Custom // use custom type codec
     }
 
     /** Data type encoding that is used */
-    protected TypeEncoding encoding;
+    private TypeEncoding encoding;
+
+    /** Custom type encoder */
+    private @SharedPtr TypeEncoder customEncoder;
 
     @JavaOnly
     public OutputStreamBuffer() {
@@ -154,12 +156,31 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         this.encoding = encoding;
     }
 
+    public OutputStreamBuffer(@PassByValue @SharedPtr TypeEncoder encoder) {
+        customEncoder = encoder;
+        encoding = TypeEncoding.Custom;
+    }
+
     /**
      * @param sink_ Sink to write to
      * @param encoding Data type encoding that is used
      */
     public OutputStreamBuffer(@OrgWrapper @PassByValue @SharedPtr Sink sink_, @CppDefault("_eLocalUids") TypeEncoding encoding) {
         this.encoding = encoding;
+
+        //JavaOnlyBlock
+        reset(sink_);
+
+        //Cpp reset(sink_);
+    }
+
+    /**
+     * @param sink_ Sink to write to
+     * @param encoder Custom type encoder
+     */
+    public OutputStreamBuffer(@OrgWrapper @PassByValue @SharedPtr Sink sink_, @PassByValue @SharedPtr TypeEncoder encoder) {
+        customEncoder = encoder;
+        encoding = TypeEncoding.Custom;
 
         //JavaOnlyBlock
         reset(sink_);
@@ -668,21 +689,25 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         } else if (encoding == TypeEncoding.Names) {
             writeString(type.getName());
         } else {
-            writeTypeSpecialization(type);
+            customEncoder.writeType(this, type);
         }
     }
 
     /**
-     * May be overridden by subclass to realize custom type serialization
+     * Serialize Object of arbitrary type to stream
+     * (including type information)
      *
-     * @param type Data type to write/reference
+     * @param to Object to write (may be null)
      */
-    @Virtual
-    protected void writeTypeSpecialization(@Const @Ref DataTypeBase type) {
+    public void writeObject(@Const GenericObject to) {
+        if (to == null) {
+            writeType(null);
+            return;
+        }
 
-        //JavaOnlyBlock
-        throw new RuntimeException("This should not be called");
-
-        //Cpp throw std::logic_error("This should not be called");
+        //writeSkipOffsetPlaceholder();
+        writeType(to.getType());
+        to.serialize(this);
+        //skipTargetHere();
     }
 }

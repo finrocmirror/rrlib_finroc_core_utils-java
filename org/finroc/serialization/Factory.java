@@ -23,6 +23,7 @@ package org.finroc.serialization;
 import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.SharedPtr;
+import org.finroc.jc.annotation.VoidPtr;
 
 /**
  * @author max
@@ -47,9 +48,21 @@ public interface Factory {
 
     /**
      * Create buffer
+     * (used to fill vectors)
      *
      * @param dt Data type
      * @return Created buffer
      */
     public @SharedPtr @CppType("void") Object createBuffer(DataTypeBase dt);
+
+    /**
+     * Create generic object
+     * (used in writeObject() / readObject() of stream classes)
+     *
+     * @param dt Data type
+     * @param factoryParameter Custom factory parameter
+     * @return Created buffer
+     */
+    public @Ptr GenericObject createGenericObject(DataTypeBase dt, @VoidPtr Object factoryParameter);
+
 }

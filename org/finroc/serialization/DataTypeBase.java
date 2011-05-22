@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.finroc.jc.AtomicInt;
+import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.AtFront;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.ConstMethod;
@@ -33,6 +34,7 @@ import org.finroc.jc.annotation.CppType;
 import org.finroc.jc.annotation.ForwardDecl;
 import org.finroc.jc.annotation.HAppend;
 import org.finroc.jc.annotation.InCpp;
+import org.finroc.jc.annotation.InCppFile;
 import org.finroc.jc.annotation.Include;
 import org.finroc.jc.annotation.Inline;
 import org.finroc.jc.annotation.JavaOnly;
@@ -64,7 +66,7 @@ import org.finroc.log.LogLevel;
 @PassByValue
 @ForwardDecl( {GenericObjectManager.class, DataTypeAnnotation.class})
 @Include( {"<boost/type_traits/is_base_of.hpp>", "<mutex>", "rrlib/logging/definitions.h"})
-@CppInclude( {"<cstring>", "sSerialization.h"})
+@CppInclude( {"<cstring>", "sSerialization.h", "DataTypeAnnotation.h"})
 @HAppend( {"template <typename T>",
            "int DataTypeBase::AnnotationIndex<T>::index;"
           })
@@ -91,7 +93,7 @@ public class DataTypeBase {
 
     /** Data type info */
     @AtFront @Ptr
-    static public class DataTypeInfoRaw {
+    static public class DataTypeInfoRaw implements HasDestructor {
 
         /** Type of data type */
         public Type type;
@@ -233,6 +235,15 @@ public class DataTypeBase {
          * @param obj Object to deserialize
          */
         @ConstMethod public void deserialize(@Ref InputStreamBuffer is, @VoidPtr Object obj) {}
+
+        @Override @InCppFile
+        public void delete() {
+            /*Cpp
+            for (size_t i = 0; i < MAX_ANNOTATIONS; i++) {
+                delete annotations[i];
+            }
+             */
+        }
     }
 
 //    /** Maximum number of types */
@@ -627,7 +638,9 @@ public class DataTypeBase {
         result.jmanager = manager;
 
         //JavaOnlyBlock
-        manager.setObject(result);
+        if (manager != null) {
+            manager.setObject(result);
+        }
 
         return result;
     }

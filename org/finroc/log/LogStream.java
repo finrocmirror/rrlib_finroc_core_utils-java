@@ -54,6 +54,12 @@ public class LogStream {
     }
 
     @JavaOnly @PostProcess("org.finroc.j2c.LogStream")
+    public LogStream append(int s) {
+        buffer.append(s);
+        return this;
+    }
+
+    @JavaOnly @PostProcess("org.finroc.j2c.LogStream")
     public LogStream appendln(String s) {
         buffer.append(s);
         buffer.append('\n');
