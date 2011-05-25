@@ -136,14 +136,14 @@ public class Serialization {
     public static void convertBinaryToHexString(@Ref InputStreamBuffer src, @Ref StringOutputStream os) {
         while (src.moreDataAvailable()) {
             @Unsigned byte b = src.readByte();
-            @Unsigned int b1 = b >>> 4;
-            @Unsigned int b2 = b & 0xF;
-            try {
-                os.append(TO_HEX[b1]);
-                os.append(TO_HEX[b2]);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            @InCpp("uint bi = b;")
+            @Unsigned int bi = b & 0xFF;
+            @Unsigned int b1 = bi >>> 4;
+            @Unsigned int b2 = bi & 0xF;
+            assert(b1 >= 0 && b1 < 16);
+            assert(b2 >= 0 && b2 < 16);
+            os.append(TO_HEX[b1]);
+            os.append(TO_HEX[b2]);
         }
     }
 
