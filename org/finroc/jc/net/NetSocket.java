@@ -224,7 +224,19 @@ public class NetSocket {
     }
 
     virtual bool moreDataAvailable(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
+        return moreDataAvailable();
+    }
+
+    bool moreDataAvailable() {
         return wrapped._available() > 0;
+    }
+
+    bool waitUntilMoreDataAvailable(int64_t waitFor = 2000, int64_t queryEvery = 100) {
+        int64_t waitUntil = Time::getCoarse() + waitFor;
+        while((!moreDataAvailable()) && Time::getCoarse() < waitUntil) {
+            Thread::sleep(100);
+        }
+        return moreDataAvailable();
     }
 
     virtual void read(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer, size_t len = 0) {

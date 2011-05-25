@@ -184,7 +184,7 @@ public class TCPConnectionHandler extends Thread {
                 }
             }
         } catch (std::exception& e) {
-            std::cerr << e._what() << std::endl;
+            _FINROC_LOG_STREAM(rrlib::logging::eLL_ERROR, logDomain, "Fatal socket error: ", e);
         }
         acceptorPtr = NULL;
         acceptor_._close();
@@ -225,12 +225,28 @@ public class TCPConnectionHandler extends Thread {
         byte first = 0;
 
         //JavaOnlyBlock
+        s.getSocket().setSoTimeout(2000);
         first = (byte)s.getSocket().getInputStream().read();
+        s.getSocket().setSoTimeout(0);
 
         /*Cpp
-        rrlib::serialization::FixedBuffer tmp(1);
-        s->readFully(tmp, 0, 1);
-        first = tmp.getByte(0);
+        try {
+            rrlib::serialization::FixedBuffer tmp(1);
+            if (!s->waitUntilMoreDataAvailable(1000, 100)) {
+                s->close();
+                return;
+            } else {
+                s->readFully(tmp, 0, 1);
+                first = tmp.getByte(0);
+            }
+        } catch (const std::exception& e) {
+            _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, "Incoming connection failed. Could not read any bytes. ", e);
+            try {
+                s->close();
+            } catch (const std::exception& e) {
+                _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, "Error closing socket after exception", e);
+            }
+        }
          */
 
         // look for server that handles connection
