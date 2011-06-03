@@ -365,7 +365,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     }
 
     /*Cpp
-    inline void write(void* address, size_t size) {
+    inline void write(const void* address, size_t size) {
         FixedBuffer fb((char*)address, size);
         write(fb);
     }

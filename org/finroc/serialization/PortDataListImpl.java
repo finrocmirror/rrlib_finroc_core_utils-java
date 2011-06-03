@@ -43,6 +43,11 @@ public class PortDataListImpl<T extends RRLibSerializable> extends RRLibSerializ
         elementType = type;
     }
 
+    /** for cloner implementation */
+    @Deprecated
+    public PortDataListImpl() {
+    }
+
     @Override
     public void serialize(OutputStreamBuffer os) {
         os.writeInt(wrapped.size());
@@ -103,6 +108,9 @@ public class PortDataListImpl<T extends RRLibSerializable> extends RRLibSerializ
 
     @Override
     public void copyFrom(PortDataList<T> source) {
+        if (elementType == null) {
+            elementType = ((PortDataListImpl<T>)source).elementType;
+        }
         Serialization.deepCopy(source, this, null);
     }
 

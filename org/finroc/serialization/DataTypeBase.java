@@ -812,4 +812,9 @@ public class DataTypeBase {
             //Cpp throw std::runtime_error("Null pointer !?");
         }
     }
+
+    @JavaOnly
+    public String toString() {
+        return getName();
+    }
 }
