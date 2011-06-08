@@ -22,6 +22,8 @@ package org.finroc.xml;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -31,8 +33,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.finroc.jc.annotation.JavaOnly;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 /**
  * This class wraps creation and accessing the DOM tree of an XML document.
@@ -106,6 +110,29 @@ public class XMLDocument {
         this(fileName, true);
     }
 
+    /** The ctor of tXMLDocument from a InputSource
+     *
+     * This ctor reads and parses XML content given in a InputSource into a XML DOM
+     * representation.
+     * If needed, the XML document is also validated using an included
+     * DTD specification.
+     *
+     * @exception tXML2WrapperException is thrown if the memory buffer could not be parsed
+     *
+     * @param input       InputSource
+     * @param validate    Whether the validation should be processed or not
+     */
+    public XMLDocument(InputSource input, boolean validate) throws XML2WrapperException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder dbuilder = factory.newDocumentBuilder();
+            document = dbuilder.parse(input);
+            rootNode = new XMLNode(document, document.getDocumentElement());
+        } catch (Exception e) {
+            throw new XML2WrapperException(e);
+        }
+    }
+
     /**
      * Get the root node of the DOM tree stored for this document
      *
@@ -151,11 +178,9 @@ public class XMLDocument {
      * @param compression   Compression level [0-9] where 0 is "no compression"
      */
     public void writeToFile(String fileName, int compression) throws Exception {
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer();
-        DOMSource source = new DOMSource(document);
-        StreamResult result = new StreamResult(new BufferedOutputStream(new FileOutputStream(fileName)));
-        transformer.transform(source, result);
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(fileName));
+        writeToStream(new StreamResult(os), compression);
+        os.close();
     }
 
     /**
@@ -170,4 +195,26 @@ public class XMLDocument {
         writeToFile(fileName, 0);
     }
 
+    /**
+     * Write the XML document to a stream
+     *
+     * @param result            StreamResult
+     * @param compression   Compression level [0-9] where 0 is "no compression"
+     */
+    @JavaOnly
+    public void writeToStream(StreamResult result, int compression) throws Exception {
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer();
+        DOMSource source = new DOMSource(document);
+        transformer.transform(source, result);
+    }
+
+    /**
+     * @return XML dump of XML file (as written to file)
+     */
+    public String getXMLDump() throws Exception {
+        StringWriter sw = new StringWriter();
+        writeToStream(new StreamResult(sw), 0);
+        return sw.toString();
+    }
 };
