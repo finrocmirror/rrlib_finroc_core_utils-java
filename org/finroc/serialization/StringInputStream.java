@@ -270,8 +270,8 @@ public class StringInputStream {
     /**
      * @return next character in stream. -1 when end of stream is reached
      */
-    @InCpp( {"char result; wrapped >> result;",
-             "if (result == _EOF) { return -1; }",
+    @InCpp( {"char result; wrapped._get(result);",
+             "if (wrapped._eof()) { return -1; }",
              "return result;"
             })
     public int read() {
@@ -287,7 +287,7 @@ public class StringInputStream {
      * @return next character in stream (without advancing in stream). -1 when end of stream is reached
      */
     @InCpp( {"char result = wrapped._peek();",
-             "if (result == _EOF) { return -1; }",
+             "if (wrapped._eof()) { return -1; }",
              "return result;"
             })
     public int peek() {
