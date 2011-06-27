@@ -286,10 +286,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     public void writeString(@CppType("std::string") @Const @Ref String s, boolean terminate) {
 
         // JavaOnlyBlock
-        int len = s.length();
-        for (int i = 0; i < len; i++) {
-            writeByte((byte)s.charAt(i));
-        }
+        write(s.getBytes());
         if (terminate) {
             writeByte(0);
         }

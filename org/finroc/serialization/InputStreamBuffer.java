@@ -20,6 +20,9 @@
  */
 package org.finroc.serialization;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
 import org.finroc.jc.HasDestructor;
 import org.finroc.jc.annotation.Const;
 import org.finroc.jc.annotation.CppDefault;
@@ -139,6 +142,10 @@ public class InputStreamBuffer implements Source, HasDestructor {
 
     /** Custom type encoder */
     protected @SharedPtr TypeEncoder customEncoder;
+
+    /** ByteArrayInputStream helper for reading strings in Java */
+    @JavaOnly
+    protected ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     @JavaOnly
     public InputStreamBuffer() {
@@ -380,13 +387,25 @@ public class InputStreamBuffer implements Source, HasDestructor {
      */
     @Inline
     public <T extends StringBuilder> void readStringImpl(@Ref T sb) {
+
+        //JavaOnlyBlock
+        baos.reset();
+
         while (true) {
             byte b = readByte();
             if (b == 0) {
                 break;
             }
-            sb.append((char)b);
+
+            //JavaOnlyBlock
+            baos.write(b);
+
+            //Cpp sb.append((char)b);
         }
+
+        //JavaOnlyBlock
+        sb.append(baos.toString());
+
     }
 
     /**
