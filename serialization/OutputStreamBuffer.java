@@ -349,8 +349,8 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     public void write(@Const @Ref byte[] b, @SizeT int off, @SizeT int len) {
         while (len > 0) {
             int write = Math.min(len, remaining());
-            buffer.buffer.put(buffer.position, b, off, len);
-            buffer.position += len;
+            buffer.buffer.put(buffer.position, b, off, write);
+            buffer.position += write;
             len -= write;
             off += write;
             assert(len >= 0);

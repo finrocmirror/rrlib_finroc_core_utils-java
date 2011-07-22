@@ -20,7 +20,6 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
