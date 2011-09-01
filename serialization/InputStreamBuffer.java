@@ -44,6 +44,7 @@ import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
 import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
+import org.rrlib.finroc_core_utils.jc.annotation.SkipArgs;
 import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
 
@@ -751,6 +752,25 @@ public class InputStreamBuffer implements Source, HasDestructor {
         int i = curBuffer.buffer.getUnsignedShort(curBuffer.position);
         curBuffer.position += 2;
         return i;
+    }
+
+    /**
+     * @return Enum value
+     */
+    @SuppressWarnings( { "rawtypes", "unchecked" })
+    @SkipArgs("1")
+    public <E extends Enum> E readEnum(Class<E> c) {
+        Object[] strings = c.getEnumConstants();
+        if (strings.length == 0) {
+            return (E) strings[readInt()];
+        } else if (strings.length <= 0x100) {
+            return (E) strings[readByte()];
+        } else if (strings.length <= 0x1000) {
+            return (E) strings[readShort()];
+        } else {
+            assert(strings.length < 0x7FFFFFFF) : "What?";
+            return (E) strings[readInt()];
+        }
     }
 
     /**

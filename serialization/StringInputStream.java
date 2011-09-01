@@ -36,6 +36,10 @@ import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
 import org.rrlib.finroc_core_utils.jc.annotation.PostInclude;
 import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
+import org.rrlib.finroc_core_utils.jc.annotation.SkipArgs;
+import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
+import org.rrlib.finroc_core_utils.log.LogDomain;
+import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
  * @author max
@@ -80,6 +84,10 @@ public class StringInputStream {
     /** Map with flags of all 256 UTF Characters */
     @InCpp("static int8_t charMap[256];")
     private static byte[] charMap = new byte[256];
+
+    /** Log domain for this class */
+    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"serialization\");")
+    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("serialization");
 
     static {
         initCharMap();
@@ -310,5 +318,43 @@ public class StringInputStream {
             wrapped.reset();
         } catch (IOException e) {
         }
+    }
+
+    public String getLogDescription() {
+        return "StringInputStream()";
+    }
+
+    /**
+     * @return Enum value
+     */
+    @SuppressWarnings( { "rawtypes", "unchecked" })
+    @SkipArgs("1")
+    public <E extends Enum> E readEnum(Class<E> eclass) {
+        // parse input
+        String enumString = readUntil("(", 0, true);
+        int c1 = read();
+        String numString = readUntil(")", 0, true);
+        int c2 = read();
+        if (c1 != '(' || c2 != ')') {
+            throw new RuntimeException("Did not read expected brackets");
+        }
+
+        // deal with input
+        Object[] constants = eclass.getEnumConstants();
+        if (enumString.length() > 0) {
+            for (int i = 0; i < constants.length; i++) {
+                if (enumString.equals(constants[i].toString())) {
+                    return (E) constants[i];
+                }
+            }
+        }
+
+        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Could not find enum constant for string '" + enumString + "'. Trying number '" + numString + "'");
+        int n = Integer.parseInt(numString);
+        if (n >= constants.length) {
+            logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Number " + n + " out of range for enum (" + constants.length + ")");
+            throw new RuntimeException("Number out of range");
+        }
+        return (E) constants[n];
     }
 }
