@@ -396,7 +396,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
             buffer.buffer.put(buffer.position, bb, off, len);
             buffer.position += len;
         } else {
-            if (directWriteSupport) {
+            if (directWriteSupport && curSkipOffsetPlaceholder < 0) {
                 commitData(-1);
                 sink.directWrite(this, bb, off, len);
             } else {

@@ -33,7 +33,7 @@ import org.rrlib.finroc_core_utils.serialization.Sink;
 /**
  * @author max
  *
- * A with ordinary stream buffers is that skip offsets often cannot be written
+ * A problem with ordinary stream buffers is that skip offsets often cannot be written
  * when the data in between is very large.
  * In this case, this class can be used as an intermediate buffer.
  * It will grow until data is flushed
