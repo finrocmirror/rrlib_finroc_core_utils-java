@@ -151,7 +151,7 @@ public class StringOutputStream {
 
     @JavaOnly
     public StringBuilder append(Enum<?> d) {
-        return wrapped.append(d.toString()).append(" (").append(d.ordinal()).append(")");
+        return wrapped.append(EnumValue.doNaturalFormatting(d.toString())).append(" (").append(d.ordinal()).append(")");
     }
 
     @NonVirtual @InCpp("return wrapped._str();") @CppType("std::string")

@@ -148,7 +148,7 @@ public class DataType<T> extends DataTypeBase {
         }
         */
 
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings( { "rawtypes", "unchecked" })
         @Override
         @InCpp( {
             "if (placement == NULL) {",
@@ -164,7 +164,9 @@ public class DataType<T> extends DataTypeBase {
             }
 
             try {
-                if (!(javaClass.isInterface() || Modifier.isAbstract(javaClass.getModifiers()))) {
+                if (javaClass.isEnum()) {
+                    return new EnumValue((Class <? extends Enum<? >>)javaClass);
+                } else if (!(javaClass.isInterface() || Modifier.isAbstract(javaClass.getModifiers()))) {
                     result = javaClass.newInstance();
                 } else { // whoops we have an interface - look for inner class that implements interface
                     for (Class<?> cl : javaClass.getDeclaredClasses()) {

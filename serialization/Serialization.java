@@ -232,6 +232,20 @@ public class Serialization {
     }
 
     /**
+     * Serializes enum constant to string
+     * (convenience function)
+     *
+     * @param e Enum constant
+     * @return String
+     */
+    @JavaOnly
+    public static String serialize(Enum<?> e) {
+        StringOutputStream os = new StringOutputStream();
+        os.append(e);
+        return os.toString();
+    }
+
+    /**
      * Creates deep copy of serializable object
      *
      * @param src Object to be copied
