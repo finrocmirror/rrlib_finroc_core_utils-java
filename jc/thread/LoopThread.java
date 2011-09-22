@@ -143,9 +143,15 @@ public abstract class LoopThread extends Thread {
     public void waitFor(long waitFor) {
         assert getId() == ThreadUtil.getCurrentThreadId();
         try {
-            waiting = true;
-            Thread.sleep(waitFor);
-            waiting = false;
+            if (waitFor <= 100) {
+                Thread.sleep(waitFor);
+            } else {
+                synchronized (this) {
+                    waiting = true;
+                    wait(waitFor);
+                    waiting = false;
+                }
+            }
         } catch (InterruptedException e) {
             //System.out.println("wait for " + toString() + " Interrupted");
             logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Thread interrupted waiting for next loop");
@@ -263,8 +269,7 @@ public abstract class LoopThread extends Thread {
     }
 
     /**
-     * @return Is Thread currently waiting?
-     * More precisely: Is thread currently waiting or executing uncritical code in waitFor-method?
+     * @return Is Thread currently waiting? (for more than 100ms on object's condition variable)
      */
     public boolean isWaiting() {
         return waiting;
