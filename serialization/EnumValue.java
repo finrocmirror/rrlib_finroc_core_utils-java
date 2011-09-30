@@ -21,7 +21,6 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.finroc.core.portdatabase.CCType;
 import org.rrlib.finroc_core_utils.jc.annotation.Const;
 import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
 import org.rrlib.finroc_core_utils.jc.annotation.HAppend;
@@ -41,7 +40,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
  * (In port-classes it's probably better to wrap port classes)
  */
 @JavaOnly
-@Superclass( {RRLibSerializable.class, CCType.class})
+@Superclass( {RRLibSerializable.class })
 @PostInclude("rrlib/serialization/DataType.h")
 @HAppend( {"extern template class ::rrlib::serialization::DataType<finroc::core::EnumValue>;"})
 public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumValue> {
