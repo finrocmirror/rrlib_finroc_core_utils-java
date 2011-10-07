@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -204,7 +205,9 @@ public class XMLDocument {
     @JavaOnly
     public void writeToStream(StreamResult result, int compression) throws Exception {
         TransformerFactory factory = TransformerFactory.newInstance();
+        factory.setAttribute("indent-number", 2);
         Transformer transformer = factory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         DOMSource source = new DOMSource(document);
         transformer.transform(source, result);
     }

@@ -246,6 +246,22 @@ public class Serialization {
     }
 
     /**
+     * Deserializes enum constant from string
+     * (convenience function)
+     *
+     * @param s String to deserialize from
+     * @param eclass Enum class that enum belongs to
+     * @return Enum constant
+     */
+    @JavaOnly
+    @SuppressWarnings("rawtypes")
+    public static <E extends Enum> E deserialize(String s, Class<E> eclass) {
+        StringInputStream os = new StringInputStream(s);
+        return os.readEnum(eclass);
+    }
+
+
+    /**
      * Creates deep copy of serializable object
      *
      * @param src Object to be copied
