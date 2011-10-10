@@ -331,25 +331,33 @@ public class StringInputStream {
     @SkipArgs("1")
     public <E extends Enum> E readEnum(Class<E> eclass) {
         // parse input
-        String enumString = readUntil("(", 0, true);
+        String enumString = readWhile("", DIGIT | LETTER | WHITESPACE, true).trim();
         int c1 = read();
-        String numString = readUntil(")", 0, true);
-        int c2 = read();
-        if (c1 != '(' || c2 != ')') {
-            throw new RuntimeException("Did not read expected brackets");
+        String numString = "";
+        if (c1 == '(') {
+            numString = readUntil(")", 0, true).trim();
+            int c2 = read();
+            if (c2 != ')') {
+                throw new RuntimeException("Did not read expected bracket");
+            }
         }
 
         // deal with input
         Object[] constants = eclass.getEnumConstants();
         if (enumString.length() > 0) {
             for (int i = 0; i < constants.length; i++) {
-                if (enumString.equals(constants[i].toString())) {
+                if (enumString.equalsIgnoreCase(constants[i].toString())) {
                     return (E) constants[i];
                 }
             }
         }
 
-        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Could not find enum constant for string '" + enumString + "'. Trying number '" + numString + "'");
+        if (enumString.length() > 0) {
+            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Could not find enum constant for string '" + enumString + "'. Trying number '" + numString + "'");
+        }
+        if (numString.length() == 0) {
+            throw new RuntimeException("No Number String specified");
+        }
         int n = Integer.parseInt(numString);
         if (n >= constants.length) {
             logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Number " + n + " out of range for enum (" + constants.length + ")");

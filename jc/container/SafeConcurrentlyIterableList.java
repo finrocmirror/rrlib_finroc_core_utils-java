@@ -144,15 +144,16 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      *
      * @param element element
      * @param appendToBack Append new element to back O(1)? (or rather search for hole => O(n), but possibly smaller list and faster iteration)
+     * @return Array index at which element was inserted
      */
-    public synchronized void add(@Const T element, boolean appendToBack) {
+    public synchronized @SizeT int add(@Const T element, boolean appendToBack) {
         @Ptr ArrayWrapper<T> backend = currentBackend; // acquire non-volatile pointer
         if (!appendToBack) {
             for (int i = firstFreeFromHere, n = backend.size(); i < n; i++) {
                 if (backend.get(i) == getNullElement()) {
                     backend.set(i, element);
                     firstFreeFromHere = i + 1;
-                    return;
+                    return i;
                 }
             }
             firstFreeFromHere = backend.size() + 1;
@@ -171,6 +172,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
                 deleteBackend(old);
             }
         }
+        return currentBackend.size() - 1;
     }
 
     @InCppFile
@@ -251,6 +253,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
                     while (size() > 0 && iterable.get(size() - 1) == getNullElement()) {
                         iterable.setSize(size() - 1);
                     }
+                    firstFreeFromHere = Math.min(firstFreeFromHere, size());
                 }
 
                 break;

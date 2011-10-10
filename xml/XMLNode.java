@@ -491,6 +491,7 @@ public class XMLNode {
                 if (nextNode.getNodeType() == Node.ELEMENT_NODE) {
                     return new XMLNode(doc, (Element)nextNode);
                 }
+                nextNode = nextNode.getNextSibling();
             }
             return null;
         }
