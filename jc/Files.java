@@ -46,17 +46,25 @@ public class Files {
     /** Paths in which to search for finroc files */
     private static ArrayList<String> pathsToCheck = new ArrayList<String>();
 
+    /** $FINROC_PROJECT_HOME path if it exists - otherwise "" */
+    private static String projectHome;
+
+    /** Current working directory absolute path */
+    private static String cwd;
+
     static {
         String finrocHome = System.getenv("FINROC_HOME");
-        String projectHome = System.getenv("FINROC_PROJECT_HOME");
-        pathsToCheck.add(new File(".").getAbsolutePath() + "/");
+        projectHome = System.getenv("FINROC_PROJECT_HOME");
         if (projectHome != null) {
-            pathsToCheck.add(projectHome + "/");
-            pathsToCheck.add(projectHome + "/sources/java/");
+            projectHome += "/";
+            pathsToCheck.add(projectHome);
         }
         if (finrocHome != null) {
             pathsToCheck.add(finrocHome + "/");
+            pathsToCheck.add(finrocHome + "/sources/java/");
         }
+        cwd = new File(".").getAbsolutePath() + "/";
+        pathsToCheck.add(cwd);
     }
 
     /**
@@ -71,9 +79,19 @@ public class Files {
     }
 
     /**
+     * Does file with specified name exist in finroc repository?
+     *
+     * @param rawFilename Raw file name
+     * @return Answer (true, when getFinrocFile(rawFilename).length() > 0 - but possibly more efficient)
+     */
+    public static boolean finrocFileExists(String rawFilename) {
+        return getFinrocFile(rawFilename).length() != 0;
+    }
+
+    /**
      * Lookup file in finroc repository.
      *
-     * Searches in current path, $FINROC_PROJECT_HOME, $FINROC_HOME, $FINROC_HOME/sources/java, system installation (in this order).
+     * Searches in $FINROC_PROJECT_HOME, $FINROC_HOME, $FINROC_HOME/sources/java, current path, system installation (in this order).
      *
      * @param rawFilename Raw file name
      * @return Filename to open (can possibly be temp file somewhere). "" if no file was found.
@@ -91,7 +109,7 @@ public class Files {
      * Open XML document in finroc repository.
      * (when dealing with archives, this can be more efficient than getFinrocFile which might create a temp file)
      *
-     * Searches in current path, $FINROC_PROJECT_HOME, $FINROC_HOME, $FINROC_HOME/sources/java, system installation (in this order).
+     * Searches in $FINROC_PROJECT_HOME, $FINROC_HOME, $FINROC_HOME/sources/java, current path, system installation (in this order).
      *
      * @param rawFilename Raw file name.
      * @param validate Whether the validation should be processed or not
@@ -102,6 +120,33 @@ public class Files {
         if (file.length() == 0) {
             throw new Exception("file not found");
         }
-        return new XMLDocument(file);
+        return new XMLDocument(file, validate);
+    }
+
+    /**
+     * Determine where to save file to.
+     * If a suitable file already exists, it is returned (and typically overwritten).
+     * Otherwise the most suitable location is returned (paths should alredy exist).
+     * Locations are considered in this order: $FINROC_PROJECT_HOME, $FINROC_HOME, $FINROC_HOME/sources/java, current path.
+     * If rawFilename has no path, either $FINROC_PROJECT_HOME is returned if set - otherwise the current path.
+     *
+     * @param rawFilename Raw file name
+     * @return File to save to. "" if no location seems suitable
+     */
+    public static String getFinrocFileToSaveTo(String rawFilename) {
+        String file = getFinrocFile(rawFilename);
+        if (file.length() > 0) {
+            return file;
+        }
+        if (!rawFilename.contains("/")) {
+            return projectHome != null ? (projectHome + rawFilename) : (cwd + rawFilename);
+        }
+        String rawpath = rawFilename.substring(0, rawFilename.lastIndexOf("/"));
+        for (String path : pathsToCheck) {
+            if (exists(path + rawpath) && new File(path + rawpath).isDirectory()) {
+                return path + rawFilename;
+            }
+        }
+        return "";
     }
 }
