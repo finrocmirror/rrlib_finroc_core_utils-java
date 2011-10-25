@@ -97,13 +97,18 @@ public abstract class GenericObject extends TypedObjectImpl {
      *
      * @param source Source object
      */
+    @SuppressWarnings("unchecked")
     @Inline
     public void deepCopyFrom(@Const @Ptr GenericObject source, @CppDefault("NULL") @Ptr Factory f) {
-        assert(source.type == type) : "Types must match";
+        if (source.type == type) {
+            deepCopyFrom((Object)source.wrapped, f);
+        } else if (Copyable.class.isAssignableFrom(type.getJavaClass())) {
+            ((Copyable)wrapped).copyFrom(source.wrapped);
+        } else {
+            throw new RuntimeException("Types must match");
+        }
 
-        //JavaOnlyBlock
-        deepCopyFrom((Object)source.wrapped, f);
-
+        //Cpp ... keep assert ...
         //Cpp deepCopyFrom(source->wrapped, f);
     }
 
