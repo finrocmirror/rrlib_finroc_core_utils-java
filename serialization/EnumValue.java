@@ -57,18 +57,19 @@ public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumVal
 
     public EnumValue(Class <? extends Enum<? >> enumClass) {
         this.enumClass = enumClass;
+        value = enumClass.getEnumConstants()[0];
     }
 
     public EnumValue() {}
 
     @Override
     public void serialize(OutputStreamBuffer os) {
-        os.writeInt(value.ordinal());
+        os.writeEnum(value);
     }
 
     @Override
     public void deserialize(InputStreamBuffer is) {
-        value = (Enum<?>)enumClass.getEnumConstants()[is.readInt()];
+        value = is.readEnum(enumClass);
     }
 
     @Override
