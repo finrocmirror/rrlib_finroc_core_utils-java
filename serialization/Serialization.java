@@ -318,7 +318,10 @@ public class Serialization {
      * @returns true if both objects are serialized to the same binary data (usually they are equal then)
      */
     public static boolean equals(@Const @Ref GenericObject obj1, @Const @Ref GenericObject obj2) {
-        if (obj1.getType() != obj2.getType()) {
+        if (obj1 == obj2) {
+            return true;
+        }
+        if (obj1 == null || obj2 == null || obj1.getType() != obj2.getType()) {
             return false;
         }
 

@@ -36,7 +36,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
  * @author max
  *
  * Generic enum value.
- * Currently only meant for use in structure parameters.
+ * Currently only meant for use in static parameters.
  * (In port-classes it's probably better to wrap port classes)
  */
 @JavaOnly
