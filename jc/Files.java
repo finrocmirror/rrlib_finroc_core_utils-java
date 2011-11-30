@@ -97,6 +97,9 @@ public class Files {
      * @return Filename to open (can possibly be temp file somewhere). "" if no file was found.
      */
     public static String getFinrocFile(String rawFilename) {
+        if (rawFilename.startsWith("/")) {
+            return exists(rawFilename) ? rawFilename : "";
+        }
         for (String path : pathsToCheck) {
             if (exists(path + rawFilename)) {
                 return path + rawFilename;
