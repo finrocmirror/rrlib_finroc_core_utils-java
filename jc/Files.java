@@ -85,6 +85,9 @@ public class Files {
      * @return Answer (true, when getFinrocFile(rawFilename).length() > 0 - but possibly more efficient)
      */
     public static boolean finrocFileExists(String rawFilename) {
+        if (rawFilename == null || rawFilename.length() == 0) {
+            return false;
+        }
         return getFinrocFile(rawFilename).length() != 0;
     }
 
