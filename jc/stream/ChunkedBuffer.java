@@ -350,7 +350,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
         // ensure we have the minimum number of chunks
         BufferChunk current = first;
         for (int i = 1; i < chunkCount; i++) {
-            BufferChunk next = first.next;
+            BufferChunk next = current.next;
             if (next == null) {
                 next = getUnusedChunk();
                 current.next = next;
