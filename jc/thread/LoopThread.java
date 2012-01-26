@@ -58,6 +58,11 @@ public abstract class LoopThread extends Thread {
      */
     private volatile boolean waiting;
 
+    /**
+     * Time spent in last call to MainLoopCallback()
+     */
+    private long lastCycleTime;
+
     /** Log domain for this class */
     @JavaOnly
     public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("thread");
@@ -124,7 +129,8 @@ public abstract class LoopThread extends Thread {
             mainLoopCallback();
 
             // wait
-            long waitForX = cycleTime - (System.currentTimeMillis() - startTimeMs);
+            lastCycleTime = (System.currentTimeMillis() - startTimeMs);
+            long waitForX = cycleTime - lastCycleTime;
             if (waitForX < 0 && warnOnCycleTimeExceed && DISPLAYWARNINGS) {
                 //System.err.println("warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
                 logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
@@ -290,5 +296,12 @@ public abstract class LoopThread extends Thread {
     @JavaOnly
     public String getLogDescription() {
         return getName();
+    }
+
+    /**
+     * \return Time spent in last call to MainLoopCallback()
+     */
+    public long getLastCycleTime() {
+        return lastCycleTime;
     }
 }
