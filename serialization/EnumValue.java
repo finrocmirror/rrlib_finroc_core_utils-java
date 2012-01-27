@@ -43,7 +43,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 @Superclass( {RRLibSerializable.class })
 @PostInclude("rrlib/serialization/DataType.h")
 @HAppend( {"extern template class ::rrlib::serialization::DataType<finroc::core::EnumValue>;"})
-public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumValue> {
+public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumValue>, NumericRepresentation {
 
     /** Data Type of current enum value */
     public Class <? extends Enum<? >> enumClass = null;
@@ -116,6 +116,11 @@ public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumVal
             result += part + " ";
         }
         return result.trim();
+    }
+
+    @Override
+    public Number getNumericRepresentation() {
+        return value.ordinal();
     }
 
 }
