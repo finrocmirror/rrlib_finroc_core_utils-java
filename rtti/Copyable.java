@@ -2,7 +2,7 @@
  * You received this file as part of an advanced experimental
  * robotics framework prototype ('finroc')
  *
- * Copyright (C) 2010 Max Reichardt,
+ * Copyright (C) 2007-2010 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,21 +19,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
+import org.rrlib.finroc_core_utils.jc.annotation.Const;
 import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
+import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 
 /**
  * @author max
  *
- * Marks classes that should be notified when recycled
+ * Marks classes that can be conveniently duplicated and copied.
  */
 @JavaOnly
-public interface Clearable {
+public interface Copyable<T> {
 
     /**
-     * Clears object and
-     * releases any shared resources
+     * Copies data from another already allocated object to this object.
+     * Other object needs to be "compatible".
+     *
+     * copyFrom must not be called concurrently.
      */
-    public void clearObject();
+    public void copyFrom(@Const @Ref T source);
 }

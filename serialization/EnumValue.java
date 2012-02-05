@@ -31,6 +31,7 @@ import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
+import org.rrlib.finroc_core_utils.rtti.Copyable;
 
 /**
  * @author max

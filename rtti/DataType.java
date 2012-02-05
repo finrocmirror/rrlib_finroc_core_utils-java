@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
 import java.lang.reflect.Modifier;
 
@@ -34,6 +34,12 @@ import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
 import org.rrlib.finroc_core_utils.jc.annotation.SkipArgs;
+import org.rrlib.finroc_core_utils.serialization.EnumValue;
+import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
+import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
+import org.rrlib.finroc_core_utils.serialization.PortDataListImpl;
+import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
+import org.rrlib.finroc_core_utils.serialization.Serialization;
 
 /**
  * @author max

@@ -24,6 +24,8 @@ package org.rrlib.finroc_core_utils.serialization;
 import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.jc.annotation.PostProcess;
 import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
+import org.rrlib.finroc_core_utils.rtti.Copyable;
+import org.rrlib.finroc_core_utils.rtti.GenericChangeable;
 
 /**
  * @author max

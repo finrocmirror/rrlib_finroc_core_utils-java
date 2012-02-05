@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +48,8 @@ import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
+import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 
 /**
  * @author max

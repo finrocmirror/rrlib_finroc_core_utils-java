@@ -19,14 +19,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
 import org.rrlib.finroc_core_utils.jc.annotation.Const;
 import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
 import org.rrlib.finroc_core_utils.jc.annotation.CppFilename;
 import org.rrlib.finroc_core_utils.jc.annotation.CppName;
 import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.HAppend;
 import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
 import org.rrlib.finroc_core_utils.jc.annotation.Init;
 import org.rrlib.finroc_core_utils.jc.annotation.Inline;
@@ -37,6 +36,7 @@ import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
+import org.rrlib.finroc_core_utils.serialization.RRLibSerializableImpl;
 
 /**
  * @author max
@@ -51,15 +51,6 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 @Ptr @Inline @NoCpp
 @CppName("TypedObject") @CppFilename("TypedObject")
 @Superclass( {RRLibSerializableImpl.class})
-@HAppend( {"inline std::ostream& operator << (std::ostream& output, const TypedObject* lu) {",
-           "    output << typeid(*lu).name() << \" (\" << ((void*)lu) << \")\";",
-           "    return output;",
-           "}",
-           "inline std::ostream& operator << (std::ostream& output, const TypedObject& lu) {",
-           "    output << (&lu);",
-           "    return output;",
-           "}"
-          })
 public abstract class TypedObjectImpl extends RRLibSerializableImpl implements TypedObject {
 
     /** Type of object */

@@ -2,7 +2,7 @@
  * You received this file as part of an advanced experimental
  * robotics framework prototype ('finroc')
  *
- * Copyright (C) 2007-2010 Max Reichardt,
+ * Copyright (C) 2011 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -19,26 +19,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.CppDelegate;
+import org.rrlib.finroc_core_utils.jc.annotation.Const;
 import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
+import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 
 /**
  * @author max
  *
- * This is the abstract base class for any object that has additional
- * type information as provided in this package.
- *
- * Such classes can be cleanly serialized to the network
+ * Interface for data types that can be changed using transactions T.
  */
-@Ptr @JavaOnly @CppDelegate(TypedObjectImpl.class)
-public interface TypedObject extends RRLibSerializable {
+@JavaOnly
+public interface GenericChangeable<T> {
 
     /**
-     * @return Type of object
+     * @param t Change/Transaction to apply
+     * @param parameter1 Custom parameter (e.g. start index)
+     * @param parameter2 Custom parameter 2 (e.g. length)
      */
-    @NonVirtual public DataTypeBase getType();
+    public void applyChange(@Const @Ref T t, long parameter1, long parameter2);
 }

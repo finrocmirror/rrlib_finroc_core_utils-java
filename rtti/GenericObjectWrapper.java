@@ -18,25 +18,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
 import org.rrlib.finroc_core_utils.jc.annotation.Attribute;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
 import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
 import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
 import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.rrlib.finroc_core_utils.jc.annotation.SkipArgs;
+import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
 /**
  * @author max
  *
  * Allows wrapping any object as GenericObject
  */
-@Inline @NoCpp @Include("clear.h")
-@IncludeClass( {StringInputStream.class, StringOutputStream.class, GenericObjectManager.class})
 public class GenericObjectWrapper <T extends RRLibSerializable, M extends GenericObjectManager> extends GenericObjectBaseImpl<T> {
 
     /** Manager */

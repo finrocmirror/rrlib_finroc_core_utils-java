@@ -47,6 +47,10 @@ import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 import org.rrlib.finroc_core_utils.jc.annotation.SkipArgs;
 import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
+import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
+import org.rrlib.finroc_core_utils.rtti.DefaultFactory;
+import org.rrlib.finroc_core_utils.rtti.Factory;
+import org.rrlib.finroc_core_utils.rtti.GenericObject;
 
 /**
  * @author max

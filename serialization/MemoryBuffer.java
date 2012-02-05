@@ -39,6 +39,10 @@ import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.finroc_core_utils.rtti.Copyable;
+import org.rrlib.finroc_core_utils.rtti.DataType;
+import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
+import org.rrlib.finroc_core_utils.rtti.GenericChangeable;
 
 /**
  * @author max

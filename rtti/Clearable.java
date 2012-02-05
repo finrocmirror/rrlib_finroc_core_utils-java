@@ -1,7 +1,8 @@
 /**
- * You received this file as part of RRLib serialization
+ * You received this file as part of an advanced experimental
+ * robotics framework prototype ('finroc')
  *
- * Copyright (C) 2011 Max Reichardt,
+ * Copyright (C) 2010 Max Reichardt,
  *   Robotics Research Lab, University of Kaiserslautern
  *
  * This program is free software; you can redistribute it and/or
@@ -18,29 +19,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
+import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 
 /**
  * @author max
  *
- * Custom annotations for data types should be derived from this class
+ * Marks classes that should be notified when recycled
  */
-@Ptr @Inline @NoCpp
-public class DataTypeAnnotation {
-
-    /** Type that is annotated */
-    DataTypeBase annotatedType;
+@JavaOnly
+public interface Clearable {
 
     /**
-     * @return Type that is annotated
+     * Clears object and
+     * releases any shared resources
      */
-    public DataTypeBase getAnnotatedType() {
-        return annotatedType;
-    }
-
-
+    public void clearObject();
 }

@@ -21,6 +21,8 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
+import org.rrlib.finroc_core_utils.rtti.DataType;
+
 
 /**
  * @author max

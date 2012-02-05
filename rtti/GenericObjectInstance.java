@@ -18,13 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.rrlib.finroc_core_utils.serialization;
+package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
 import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
+import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
 /**
  * @author max
@@ -33,8 +30,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
  *
  * This class should only be instantiated by tDataType !
  */
-@Inline @NoCpp @Include("clear.h")
-@IncludeClass( {StringInputStream.class, StringOutputStream.class})
 public class GenericObjectInstance <T extends RRLibSerializable> extends GenericObjectBaseImpl<T> {
 
     /**

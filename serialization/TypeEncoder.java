@@ -22,6 +22,7 @@
 package org.rrlib.finroc_core_utils.serialization;
 
 import org.rrlib.finroc_core_utils.jc.annotation.Ref;
+import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 
 /**
  * @author max
