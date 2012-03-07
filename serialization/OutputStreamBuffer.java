@@ -318,7 +318,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
             if (sink.write(this, buffer, addSizeHint)) {
                 assert(curSkipOffsetPlaceholder < 0);
             }
-            assert(buffer.remaining() >= 8);
+            assert(addSizeHint < 0 || buffer.remaining() >= 8);
             bufferCopyFraction = (int)(buffer.capacity() * BUFFER_COPY_FRACTION);
         }
     }
