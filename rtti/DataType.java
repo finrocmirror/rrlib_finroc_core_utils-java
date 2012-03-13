@@ -70,7 +70,7 @@ import org.rrlib.finroc_core_utils.serialization.Serialization;
     "extern template class DataType<unsigned long long int>;",
     "extern template class DataType<double>;",
     "extern template class DataType<float>;",
-    "extern template class DataType<bool>;",
+    "extern template class DataType<bool>;"
 })
 public class DataType<T> extends DataTypeBase {
 
