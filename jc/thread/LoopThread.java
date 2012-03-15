@@ -63,6 +63,9 @@ public abstract class LoopThread extends Thread {
      */
     private long lastCycleTime;
 
+    /** Start time of last cycle */
+    private long lastCycleStart;
+
     /** Log domain for this class */
     @JavaOnly
     public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("thread");
@@ -119,24 +122,28 @@ public abstract class LoopThread extends Thread {
         while (!stopSignal) {
 
             if (pauseSignal) {
+                lastCycleStart = 0;
                 waitUntilNotification();
                 continue;
             }
 
-            // remember start time
-            long startTimeMs = System.currentTimeMillis();
+            if (lastCycleStart != 0) {
+                // wait
+                lastCycleTime = (System.currentTimeMillis() - lastCycleStart);
+                long waitForX = cycleTime - lastCycleTime;
+                if (waitForX < 0 && warnOnCycleTimeExceed && DISPLAYWARNINGS) {
+                    //System.err.println("warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
+                    logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
+                } else if (waitForX > 0) {
+                    waitFor(waitForX);
+                }
+                lastCycleStart += cycleTime;
+            } else {
+                lastCycleStart = System.currentTimeMillis();
+            }
 
             mainLoopCallback();
 
-            // wait
-            lastCycleTime = (System.currentTimeMillis() - startTimeMs);
-            long waitForX = cycleTime - lastCycleTime;
-            if (waitForX < 0 && warnOnCycleTimeExceed && DISPLAYWARNINGS) {
-                //System.err.println("warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
-                logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
-            } else if (waitForX > 0) {
-                waitFor(waitForX);
-            }
         }
     }
 
