@@ -138,6 +138,9 @@ public abstract class LoopThread extends Thread {
                     waitFor(waitForX);
                 }
                 lastCycleStart += cycleTime;
+                if (waitForX < 0) {
+                    lastCycleStart = System.currentTimeMillis();
+                }
             } else {
                 lastCycleStart = System.currentTimeMillis();
             }
