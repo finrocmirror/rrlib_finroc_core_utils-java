@@ -76,7 +76,7 @@ public class DataTypeBase {
 
     /** type of data type */
     @AtFront
-    enum Type {
+    public enum Type {
         PLAIN, // Plain type
         LIST, // List of objects of same type
         PTR_LIST, // List of objects with possibly objects of different types
@@ -139,6 +139,9 @@ public class DataTypeBase {
         /** Annotations to data type */
         @InCpp("DataTypeAnnotation* annotations[MAX_ANNOTATIONS];")
         public DataTypeAnnotation[] annotations = new DataTypeAnnotation[MAX_ANNOTATIONS];
+
+        /** Enum Constants - if this a enum type */
+        public ArrayList<String> enumConstants;
 
         @JavaOnly
         public DataTypeInfoRaw() {
@@ -818,5 +821,15 @@ public class DataTypeBase {
     @JavaOnly
     public String toString() {
         return getName();
+    }
+
+    /**
+     * \return If this is as enum type, returns enum constant names - otherwise NULL
+     */
+    public ArrayList<String> getEnumConstants() {
+        if (info != null) {
+            return info.enumConstants;
+        }
+        return null;
     }
 }

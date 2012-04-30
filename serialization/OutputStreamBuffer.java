@@ -716,8 +716,9 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      * (including type information)
      *
      * @param to Object to write (may be null)
+     * @param enc Data encoding to use
      */
-    public void writeObject(@Const GenericObject to) {
+    public void writeObject(@Const GenericObject to, Serialization.DataEncoding enc) {
         if (to == null) {
             writeType(null);
             return;
@@ -725,7 +726,7 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
 
         //writeSkipOffsetPlaceholder();
         writeType(to.getType());
-        to.serialize(this);
+        to.serialize(this, enc);
         //skipTargetHere();
     }
 }

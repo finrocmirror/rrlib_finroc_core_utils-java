@@ -1006,12 +1006,12 @@ public class InputStreamBuffer implements Source, HasDestructor {
      * Deserialize object with yet unknown type from stream
      * (should have been written to stream with OutputStream.WriteObject() before; typeencoder should be of the same type)
      *
-     * @param inInterThreadContainer Deserialize "cheap copy" data in interthread container?
      * @param expectedType expected type (optional, may be null)
      * @param factoryParameter Custom parameter for possibly user defined factory
+     * @param enc Data type encoding to use
      * @return Buffer with read object (caller needs to take care of deleting it)
      */
-    public GenericObject readObject(@Const @Ref @CppDefault("NULL") DataTypeBase expectedType, @VoidPtr @CppDefault("NULL") Object factoryParameter) {
+    public GenericObject readObject(@Const @Ref @CppDefault("NULL") DataTypeBase expectedType, @VoidPtr @CppDefault("NULL") Object factoryParameter, Serialization.DataEncoding enc) {
         //readSkipOffset();
         DataTypeBase dt = readType();
         if (dt == null) {
@@ -1024,7 +1024,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
         }
 
         GenericObject buffer = factory.createGenericObject(dt, factoryParameter);
-        buffer.deserialize(this);
+        buffer.deserialize(this, enc);
         return buffer;
     }
 }

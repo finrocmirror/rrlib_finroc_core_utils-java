@@ -176,11 +176,11 @@ public class XMLDocument {
      * the documents XML representation into it.
      *
      * @param fileName     The name of the file to use
-     * @param compression   Compression level [0-9] where 0 is "no compression"
+     * @param format       Format output?
      */
-    public void writeToFile(String fileName, int compression) throws Exception {
+    public void writeToFile(String fileName, boolean format) throws Exception {
         OutputStream os = new BufferedOutputStream(new FileOutputStream(fileName));
-        writeToStream(new StreamResult(os), compression);
+        writeToStream(new StreamResult(os), format, new DOMSource(document));
         os.close();
     }
 
@@ -193,31 +193,33 @@ public class XMLDocument {
      * @param fileName     The name of the file to use
      */
     public void writeToFile(String fileName) throws Exception {
-        writeToFile(fileName, 0);
+        writeToFile(fileName, true);
     }
 
     /**
      * Write the XML document to a stream
      *
-     * @param result            StreamResult
-     * @param compression   Compression level [0-9] where 0 is "no compression"
+     * @param result   StreamResult
+     * @param format   Format output?
      */
     @JavaOnly
-    public void writeToStream(StreamResult result, int compression) throws Exception {
+    public static void writeToStream(StreamResult result, boolean format, DOMSource source) throws Exception {
         TransformerFactory factory = TransformerFactory.newInstance();
         factory.setAttribute("indent-number", 2);
         Transformer transformer = factory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        DOMSource source = new DOMSource(document);
+        if (format) {
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        }
         transformer.transform(source, result);
     }
 
     /**
+     * @param format   Format output?
      * @return XML dump of XML file (as written to file)
      */
-    public String getXMLDump() throws Exception {
+    public String getXMLDump(boolean format) throws Exception {
         StringWriter sw = new StringWriter();
-        writeToStream(new StreamResult(sw), 0);
+        writeToStream(new StreamResult(sw), format, new DOMSource(document));
         return sw.toString();
     }
 };

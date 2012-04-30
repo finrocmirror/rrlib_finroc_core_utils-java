@@ -20,6 +20,11 @@
  */
 package org.rrlib.finroc_core_utils.xml;
 
+import java.io.StringWriter;
+
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.rrlib.finroc_core_utils.jc.annotation.CppName;
 import org.rrlib.finroc_core_utils.jc.annotation.PostProcess;
 import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
@@ -115,6 +120,29 @@ public class XMLNode {
         Element e = doc.createElement(name);
         node.appendChild(e);
         return new XMLNode(doc, e);
+    }
+
+    /**
+     * Add an existing node as child to this node
+     *
+     * This methods adds an existing node to \a this children. By default,
+     * \a node is moved with its complete subtree to its new place. It is
+     * not possible to move a node into its own subtree.
+     *
+     * If \a copy is set to true the node and its complete subtree is copied
+     * to its new place and the old version remains at its origin.
+     *
+     * @exception tXML2WrapperException is thrown if \this is contained in the subtree of \a node and \a copy is false
+     *
+     * @param node   The node to be added
+     * @param copy   Set to true if a copy of \a node should be added instead of \a node itself
+     *
+     * @return A reference to the new child
+     */
+    public XMLNode addChildNode(XMLNode n, boolean copy) {
+        XMLNode result = new XMLNode(doc, (Element)doc.importNode(n.node, copy));
+        node.appendChild(result.node);
+        return result;
     }
 
     /**
@@ -524,5 +552,28 @@ public class XMLNode {
             i++;
         }
         return i;
+    }
+
+    /**
+     * Get a dump in form of xml code of the subtree starting at \a this
+     *
+     * @param format   Set to true if the dumped text should be indented
+     */
+    public String getXMLDump(boolean format) {
+        try {
+            StringWriter sw = new StringWriter();
+            XMLDocument.writeToStream(new StreamResult(sw), format, new DOMSource(node));
+            return sw.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed!");
+        }
+    }
+
+    /**
+     * @param other Node to compare with
+     * @return True, if nodes are equal
+     */
+    public boolean nodeEquals(XMLNode other) {
+        return node.isEqualNode(other.node);
     }
 };

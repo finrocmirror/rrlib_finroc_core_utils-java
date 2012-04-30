@@ -20,6 +20,8 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
+import java.io.StringReader;
+
 import org.rrlib.finroc_core_utils.jc.annotation.Const;
 import org.rrlib.finroc_core_utils.jc.annotation.CppDefault;
 import org.rrlib.finroc_core_utils.jc.annotation.CppInclude;
@@ -40,7 +42,9 @@ import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 import org.rrlib.finroc_core_utils.jc.annotation.Unsigned;
 import org.rrlib.finroc_core_utils.rtti.Factory;
 import org.rrlib.finroc_core_utils.rtti.GenericObject;
+import org.rrlib.finroc_core_utils.xml.XMLDocument;
 import org.rrlib.finroc_core_utils.xml.XMLNode;
+import org.xml.sax.InputSource;
 
 /**
  * @author max
@@ -65,6 +69,9 @@ import org.rrlib.finroc_core_utils.xml.XMLNode;
 @CppInclude("<cxxabi.h>")
 @PostInclude( {"deepcopy.h"})
 public class Serialization {
+
+    /** Enum for different types of data encoding */
+    public enum DataEncoding { BINARY, STRING, XML }
 
     /** int -> hex char */
     @InCpp("static char TO_HEX[16];")
@@ -363,6 +370,62 @@ public class Serialization {
     @InCpp("detail::Resize<std::vector<T>, T, !boost::is_base_of<boost::noncopyable, T>::value>::resize(vector, newSize);") @HAppend( {})
     static public <T> void resizeVector(@CppType("std::vector<T>") @Ref PortDataList<?> vector, @SizeT int newSize) {
         vector.resize(newSize);
+    }
+
+    /**
+     * Serialize data to binary output stream - possibly using non-binary encoding
+     *
+     * @param os Binary output stream
+     * @param s Object to serialize
+     * @param enc Encoding to use
+     */
+    static public void serialize(OutputStreamBuffer os, RRLibSerializable s, DataEncoding enc) {
+        if (enc == DataEncoding.BINARY) {
+            s.serialize(os);
+        } else if (enc == DataEncoding.STRING) {
+            os.writeString(serialize(s));
+        } else {
+            assert(enc == DataEncoding.XML);
+            XMLDocument d = new XMLDocument();
+            try {
+                XMLNode n = d.addRootNode("value");
+                s.serialize(n);
+                os.writeString(d.getXMLDump(true));
+            } catch (Exception e) {
+                e.printStackTrace();
+                os.writeString("error generating XML code.");
+            }
+        }
+    }
+
+    /**
+     * Deserialize data from binary input stream - possibly using non-binary encoding
+     *
+     * @param os Binary input stream
+     * @param s Object to deserialize
+     * @param enc Encoding to use
+     */
+    static public void deserialize(InputStreamBuffer is, RRLibSerializable s, DataEncoding enc) {
+        if (enc == DataEncoding.BINARY) {
+            s.deserialize(is);
+        } else if (enc == DataEncoding.STRING) {
+            StringInputStream sis = new StringInputStream(is.readString());
+            try {
+                s.deserialize(sis);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            sis.close();
+        } else {
+            assert(enc == DataEncoding.XML);
+            try {
+                XMLDocument d = new XMLDocument(new InputSource(new StringReader(is.readString())), false);
+                XMLNode n = d.getRootNode();
+                s.deserialize(n);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /*Cpp

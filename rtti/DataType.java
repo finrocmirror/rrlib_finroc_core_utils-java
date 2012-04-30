@@ -21,6 +21,7 @@
 package org.rrlib.finroc_core_utils.rtti;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 
 import org.rrlib.finroc_core_utils.jc.annotation.AtFront;
 import org.rrlib.finroc_core_utils.jc.annotation.Const;
@@ -86,6 +87,12 @@ public class DataType<T> extends DataTypeBase {
             type = Type.PLAIN;
             javaClass = c;
             name = c.getSimpleName();
+            if (c.isEnum()) {
+                enumConstants = new ArrayList<String>();
+                for (int i = 0; i < c.getEnumConstants().length; i++) {
+                    enumConstants.add(c.getEnumConstants()[i].toString());
+                }
+            }
         }
 
         @JavaOnly public DataTypeInfo(DataTypeBase e, Type type) {

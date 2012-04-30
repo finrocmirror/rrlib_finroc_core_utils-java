@@ -30,7 +30,11 @@ import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
 import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
 import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
+import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
+import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
+import org.rrlib.finroc_core_utils.serialization.Serialization;
+import org.rrlib.finroc_core_utils.serialization.Serialization.DataEncoding;
 
 /**
  * @author max
@@ -141,5 +145,25 @@ public abstract class GenericObject extends TypedObjectImpl {
      * (e.g. for reusing object in pool)
      */
     public abstract void clear();
+
+    /**
+     * Deserialize data from binary input stream - possibly using non-binary encoding.
+     *
+     * @param is Binary input stream
+     * @param enc Encoding to use
+     */
+    public void deserialize(InputStreamBuffer is, DataEncoding enc) {
+        Serialization.deserialize(is, getData(), enc);
+    }
+
+    /**
+     * Serialize data to binary output stream - possibly using non-binary encoding.
+     *
+     * @param os Binary output stream
+     * @param enc Encoding to use
+     */
+    public void serialize(OutputStreamBuffer os, DataEncoding enc) {
+        Serialization.serialize(os, getData(), enc);
+    }
 
 }

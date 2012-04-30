@@ -98,6 +98,10 @@ public class StringInputStream {
         wrapped = new StringReader(s);
     }
 
+    public void close() {
+        wrapped.close();
+    }
+
     /**
      * Initializes char map
      *

@@ -98,7 +98,7 @@ public abstract class RRLibSerializableImpl extends LogUser implements RRLibSeri
      */
     @Override @InCppFile @Virtual
     public void deserialize(@Const @Ref XMLNode node) throws Exception {
-        StringInputStream is = new StringInputStream(node.getTextContent());
+        StringInputStream is = new StringInputStream(node.hasTextContent() ? node.getTextContent() : "");
         deserialize(is);
     }
 }
