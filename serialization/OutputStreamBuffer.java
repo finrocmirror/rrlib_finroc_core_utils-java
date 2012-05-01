@@ -542,17 +542,25 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      */
     @Inline
     public void writeEnum(Enum<?> e) {
-        Object[] constants = e.getDeclaringClass().getEnumConstants();
+        writeEnum(e.ordinal(), e.getDeclaringClass().getEnumConstants());
+    }
+
+    /**
+     * @param value Enum value (ordinal)
+     * @param constants All enum constants
+     */
+    @Inline
+    public void writeEnum(int value, Object[] constants) {
         if (constants.length == 0) {
-            assert(e.ordinal() < 0x7FFFFFFF) : "What?";
-            writeInt(e.ordinal());
+            assert(value < 0x7FFFFFFF) : "What?";
+            writeInt(value);
         } else if (constants.length <= 0x100) {
-            writeByte((byte) e.ordinal());
+            writeByte((byte) value);
         } else if (constants.length <= 0x1000) {
-            writeShort((short) e.ordinal());
+            writeShort((short) value);
         } else {
             assert(constants.length < 0x7FFFFFFF) : "What?";
-            writeInt(e.ordinal());
+            writeInt(value);
         }
     }
 

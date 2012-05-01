@@ -331,9 +331,17 @@ public class StringInputStream {
     /**
      * @return Enum value
      */
-    @SuppressWarnings( { "rawtypes", "unchecked" })
+    @SuppressWarnings( { "rawtypes" })
     @SkipArgs("1")
     public <E extends Enum> E readEnum(Class<E> eclass) {
+        return eclass.getEnumConstants()[readEnum(eclass.getEnumConstants())];
+    }
+
+    /**
+     * @param enumConstants Enum constants (only their toString() method is used)
+     * @return Enum value
+     */
+    public int readEnum(Object[] enumConstants) {
         // parse input
         String enumString = readWhile("", DIGIT | LETTER | WHITESPACE, true).trim();
         int c1 = read();
@@ -347,11 +355,14 @@ public class StringInputStream {
         }
 
         // deal with input
-        Object[] constants = eclass.getEnumConstants();
         if (enumString.length() > 0) {
-            for (int i = 0; i < constants.length; i++) {
-                if (enumString.equalsIgnoreCase(constants[i].toString())) {
-                    return (E) constants[i];
+            for (int i = 0; i < enumConstants.length; i++) {
+                if (enumConstants[i] instanceof Enum) {
+                    if (enumString.equalsIgnoreCase(EnumValue.doNaturalFormatting(enumConstants[i].toString()))) {
+                        return i;
+                    }
+                } else if (enumString.equalsIgnoreCase(enumConstants[i].toString())) {
+                    return i;
                 }
             }
         }
@@ -363,10 +374,10 @@ public class StringInputStream {
             throw new RuntimeException("No Number String specified");
         }
         int n = Integer.parseInt(numString);
-        if (n >= constants.length) {
-            logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Number " + n + " out of range for enum (" + constants.length + ")");
+        if (n >= enumConstants.length) {
+            logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Number " + n + " out of range for enum (" + enumConstants.length + ")");
             throw new RuntimeException("Number out of range");
         }
-        return (E) constants[n];
+        return n;
     }
 }

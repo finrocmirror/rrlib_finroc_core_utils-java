@@ -88,10 +88,11 @@ public class DataType<T> extends DataTypeBase {
             javaClass = c;
             name = c.getSimpleName();
             if (c.isEnum()) {
-                enumConstants = new ArrayList<String>();
-                for (int i = 0; i < c.getEnumConstants().length; i++) {
-                    enumConstants.add(c.getEnumConstants()[i].toString());
+                ArrayList<String> constants = new ArrayList<String>();
+                for (Object o : c.getEnumConstants()) {
+                    constants.add(EnumValue.doNaturalFormatting(o.toString()));
                 }
+                enumConstants = constants.toArray();
             }
         }
 
@@ -161,7 +162,7 @@ public class DataType<T> extends DataTypeBase {
         }
         */
 
-        @SuppressWarnings( { "rawtypes", "unchecked" })
+        @SuppressWarnings( { "rawtypes" })
         @Override
         @InCpp( {
             "if (placement == NULL) {",
@@ -177,8 +178,8 @@ public class DataType<T> extends DataTypeBase {
             }
 
             try {
-                if (javaClass.isEnum()) {
-                    return new EnumValue((Class <? extends Enum<? >>)javaClass);
+                if (enumConstants != null) {
+                    return new EnumValue(dataType);
                 } else if (!(javaClass.isInterface() || Modifier.isAbstract(javaClass.getModifiers()))) {
                     result = javaClass.newInstance();
                 } else { // whoops we have an interface - look for inner class that implements interface

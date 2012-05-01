@@ -22,16 +22,12 @@
 package org.rrlib.finroc_core_utils.serialization;
 
 import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.HAppend;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
 import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.PostInclude;
 import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.rtti.Copyable;
+import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 
 /**
  * @author max
@@ -41,66 +37,56 @@ import org.rrlib.finroc_core_utils.rtti.Copyable;
  * (In port-classes it's probably better to wrap port classes)
  */
 @JavaOnly
-@Superclass( {RRLibSerializable.class })
-@PostInclude("rrlib/serialization/DataType.h")
-@HAppend( {"extern template class ::rrlib::serialization::DataType<finroc::core::EnumValue>;"})
 public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumValue>, NumericRepresentation {
 
-    /** Data Type of current enum value */
-    public Class <? extends Enum<? >> enumClass = null;
+    /** Data Type of this enum value */
+    private DataTypeBase type;
 
     /** Current wrapped enum value */
-    private Enum<?> value;
+    private int value;
 
     /** Log domain for serialization */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"enum\");")
     public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("enum");
-
-    public EnumValue(Class <? extends Enum<? >> enumClass) {
-        this.enumClass = enumClass;
-        value = enumClass.getEnumConstants()[0];
-    }
 
     public EnumValue() {}
 
+    public EnumValue(DataTypeBase type) {
+        this.type = type;
+    }
+
+    public EnumValue(String s) {}
+
     @Override
     public void serialize(OutputStreamBuffer os) {
-        os.writeEnum(value);
+        os.writeEnum(value, type.getEnumConstants());
     }
 
     @Override
     public void deserialize(InputStreamBuffer is) {
-        value = is.readEnum(enumClass);
+        value = is.readEnum(type.getEnumConstants());
     }
 
     @Override
-    public void serialize(StringOutputStream sb) {
-        sb.append(value);
+    public void serialize(StringOutputStream os) {
+        os.append(type.getEnumConstants()[value].toString()).append(" (").append(value).append(")");
     }
 
     @Override
     public void deserialize(StringInputStream is) throws Exception {
-        value = (Enum<?>)is.readEnum(enumClass);
+        value = is.readEnum(type.getEnumConstants());
     }
 
     /**
-     * @param e new Value (as integer)
+     * @return Enum value's ordinal
      */
-    public void set(Enum<?> e) {
-        value = e;
-    }
-
-    /**
-     * @return current value
-     */
-    @ConstMethod public Enum<?> get() {
+    public int getOrdinal() {
         return value;
     }
 
     @Override
     public void copyFrom(@Const @Ref EnumValue source) {
         value = source.value;
-        enumClass = source.enumClass;
+        type = source.type;
     }
 
     /**
@@ -121,7 +107,33 @@ public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumVal
 
     @Override
     public Number getNumericRepresentation() {
-        return value.ordinal();
+        return value;
     }
 
+    /**
+     * @param ordinal New ordinal value
+     */
+    public void set(int ordinal) {
+        value = ordinal;
+    }
+
+    /**
+     * @return Data Type of this enum value
+     */
+    public DataTypeBase getType() {
+        return type;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof EnumValue) {
+            EnumValue o = (EnumValue)other;
+            return value == o.value && type == o.type;
+        }
+        return false;
+    }
+
+    public String toString() {
+        return Serialization.serialize(this);
+    }
 }

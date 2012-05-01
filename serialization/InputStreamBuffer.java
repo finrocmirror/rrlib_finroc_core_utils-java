@@ -390,7 +390,7 @@ public class InputStreamBuffer implements Source, HasDestructor {
      * @param sb StringBuilder object to write result to
      */
     @Inline
-    public <T extends StringBuilder> void readStringImpl(@Ref T sb) {
+    public void readStringImpl(@Ref StringBuilder sb) {
 
         //JavaOnlyBlock
         baos.reset();
@@ -761,19 +761,25 @@ public class InputStreamBuffer implements Source, HasDestructor {
     /**
      * @return Enum value
      */
-    @SuppressWarnings( { "rawtypes", "unchecked" })
+    @SuppressWarnings( { "rawtypes"})
     @SkipArgs("1")
     public <E extends Enum> E readEnum(Class<E> c) {
-        Object[] strings = c.getEnumConstants();
+        return c.getEnumConstants()[readEnum(c.getEnumConstants())];
+    }
+
+    /**
+     * @return Enum value
+     */
+    public int readEnum(Object[] strings) {
         if (strings.length == 0) {
-            return (E) strings[readInt()];
+            return readInt();
         } else if (strings.length <= 0x100) {
-            return (E) strings[readByte()];
+            return readByte();
         } else if (strings.length <= 0x1000) {
-            return (E) strings[readShort()];
+            return readShort();
         } else {
             assert(strings.length < 0x7FFFFFFF) : "What?";
-            return (E) strings[readInt()];
+            return readInt();
         }
     }
 

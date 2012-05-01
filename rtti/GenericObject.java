@@ -102,7 +102,7 @@ public abstract class GenericObject extends TypedObjectImpl {
      *
      * @param source Source object
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings( { "unchecked", "rawtypes" })
     @Inline
     public void deepCopyFrom(@Const @Ptr GenericObject source, @CppDefault("NULL") @Ptr Factory f) {
         if (source.type == type) {

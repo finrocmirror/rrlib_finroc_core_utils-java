@@ -141,7 +141,7 @@ public class DataTypeBase {
         public DataTypeAnnotation[] annotations = new DataTypeAnnotation[MAX_ANNOTATIONS];
 
         /** Enum Constants - if this a enum type */
-        public ArrayList<String> enumConstants;
+        public Object[] enumConstants;
 
         @JavaOnly
         public DataTypeInfoRaw() {
@@ -826,7 +826,7 @@ public class DataTypeBase {
     /**
      * \return If this is as enum type, returns enum constant names - otherwise NULL
      */
-    public ArrayList<String> getEnumConstants() {
+    public Object[] getEnumConstants() {
         if (info != null) {
             return info.enumConstants;
         }
