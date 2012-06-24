@@ -737,4 +737,11 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         to.serialize(this, enc);
         //skipTargetHere();
     }
+
+    /**
+     * @param duration Duration in ms
+     */
+    public void writeDuration(long duration) {
+        writeLong(duration * 1000000);
+    }
 }

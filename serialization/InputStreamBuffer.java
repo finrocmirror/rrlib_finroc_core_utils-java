@@ -1033,4 +1033,11 @@ public class InputStreamBuffer implements Source, HasDestructor {
         buffer.deserialize(this, enc);
         return buffer;
     }
+
+    /**
+     * @return Duration in milliseconds
+     */
+    public long readDuration() {
+        return readLong() / 1000000;
+    }
 }
