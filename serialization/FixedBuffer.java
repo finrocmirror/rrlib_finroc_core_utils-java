@@ -24,6 +24,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.rrlib.finroc_core_utils.jc.annotation.Const;
 import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
@@ -59,7 +60,10 @@ public class FixedBuffer {
 //  /** number of times buffer was (re-)allocated */
 //  @JavaOnly protected volatile int allocationCount = 0;
 
-    @JavaOnly protected final ThreadLocal<TempBuffer> tempBufs = new ThreadLocal<TempBuffer>();
+    /** Number of temp buffers to allocate for each fixed buffer */
+    private final int TEMP_BUFFER_COUNT = 4;
+
+    @JavaOnly protected final TempBuffer[] tempBufs = new TempBuffer[TEMP_BUFFER_COUNT];
 
     /** Actual (wrapped) buffer - may be replaced by subclasses */
     @InCpp( {"friend class ReadView;", "",
@@ -126,6 +130,10 @@ public class FixedBuffer {
     @JavaOnly public FixedBuffer(ByteBuffer bb) {
         buffer = bb;
         buffer.order(BYTE_ORDER);
+        for (int i = 0; i < TEMP_BUFFER_COUNT; i++) {
+            tempBufs[i] = new TempBuffer();
+            tempBufs[i].init();
+        }
     }
 
     /**
@@ -138,14 +146,18 @@ public class FixedBuffer {
     /**
      * @return Temporary buffer
      */
-    @JavaOnly public ByteBuffer getTempBuffer() {
-        TempBuffer tb = tempBufs.get();
-        if (tb == null) {
-            tb = new TempBuffer();
-            tempBufs.set(tb);
+    @JavaOnly public TempBuffer getTempBuffer() {
+        for (int i = 0; i < TEMP_BUFFER_COUNT; i++) {
+            TempBuffer tb = tempBufs[i];
+            if (tb.inUse.compareAndSet(false, true)) {
+                return tb;
+            }
         }
+
+        // No spare temp buffer ... create one (not really expensive)
+        TempBuffer tb = new TempBuffer();
         tb.init();
-        return tb.buffer;
+        return tb;
     }
 
     /**
@@ -161,9 +173,10 @@ public class FixedBuffer {
             })*/
     @JavaOnly
     @ConstMethod public void get(@SizeT int offset, @Ref byte[] dst, @SizeT int off, @SizeT int len) {
-        ByteBuffer buffer = getTempBuffer();
-        buffer.position(offset);
-        buffer.get(dst, off, len);
+        TempBuffer buffer = getTempBuffer();
+        buffer.buffer.position(offset);
+        buffer.buffer.get(dst, off, len);
+        buffer.inUse.set(false);
     }
 
     /**
@@ -192,9 +205,10 @@ public class FixedBuffer {
     //@InCpp("get(offset, dst.getPointer(), dst.length);")
     @JavaOnly
     @ConstMethod public void get(@SizeT int offset, @Ref byte[] dst) {
-        ByteBuffer buffer = getTempBuffer();
-        buffer.position(offset);
-        buffer.get(dst);
+        TempBuffer buffer = getTempBuffer();
+        buffer.buffer.position(offset);
+        buffer.buffer.get(dst);
+        buffer.inUse.set(false);
     }
 
     /**
@@ -219,14 +233,15 @@ public class FixedBuffer {
      * @param length number of bytes to copy
      */
     @JavaOnly public void get(int offset, ByteBuffer dst, int off, int len) {
-        ByteBuffer buffer = getTempBuffer();
+        TempBuffer buffer = getTempBuffer();
         dst.clear();
         dst.position(off);
-        buffer.position(offset);
-        int oldLimit = buffer.limit();
-        buffer.limit(offset + len);
-        dst.put(buffer);
-        buffer.limit(oldLimit);
+        buffer.buffer.position(offset);
+        int oldLimit = buffer.buffer.limit();
+        buffer.buffer.limit(offset + len);
+        dst.put(buffer.buffer);
+        buffer.buffer.limit(oldLimit);
+        buffer.inUse.set(false);
     }
 
     /*Cpp
@@ -331,7 +346,9 @@ public class FixedBuffer {
              "put(offset, src.getPointer() + off, len);"
             })
     public void put(@SizeT int offset, @Const @Ref FixedBuffer src, @SizeT int off, @SizeT int len) {
-        put(offset, src.getTempBuffer(), off, len);
+        TempBuffer buffer = src.getTempBuffer();
+        put(offset, buffer.buffer, off, len);
+        buffer.inUse.set(false);
     }
 
     /**
@@ -343,13 +360,14 @@ public class FixedBuffer {
      */
     @InCpp("get(offset, dst.getPointer(), dst.capacity());")
     @ConstMethod public void get(@SizeT int offset, @Ref FixedBuffer dst) {
-        ByteBuffer buffer = getTempBuffer();
+        TempBuffer buffer = getTempBuffer();
         dst.buffer.clear();
-        buffer.position(offset);
-        int oldLimit = buffer.limit();
-        buffer.limit(offset + dst.buffer.capacity());
-        dst.buffer.put(buffer);
-        buffer.limit(oldLimit);
+        buffer.buffer.position(offset);
+        int oldLimit = buffer.buffer.limit();
+        buffer.buffer.limit(offset + dst.buffer.capacity());
+        dst.buffer.put(buffer.buffer);
+        buffer.buffer.limit(oldLimit);
+        buffer.inUse.set(false);
     }
 
     /**
@@ -705,6 +723,7 @@ public class FixedBuffer {
     @JavaOnly
     class TempBuffer {
         ByteBuffer buffer;
+        AtomicBoolean inUse = new AtomicBoolean();
 //      private int allocationView = -1;
 
         void init() {
