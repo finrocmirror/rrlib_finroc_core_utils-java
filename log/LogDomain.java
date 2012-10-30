@@ -76,8 +76,16 @@ public class LogDomain {
 
     private StringBuilder buffer = new StringBuilder(); // temporary buffer for output string (only use with lock on domain)
 
-    /** Use colored console output ? (we don't want during debugging in IDEs such as Eclipse) */
-    private final static boolean COLORED_CONSOLE_OUTPUT = LogDomain.class.getResource("LogDomain.class").toString().contains(".jar!");
+    /** Use colored console output ? (we don't want during debugging in IDEs such as Eclipse or on Android devices) */
+    private final static boolean COLORED_CONSOLE_OUTPUT;
+
+    static {
+        boolean coloredOutput = false;
+        try {
+            coloredOutput = LogDomain.class.getResource("LogDomain.class").toString().contains(".jar!");
+        } catch (Exception e) {}
+        COLORED_CONSOLE_OUTPUT = coloredOutput;
+    }
 
     /** The ctor of a top level domain
      *
