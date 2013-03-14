@@ -24,23 +24,14 @@ package org.rrlib.finroc_core_utils.jc;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Prefix;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.xml.XMLDocument;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Some basic file operations
  * and lookup of files in finroc repositories.
  */
-@Inline @NoCpp @Prefix("s")
-@Include("<boost/filesystem.hpp>")
 public class Files {
 
     /** Paths in which to search for finroc files */
@@ -73,8 +64,7 @@ public class Files {
      * @param filename File name
      * @return Answer
      */
-    @InCpp("return boost::filesystem::_exists(filename.getStdString());")
-    public static boolean exists(@Const @Ref String filename) {
+    public static boolean exists(String filename) {
         return new File(filename).exists();
     }
 

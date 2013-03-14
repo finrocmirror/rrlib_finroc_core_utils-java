@@ -24,15 +24,13 @@ package org.rrlib.finroc_core_utils.jc.jni;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.jc.log.LogUser;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Marks all objects wrapping something that can also be used in C++
  */
-@JavaOnly
 public abstract class UsedInC extends LogUser {
 
     /** Objects and buffers that need to exist in C++ as long as this object does */

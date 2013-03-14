@@ -23,14 +23,11 @@ package org.rrlib.finroc_core_utils.jc.jni;
 
 import java.nio.ByteBuffer;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Area of shared memory that can be shared between Java and C++
  */
-@JavaOnly
 public class SharedBuffer extends UsedInC {
 
     /** Buffer's address in memory */

@@ -20,37 +20,23 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Default factory implementation.
  * Simply allocates and deletes objects as needed on Heap.
  */
-@Inline @NoCpp
-@IncludeClass(GenericObjectManager.class)
 public class DefaultFactory implements Factory {
 
-    @JavaOnly
     public static DefaultFactory instance;
 
-    @InCpp("return std::shared_ptr<void>(dt.createInstance());")
     @Override
-    public Object createBuffer(@Const @Ref DataTypeBase dt) {
+    public Object createBuffer(DataTypeBase dt) {
         return dt.createInstance();
     }
 
     @Override
-    @InCpp("return dt.createInstanceGeneric<>();")
-    public GenericObject createGenericObject(DataTypeBase dt, @VoidPtr Object customParameter) {
+    public GenericObject createGenericObject(DataTypeBase dt, Object customParameter) {
         return dt.createInstanceGeneric(null);
     }
 }

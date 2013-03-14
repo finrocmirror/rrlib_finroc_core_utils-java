@@ -22,17 +22,15 @@
 package org.rrlib.finroc_core_utils.jc.jni;
 
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Proxy class/wrapper for an C++ object (with super class JNIWrappable).
  */
-@JavaOnly
 public abstract class JNIWrapper extends UsedInC implements HasDestructor {
 
     /** Pointer to class */

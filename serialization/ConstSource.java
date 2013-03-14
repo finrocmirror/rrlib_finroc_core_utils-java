@@ -20,15 +20,8 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppDefault;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Abstract Data Source that can be used with InputStreamBuffer.
  *
@@ -38,7 +31,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
  * Same as source, but with const-methods.
  * Typically, only const-sources allow concurrent reading
  */
-@Ptr @Include("<cstddef>")
 public interface ConstSource {
 
     /**
@@ -51,7 +43,7 @@ public interface ConstSource {
      * @param inputStreamBuffer InputStreamBuffer that requests reset operation.
      * @param buffer BufferInfo object that will contain result - about buffer to initially operate on
      */
-    @ConstMethod public void reset(@Ptr InputStreamBuffer inputStreamBuffer, @Ref BufferInfo buffer);
+    public void reset(InputStreamBuffer inputStreamBuffer, BufferInfo buffer);
 
     /**
      * Fetch next bytes for reading.
@@ -65,13 +57,13 @@ public interface ConstSource {
      * @param buffer BufferInfo object that contains result of read operation (buffer managed by Source)
      * @param len Minimum number of bytes to read
      */
-    @ConstMethod public void read(@Ptr InputStreamBuffer inputStreamBuffer, @Ref BufferInfo buffer, @CppDefault("0") @SizeT int len);
+    public void read(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, int len);
 
     /**
      * @return Does source support reading directly into target buffer?
      * (optional optimization - does not have to make sense, depending on source)
      */
-    @ConstMethod public boolean directReadSupport();
+    public boolean directReadSupport();
 
     /**
      * (Optional operation)
@@ -81,7 +73,7 @@ public interface ConstSource {
      * @param buffer Buffer to copy data to (buffer provided and managed by client)
      * @param len Minimum number of bytes to read
      */
-    @ConstMethod public void directRead(@Ptr InputStreamBuffer inputStreamBuffer, @Ref FixedBuffer buffer, @SizeT int offset, @CppDefault("0") @SizeT int len);
+    public void directRead(InputStreamBuffer inputStreamBuffer, FixedBuffer buffer, int offset, int len);
 
     /**
      * Close stream/source.
@@ -91,7 +83,7 @@ public interface ConstSource {
      * @param inputStreamBuffer InputStreamBuffer that requests fetch operation.
      * @param buffer BufferInfo object that may contain buffer that needs to be deleted
      */
-    @ConstMethod public void close(@Ptr InputStreamBuffer inputStreamBuffer, @Ref BufferInfo buffer);
+    public void close(InputStreamBuffer inputStreamBuffer, BufferInfo buffer);
 
     /**
      * Is any more data available?
@@ -100,5 +92,5 @@ public interface ConstSource {
      * @param buffer Current buffer (managed by source)
      * @return Answer
      */
-    @ConstMethod public boolean moreDataAvailable(@Ptr InputStreamBuffer inputStreamBuffer, @Ref BufferInfo buffer);
+    public boolean moreDataAvailable(InputStreamBuffer inputStreamBuffer, BufferInfo buffer);
 }

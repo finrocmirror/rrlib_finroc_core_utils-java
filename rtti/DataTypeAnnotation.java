@@ -20,16 +20,12 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Custom annotations for data types should be derived from this class
  */
-@Ptr @Inline @NoCpp
 public class DataTypeAnnotation {
 
     /** Type that is annotated */

@@ -21,14 +21,11 @@
  */
 package org.rrlib.finroc_core_utils.jc.jni;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * String with C++ (const char*) representation in memory
  */
-@JavaOnly
 public class CString extends SharedBuffer {
 
     /**

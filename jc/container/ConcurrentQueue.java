@@ -23,18 +23,9 @@ package org.rrlib.finroc_core_utils.jc.container;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is a wait-free, fully concurrent FIFO queue.
  *
@@ -58,35 +49,19 @@ import org.rrlib.finroc_core_utils.jc.annotation.Ref;
  * implementation that works with both Java and C++.
  * Feel free to come up with something better.
  */
-@Inline @NoCpp
-@Include("<tbb/concurrent_queue.h>")
-public class ConcurrentQueue<T> extends ConcurrentQueueBase {
+public class ConcurrentQueue<T> {
 
     /** Wrapped Queue (in C++ there's no peek - so no peek...) */
-    @InCpp("tbb::concurrent_queue<T> backend;")
     private final ConcurrentLinkedQueue<T> backend;
 
-    @Init("backend()")
     public ConcurrentQueue() {
         backend = new ConcurrentLinkedQueue<T>();
     }
 
-    /*Cpp
-    // true, if there was an element to dequeue
-    inline bool dequeue(T& t) {
-    #if (TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2) || (TBB_VERSION_MAJOR >= 3)
-        return backend.try_pop(t);
-    #else
-        return backend.pop_if_present(t);
-    #endif
-    }
-     */
-
     /**
      * @param element Element to enqueue
      */
-    @InCpp("backend._push(element);")
-    public void enqueue(@Const @Ref T element) {
+    public void enqueue(T element) {
         backend.add(element);
     }
 
@@ -96,20 +71,8 @@ public class ConcurrentQueue<T> extends ConcurrentQueueBase {
      *
      * @return Removed element
      */
-    public @PassByValue T dequeue() {
-
-        // JavaOnlyBlock
+    public T dequeue() {
         return backend.poll();
-
-        /*Cpp
-        T t;
-        #if (TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2) || (TBB_VERSION_MAJOR >= 3)
-        success = backend.try_pop(t);
-        #else
-        success = backend.pop_if_present(t);
-        #endif
-        return t;
-         */
     }
 
     /**
@@ -118,8 +81,7 @@ public class ConcurrentQueue<T> extends ConcurrentQueueBase {
      * @param t Dequeued element
      * @return Answer
      */
-    @ConstMethod @Inline @InCpp("return success;")
-    public boolean dequeueSuccessful(@Const T t) {
+    public boolean dequeueSuccessful(T t) {
         return t != null;
     }
 
@@ -130,19 +92,7 @@ public class ConcurrentQueue<T> extends ConcurrentQueueBase {
      * @return Removed element
      */
     public T dequeuePtr() {
-
-        // JavaOnlyBlock
         return backend.poll();
-
-        /*Cpp
-        T t = NULL;
-        #if (TBB_VERSION_MAJOR >= 2 && TBB_VERSION_MINOR >= 2) || (TBB_VERSION_MAJOR >= 3)
-        backend.try_pop(t);
-        #else
-        backend.pop_if_present(t);
-        #endif
-        return t;
-         */
     }
 
     /**
@@ -155,7 +105,6 @@ public class ConcurrentQueue<T> extends ConcurrentQueueBase {
     /**
      * @return is queue currently empty?
      */
-    @ConstMethod @InCpp("return backend._empty();")
     public boolean isEmpty() {
         return backend.isEmpty();
     }

@@ -23,11 +23,6 @@ package org.rrlib.finroc_core_utils.jc;
 
 import java.util.Arrays;
 
-import org.rrlib.finroc_core_utils.jc.annotation.ConvertInterfaceOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-
 /**
  * Wraps an array.
  * The wrapper keeps track of the array's 'capacity' and the number
@@ -49,8 +44,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
  *          ... iterable.get(i)  OR  ... iterable[i]
  *       }
  */
-@ConvertInterfaceOnly
-@SizeT @JavaOnly
 public class ArrayWrapper<T> {
 
     /** size of array... may be smaller than backend capacity/length */
@@ -67,7 +60,6 @@ public class ArrayWrapper<T> {
      * @param backend backend
      * @param size size of array... may be smaller than backend capacity
      */
-    @JavaOnly
     public ArrayWrapper(T[] backend, int size) {
         this.backend = backend;
         this.size = size;
@@ -77,14 +69,14 @@ public class ArrayWrapper<T> {
      * @return Empty Array Wrapper
      */
     @SuppressWarnings("rawtypes")
-    public static @Ptr ArrayWrapper getEmpty() {
+    public static ArrayWrapper getEmpty() {
         return EMPTY;
     }
 
     /**
      * @param capacity Array capacity and size
      */
-    public ArrayWrapper(@SizeT int capacity) {
+    public ArrayWrapper(int capacity) {
         this(capacity, capacity);
     }
 
@@ -92,11 +84,9 @@ public class ArrayWrapper<T> {
      * @param size size of array... may be smaller than backend capacity
      */
     @SuppressWarnings("unchecked")
-    public ArrayWrapper(@SizeT int size, @SizeT int capacity) {
+    public ArrayWrapper(int size, int capacity) {
         assert size <= capacity;
         this.backend = (T[])new Object[capacity];
-        // in cpp mit NULL füllen (?)
-        //cpp fill(0);
     }
 
     public T get(int index) {
@@ -133,7 +123,6 @@ public class ArrayWrapper<T> {
     /**
      * @return Backend
      */
-    @JavaOnly
     public T[] getBackend() {
         return backend;
     }
@@ -204,7 +193,7 @@ public class ArrayWrapper<T> {
      * - if size is reduced, elements are not deleted or set to NULL
      * (Attention! Potential Java and C++ memory leaks...)
      */
-    public void setSize(@SizeT int newSize) {
+    public void setSize(int newSize) {
         assert(newSize <= backend.length);
         size = newSize;
     }

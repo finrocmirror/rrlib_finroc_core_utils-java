@@ -23,14 +23,11 @@ package org.rrlib.finroc_core_utils.jc.jni;
 
 import java.util.List;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Array of Pointers in C++
  */
-@JavaOnly
 public class PointerArray extends SharedBuffer {
 
     public PointerArray(List<UsedInC> objectsWithPointers) {

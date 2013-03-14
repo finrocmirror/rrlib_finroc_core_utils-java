@@ -21,27 +21,19 @@
  */
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.log.LogUser;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Queue fragment.
  *
  * Used to dequeue all elements of bounded WonderQueue at once
  */
-@PassByValue @RawTypeArgs
 public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUser {
-
-    //Cpp template <typename X, typename Y>
-    //Cpp friend class WonderQueueBounded;
 
     /** Next element in fragment */
     protected C next = null;
@@ -50,7 +42,7 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
     protected C last = null;
 
     /** Object of last element */
-    @Ptr protected T lastObject = null;
+    protected T lastObject = null;
 
     /** "Previous" entry of last element */
     protected C lastPrev = null;
@@ -59,7 +51,6 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
     public boolean skipFirst = false;
 
     /** Log domain for this class */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"queue_impl\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     /**
@@ -68,8 +59,8 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
      * @return Next element in QueueFragment - null when there's none
      */
     @SuppressWarnings("unchecked")
-    public @Ptr T dequeue() {
-        @Ptr C n2 = next;
+    public T dequeue() {
+        C n2 = next;
         if (last == null) {
             return null;
         } else if (n2 == last) {
@@ -77,14 +68,14 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
             return skipFirst ? null : lastObject;
         } else {
             assert(n2 != null);
-            @Ptr BoundedQElementContainer nextX = n2.next2.get();
+            BoundedQElementContainer nextX = n2.next2.get();
             if (nextX.isDummy()) {
                 // rare preemption case: find next element from the back
 
                 if (n2 == lastPrev) {
                     next = last;
                 } else {
-                    @Ptr BoundedQElementContainer current = lastPrev;
+                    BoundedQElementContainer current = lastPrev;
                     while (current.prev != n2) {
                         current = current.prev;
                     }
@@ -98,7 +89,7 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
                 next = (C)nextX;
             }
         }
-        @Ptr T result = (T)n2.element;
+        T result = (T)n2.element;
 
         n2.recycle(false);
         if (result == null || skipFirst) {

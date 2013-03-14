@@ -23,14 +23,11 @@ package org.rrlib.finroc_core_utils.jc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Atomic integer class
  */
-@JavaOnly
 public class AtomicInt extends AtomicInteger {
 
     /** UID */

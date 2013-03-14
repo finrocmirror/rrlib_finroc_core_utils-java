@@ -20,17 +20,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-@Namespace("finroc::util::jni")
-@CppLocation("rrlib/finroc_core_utils_jni")
-@JNILocation("rrlib/finroc_core_utils_jni")
-
 /**
  * This package contains contains classes that help
  * closely integrating Java and C++ code via JNI
  */
 package org.rrlib.finroc_core_utils.jc.jni;
-
-import org.rrlib.finroc_core_utils.jc.annotation.CppLocation;
-import org.rrlib.finroc_core_utils.jc.annotation.JNILocation;
-import org.rrlib.finroc_core_utils.jc.annotation.Namespace;
-

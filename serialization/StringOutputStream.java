@@ -20,141 +20,79 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.HAppend;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.PostInclude;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * String output stream.
  * Used for completely serializing object to a string stream (UTF-8).
  */
-@HAppend( {
-    "inline StringOutputStream& operator<< (StringOutputStream& os, char t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, int8_t t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, int16_t t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, int32_t t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, long int t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, long long int t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, uint8_t t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, uint16_t t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, uint32_t t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, unsigned long int t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, unsigned long long int t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, float t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, double t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, bool t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, const char* t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, const std::string& t) { os.wrapped << t; return os; }",
-    "inline StringOutputStream& operator<< (StringOutputStream& os, const Serializable& t) { t.serialize(os); return os; }"
-})
-@IncludeClass(RRLibSerializableImpl.class)
-@Include("<sstream>")
-@NoCpp @Inline
-@PostInclude( {"detail/tOutputStreamFallback.h", "detail/tStringOutputStreamFallback.h"})
 public class StringOutputStream {
 
     /** Wrapped string stream */
-    @CppType("std::ostringstream")
     StringBuilder wrapped = new StringBuilder();
 
-    /*Cpp
-    template <typename T>
-    StringOutputStream& append(const T& t) {
-        *this << t;
-        return *this;
-    }
-     */
-
-    @Init("wrapped()")
     public StringOutputStream() {
     }
 
     /**
      * @param length Initial length of buffer (TODO: in C++ this currently has now effect)
      */
-    @Init("wrapped()")
     public StringOutputStream(int length) {
-
-        //JavaOnlyBlock
         wrapped.setLength(length);
     }
 
-    @JavaOnly
     public StringBuilder append(String str) {
         return wrapped.append(str);
     }
 
-    @JavaOnly
     public StringBuilder append(StringBuffer sb) {
         return wrapped.append(sb);
     }
 
-    @JavaOnly
     public StringBuilder append(CharSequence s) {
         return wrapped.append(s);
     }
 
-    @JavaOnly
     public StringBuilder append(CharSequence s, int start, int end) {
         return wrapped.append(s, start, end);
     }
 
-    @JavaOnly
     public StringBuilder append(char[] str) {
         return wrapped.append(str);
     }
 
-    @JavaOnly
     public StringBuilder append(char[] str, int offset, int len) {
         return wrapped.append(str, offset, len);
     }
 
-    @JavaOnly
     public StringBuilder append(boolean b) {
         return wrapped.append(b);
     }
 
-    @JavaOnly
     public StringBuilder append(char c) {
         return wrapped.append(c);
     }
 
-    @JavaOnly
     public StringBuilder append(int i) {
         return wrapped.append(i);
     }
 
-    @JavaOnly
     public StringBuilder append(long lng) {
         return wrapped.append(lng);
     }
 
-    @JavaOnly
     public StringBuilder append(float f) {
         return wrapped.append(f);
     }
 
-    @JavaOnly
     public StringBuilder append(double d) {
         return wrapped.append(d);
     }
 
-    @JavaOnly
     public StringBuilder append(Enum<?> d) {
         return wrapped.append(EnumValue.doNaturalFormatting(d.toString())).append(" (").append(d.ordinal()).append(")");
     }
 
-    @NonVirtual @InCpp("return wrapped._str();") @CppType("std::string")
     public String toString() {
         return wrapped.toString();
     }
@@ -162,7 +100,6 @@ public class StringOutputStream {
     /**
      * Clear contents and reset
      */
-    @InCpp("wrapped._str(std::_string());")
     public void clear() {
         wrapped.delete(0, wrapped.length());
     }

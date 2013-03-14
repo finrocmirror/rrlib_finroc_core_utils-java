@@ -22,30 +22,24 @@
 package org.rrlib.finroc_core_utils.jc.stream;
 
 import org.rrlib.finroc_core_utils.jc.AtomicDoubleInt;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 import org.rrlib.finroc_core_utils.jc.container.Reusable;
 import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Single chunk that is used in a chunk buffer
  */
-@Inline @NoCpp @Ptr
 public class BufferChunk extends Reusable {
 
     /** Size of a single buffer chunk */
-    @SizeT public static final int CHUNK_SIZE = 8192;
+    public static final int CHUNK_SIZE = 8192;
 
     /** Next chunk in singly-linked list */
     public volatile BufferChunk next = null;
 
     /** Buffer that this object provides */
-    @PassByValue public final FixedBuffer buffer;
+    public final FixedBuffer buffer;
 
     /**
      * [1 bit] Is a following chunk available? (Updated _after_ next has been set)

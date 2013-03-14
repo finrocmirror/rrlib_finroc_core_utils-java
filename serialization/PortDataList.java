@@ -21,39 +21,32 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.PostProcess;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 import org.rrlib.finroc_core_utils.rtti.Copyable;
 import org.rrlib.finroc_core_utils.rtti.GenericChangeable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * List of type T that can be used in ports - or in a blackboard
  *
  * For reasons of complexity, objects in PortDataList must not be used/stored outside of PortDataList in Java.
  * They have to be copied, before lock on list is released.
  */
-@JavaOnly
 public interface PortDataList<T> extends RRLibSerializable, Copyable<PortDataList<T>>, GenericChangeable<PortDataList<T>> {
 
     /**
      * @return Size of list
      */
-    @PostProcess("org.finroc.j2c.PortDataList")
-    public @SizeT int size();
+    public int size();
 
     /**
      * @param index Index of element
      * @return Element at index
      */
-    @PostProcess("org.finroc.j2c.PortDataList")
     public T get(int index);
 
     /**
      * @param newSize New size of list
      */
-    @PostProcess("org.finroc.j2c.PortDataList")
     public void resize(int newSize);
 }

@@ -22,14 +22,6 @@
 package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Managed;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.log.LogUser;
 import org.rrlib.finroc_core_utils.jc.stampedptr.AtomicStampedPtrIdx64;
@@ -37,7 +29,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is a special concurrent non-blocking FIFO linked queue.
  * It should be real-time-capable, since it does not need to allocate memory.
@@ -64,12 +56,7 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
  *   [1bit flag: signal that element has already been used/dequeued - do not use/recycle content anymore (enters this state when dequeueing last element]
  *   [29bit counter - wrapped around]
  */
-@Include( {"Atomic.h", "stampedptr/AtomicStampedPtr.h"}) @RawTypeArgs
 public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> extends LogUser implements HasDestructor {
-
-    ////Cpp typedef util::AtomicStampedPtrIdx64<C> StampedPtrT;
-    //Cpp typedef Atomic32BitStampedPtr<C> StampedPtrT;
-    //Cpp typedef typename StampedPtrT::raw_t raw_t;
 
     /** See class comment for meanings */
     //private static final int DQ_THREAD_LOCK_FLAG = 0x40000000;
@@ -78,11 +65,9 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
     private static final int COUNTER_WRAP = COUNTER_MASK + 1;
 
     /** Last element in queue - the one that was most recently added - never null - stamp is element index*/
-    @CppType("StampedPtrT")
     protected final AtomicStampedPtrIdx64<C> last = new AtomicStampedPtrIdx64<C>();
 
     /** First/oldest element in queue - stamp is element index - negative stamp means that object has already been dequeued: do not recycle element */
-    @CppType("StampedPtrT")
     protected final AtomicStampedPtrIdx64<C> first = new AtomicStampedPtrIdx64<C>();
 
     /**
@@ -96,7 +81,6 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
     private static final Object RETRY = new Object();
 
     /** Log domain for this class */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"queue_impl\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     public WonderQueueBounded() {
@@ -135,7 +119,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
      * (Should definetly be overriden by subclasses)
      * @return Returns empty container, as it is used in this queue
      */
-    protected abstract @Managed @Ptr C getEmptyContainer();
+    protected abstract C getEmptyContainer();
 
     /**
      * Add element to the end of the queue.
@@ -143,7 +127,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
      *
      * @param pd Element to enqueue
      */
-    public void enqueueWrapped(@Ptr T o) {
+    public void enqueueWrapped(T o) {
         C c = getEmptyContainer();
         assert(c.element == null);
         assert(!c.isDummy());
@@ -158,13 +142,13 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
      * @param pd Element to enqueue
      * @return Element index in queue
      */
-    public void enqueueDirect(@Ptr C pd) {
+    public void enqueueDirect(C pd) {
 
         assert(pd.stateChange((byte)(Reusable.UNKNOWN | Reusable.USED), Reusable.ENQUEUED, this));
 
         // swap last pointer
-        @Ptr BoundedQElementContainer prev = null;
-        @CppType("raw_t") long raw = 0;
+        BoundedQElementContainer prev = null;
+        long raw = 0;
         assert(pd.next2.get() == BoundedQElementContainer.getDummy(pd.reuseCounter));
         int count = 0;
         int lastCounter = 0;
@@ -214,7 +198,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
         }
 
         // check whether we might need to dequeue
-        @CppType("raw_t") long rawFirst = first.getRaw();
+        long rawFirst = first.getRaw();
         int firstCountRaw = first.getStamp(rawFirst);
         int firstCount = firstCountRaw & COUNTER_MASK;
         C firstElem = first.getPointer(rawFirst);
@@ -228,7 +212,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
                 return; // wow! we're having some rare preemption delays... never mind... queue might be a little too long
             }
 
-            @CppType("raw_t") long rawNext = first.merge((C)next, firstCount + 1);
+            long rawNext = first.merge((C)next, firstCount + 1);
             if (!first.compareAndSet(rawFirst, rawNext)) {
                 return; // someone else is dealing with this... he will shorten the list... maybe not enough, but never mind... somebody will do it
             }
@@ -264,8 +248,8 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
      * @return Element that was dequeued - null if no element is available
      */
     @SuppressWarnings("unchecked")
-    public @Ptr T dequeue() {
-        @VoidPtr Object result = null;
+    public T dequeue() {
+        Object result = null;
         do {
             result = dequeue2();
         } while (result == RETRY);
@@ -276,11 +260,11 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
      * Helper method for above
      */
     @SuppressWarnings("unchecked")
-    private @VoidPtr Object dequeue2() {
+    private Object dequeue2() {
 
-        @Ptr T result = null;
+        T result = null;
 
-        @CppType("raw_t") long rawFirst = first.getRaw();
+        long rawFirst = first.getRaw();
         int firstCountRaw = first.getStamp(rawFirst);
         int firstCount = firstCountRaw & COUNTER_MASK;
         C firstElem = first.getPointer(rawFirst);
@@ -293,7 +277,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
                 return null;
             }
 
-            @CppType("raw_t") long rawNext = first.merge((C)next, firstCount + 1);
+            long rawNext = first.merge((C)next, firstCount + 1);
             if (!first.compareAndSet(rawFirst, rawNext)) {
                 //System.out.println("dqr2: Retry " + firstCount + 1);
                 return RETRY; // ah... somebody else changed something... we need to retry
@@ -321,7 +305,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
             return result;
         }
 
-        @CppType("raw_t") long rawNext = first.merge((C)next, firstCount + 1);
+        long rawNext = first.merge((C)next, firstCount + 1);
         if (!first.compareAndSet(rawFirst, rawNext)) {
             //System.out.println("dqr2: XRetryX " + firstCount + 1);
             return RETRY; // ah... somebody else changed something... we need to retry
@@ -339,14 +323,14 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
      * @param wqf Empty fragment. Elements will dequeued and put into this fragment. There they can be handled very efficiently.
      */
     @SuppressWarnings("unchecked")
-    public void dequeueAll(@Ref QueueFragment<T, C> wqf) {
+    public void dequeueAll(QueueFragment<T, C> wqf) {
 
         // Idea: last element remains in queue. It is marked "DONT_USE" and its object is passed to fragment.
 
         assert(wqf.dequeue() == null);
 
-        @CppType("raw_t") long rawFirst = 0;
-        @CppType("raw_t") long rawLast = 0;
+        long rawFirst = 0;
+        long rawLast = 0;
         int lastStamp = 0;
 
         // adjust first and last pointers

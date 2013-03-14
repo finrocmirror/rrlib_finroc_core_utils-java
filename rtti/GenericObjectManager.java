@@ -20,14 +20,9 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Management information for generic object.
  * May be subclassed to store more custom info such as reference counting.
@@ -37,34 +32,16 @@ import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
  * Therefore, their destructor should never be called. Instead, the
  * GenericObject should be deallocated.
  */
-@Superclass( {}) @Ptr
-@IncludeClass(GenericObject.class)
 public interface GenericObjectManager {
 
     /**
      * @return Generic object that this class manages
      */
-    @Ptr @NonVirtual @JavaOnly
     public GenericObject getObject();
 
     /**
      * @param managedObject Set object to be managed
      */
-    @JavaOnly
     public void setObject(GenericObject managedObject);
-
-    /*Cpp
-    public:
-
-    // \return Generic object that this class manages
-    GenericObject* getObject() {
-        return reinterpret_cast<GenericObject*>(reinterpret_cast<char*>(this) - GenericObject::MANAGER_OFFSET);
-    }
-
-    // \return Generic object that this class manages
-    const GenericObject* getObject() const {
-        return reinterpret_cast<const GenericObject*>(reinterpret_cast<const char*>(this) - GenericObject::MANAGER_OFFSET);
-    }
-     */
 }
 

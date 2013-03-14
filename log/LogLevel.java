@@ -20,8 +20,6 @@
  */
 package org.rrlib.finroc_core_utils.log;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
 * The enumeration that encodes the message levels. These levels are
 * predefined and can be used to give the messages different priorities,
@@ -30,7 +28,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 * release mode).
 * They are also used for colored output to stdout or stderr.
  */
-@JavaOnly
 public enum LogLevel {
     LL_USER,             //!< Information for user (including end-users). Is always shown if domain is active.
     LL_ERROR,            //!< Error message. Used to inform about _certain_ malfunction of application. Is always shown if domain is active.

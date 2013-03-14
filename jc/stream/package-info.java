@@ -20,15 +20,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-@Namespace("finroc::util")
-@CppLocation("rrlib/finroc_core_utils/stream")
-
 /**
  * This package contains some stream-related classes
  * that are available in Java and C++.
  */
 package org.rrlib.finroc_core_utils.jc.stream;
-
-import org.rrlib.finroc_core_utils.jc.annotation.CppLocation;
-import org.rrlib.finroc_core_utils.jc.annotation.Namespace;
-

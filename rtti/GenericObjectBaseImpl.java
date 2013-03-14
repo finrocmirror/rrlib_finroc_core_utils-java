@@ -20,13 +20,6 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.CppDefault;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SkipArgs;
 import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
@@ -36,7 +29,7 @@ import org.rrlib.finroc_core_utils.serialization.StringOutputStream;
 import org.rrlib.finroc_core_utils.xml.XMLNode;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Allows wrapping any object as GenericObject
  */
@@ -46,56 +39,44 @@ public class GenericObjectBaseImpl <T extends RRLibSerializable> extends Generic
      * @param wrappedObject Wrapped object
      * @param dt Data type of wrapped object
      */
-    @JavaOnly @SkipArgs("2")
-    public GenericObjectBaseImpl(@CppDefault("NULL") @Ptr T wrappedObject, @CppDefault("DataType<T>()") DataTypeBase dt) {
+    public GenericObjectBaseImpl(T wrappedObject, DataTypeBase dt) {
         super(dt);
         wrapped = wrappedObject;
     }
 
-    /*Cpp
-    GenericObjectBaseImpl() : GenericObject(DataType<T>()) {}
-     */
-
     @Override
-    @InCpp("os << *getData<T>();")
     public void serialize(OutputStreamBuffer os) {
         getData().serialize(os);
     }
 
     @Override
-    @InCpp("is >> *getData<T>();")
     public void deserialize(InputStreamBuffer is) {
         getData().deserialize(is);
     }
 
     @Override
-    @InCpp("os << *getData<T>();")
     public void serialize(StringOutputStream os) {
         getData().serialize(os);
     }
 
     @Override
-    @InCpp("is >> *getData<T>();")
     public void deserialize(StringInputStream is) throws Exception {
         getData().deserialize(is);
     }
 
     @Override
-    @InCpp("node << *getData<T>();")
     public void serialize(XMLNode node) throws Exception {
         getData().serialize(node);
     }
 
     @Override
-    @InCpp("node >> *getData<T>();")
     public void deserialize(XMLNode node) throws Exception {
         getData().deserialize(node);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    @InCpp("deepCopyFromImpl(*static_cast<const T*>(source), f);")
-    protected void deepCopyFrom(Object source, @CppDefault("NULL") @Ptr Factory f) {
+    protected void deepCopyFrom(Object source, Factory f) {
         deepCopyFromImpl((T)source, f);
     }
 
@@ -104,12 +85,10 @@ public class GenericObjectBaseImpl <T extends RRLibSerializable> extends Generic
      *
      * @param source Source object
      */
-    @InCpp("_sSerialization::deepCopy(source, *getData<T>(), f);")
-    public void deepCopyFromImpl(@Const @Ref T source, @CppDefault("NULL") @Ptr Factory f) {
+    public void deepCopyFromImpl(T source, Factory f) {
         Serialization.deepCopy(source, getData(), f);
     }
 
-    @InCpp("clear::clear(getData<T>());")
     @Override
     public void clear() {
         if (getData() instanceof Clearable) {

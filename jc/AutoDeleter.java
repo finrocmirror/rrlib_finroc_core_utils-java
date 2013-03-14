@@ -21,47 +21,14 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.CppInclude;
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.InCppFile;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Managed;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * All objects added to this container will be deleted as soon as the container is.
  */
-@Include("<vector>")
-@CppInclude("container/AllocationRegister.h")
 public class AutoDeleter {
 
-    @JavaOnly
     private static AutoDeleter instance = new AutoDeleter();
-
-    /*Cpp
-    private:
-    std::vector<SafeDestructible*> deletables;
-
-    public:
-
-    virtual ~AutoDeleter() {
-        Thread::stopThreads();
-
-        // delete in reverse order
-        for (int i = ((int)deletables._size()) - 1; i >= 0; i--) {
-            deletables[i]->customDelete(false);
-        }
-    }
-
-    inline void add(SafeDestructible* del) {
-        deletables.push_back(del);
-    }
-     */
 
     /**
      * Registers object/resource for deletion when this object is deleted
@@ -69,49 +36,9 @@ public class AutoDeleter {
      *
      * @param del (Pointer to) object to delete with this object
      */
-    @InCpp("deletables.push_back(del);")
-    public void add(@Ptr Object del) {}
+    public void add(Object del) {}
 
-    /*Cpp
-
-    // Helper for classes which are not derived from tSafeDestructible
-    class Any {
-
-        class AnyDeleter : public SafeDestructible {
-        public:
-            std::shared_ptr<void> sp;
-            AnyDeleter(std::shared_ptr<void> p) : sp(p) {}
-        };
-
-    public:
-        AnyDeleter* wrapped;
-
-        template <typename T>
-        Any(T* t) : wrapped(new AnyDeleter(std::shared_ptr<T>(t))) {}
-    };
-
-
-    // same as below - helps with multiple inheritance problem
-    inline static void addStaticImpl(Object* del) {
-        addStatic(static_cast<SafeDestructible*>(del));
-    }
-
-    // same as below - helps with multiple inheritance problem
-    inline static void addStaticImpl(Any del) {
-        addStatic(del.wrapped);
-    }
-     */
-
-    @InCppFile
-    @InCpp( {
-        "// 'Lock' to allocation register - ensures that report will be printed after static auto-deleter has been deleted",
-        "static std::shared_ptr<AllocationRegister> allocationRegisterLock(AllocationRegister::getInstance());",
-        "// This 'lock' ensures that Thread info is deallocated after static auto-deleter has been deleted",
-        "static util::ThreadInfoLock threadInfoLock = util::Thread::getThreadInfoLock();",
-        "static std::shared_ptr<AutoDeleter> instance(new AutoDeleter());",
-        "return instance;"
-    })
-    public static @SharedPtr AutoDeleter getStaticInstance() {
+    public static AutoDeleter getStaticInstance() {
         return instance;
     }
 
@@ -121,7 +48,7 @@ public class AutoDeleter {
      *
      * @param del (Pointer to) object to delete when program ends
      */
-    private static void addStaticImpl(@Ptr @CppType("SafeDestructible") Object del) {
+    private static void addStaticImpl(Object del) {
         getStaticInstance().add(del);
     }
 
@@ -131,7 +58,7 @@ public class AutoDeleter {
      *
      * @param del (Pointer to) object to delete when program ends
      */
-    public static @Ptr <T> T addStatic(@Managed @Ptr T obj) {
+    public static <T> T addStatic(T obj) {
         addStaticImpl(obj);
         return obj;
     }

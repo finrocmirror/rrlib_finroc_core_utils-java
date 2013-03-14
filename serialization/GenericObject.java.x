@@ -31,7 +31,7 @@ import org.finroc.jc.annotation.Ptr;
 import org.finroc.jc.annotation.VoidPtr;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Container for an arbitrary object.
  * 

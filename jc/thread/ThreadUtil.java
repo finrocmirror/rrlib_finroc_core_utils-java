@@ -21,24 +21,15 @@
  */
 package org.rrlib.finroc_core_utils.jc.thread;
 
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Managed;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Prefix;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Diverse static utility functions regarding threads.
  *
  * These utility functions are mainly helpful to handle
  * threads in C++ (also).
  */
-@NoCpp @Prefix("s")
 public class ThreadUtil {
 
     /**
@@ -47,7 +38,6 @@ public class ThreadUtil {
      *
      * @return Current thread id
      */
-    @InCpp("return Thread::currentThreadRaw()->getId();")
     public static long getCurrentThreadId() {
         return Thread.currentThread().getId();
     }
@@ -60,8 +50,7 @@ public class ThreadUtil {
      * @param t Thread to set up
      * @return Relevant Further Thread reference
      */
-    @InCpp( {"t.setAutoDelete();", "return t.getSharedPtr();"})
-    public static @SharedPtr Thread setAutoDelete(@Ref Thread t) {
+    public static Thread setAutoDelete(Thread t) {
         return t;
     }
 
@@ -74,10 +63,7 @@ public class ThreadUtil {
      * @param t Thread to get pointer from
      * @return Shared pointer to thread
      */
-    @InCpp( {"t->setAutoDelete(); // we want AutoDelete semantics now",
-             "return std::static_pointer_cast<T>(t->getSharedPtr());"
-            })
-    public static @SharedPtr <T extends Thread> T getThreadSharedPtr(@Managed @Ptr T t) {
+    public static <T extends Thread> T getThreadSharedPtr(T t) {
         return t;
     }
 
@@ -89,8 +75,7 @@ public class ThreadUtil {
      *
      * @param t Thread to make real-time
      */
-    @InCpp("t->setRealtime();")
-    public static void makeThreadRealtime(@PassByValue @SharedPtr Thread t) {
+    public static void makeThreadRealtime(Thread t) {
         t.setPriority(Thread.MAX_PRIORITY);
     }
 }

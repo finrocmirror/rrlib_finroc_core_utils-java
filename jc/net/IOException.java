@@ -21,14 +21,11 @@
  */
 package org.rrlib.finroc_core_utils.jc.net;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * equivalent to Java IOException
  */
-@JavaOnly
 public class IOException extends Exception {
 
     public IOException() {}
@@ -41,7 +38,6 @@ public class IOException extends Exception {
     }
 
     /** UID */
-    @JavaOnly
     private static final long serialVersionUID = -1070345834685462531L;
 
 }

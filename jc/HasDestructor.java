@@ -21,19 +21,14 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Destructor;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Objects that have a custom delete method in Java.
  * It will be invoked by the garbage collector when requested.
  */
-@JavaOnly
 public interface HasDestructor {
 
     /** Delete method */
-    @Destructor
     public void delete();
 }

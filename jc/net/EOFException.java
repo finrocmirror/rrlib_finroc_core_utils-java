@@ -21,14 +21,11 @@
  */
 package org.rrlib.finroc_core_utils.jc.net;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * equivalent to Java ConnectException
  */
-@JavaOnly
 public class EOFException extends RuntimeException {
 
     public EOFException() {}
@@ -40,7 +37,6 @@ public class EOFException extends RuntimeException {
     }
 
     /** UID */
-    @JavaOnly
     private static final long serialVersionUID = -18076677848254531L;
 
 }

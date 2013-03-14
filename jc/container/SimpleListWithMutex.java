@@ -22,22 +22,15 @@
 package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-//import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Simple List with an ordered mutex
  */
-@Inline @SizeT @NoCpp
 public class SimpleListWithMutex<T> extends SimpleList<T> {
 
     /** UID */
-    @JavaOnly
     private static final long serialVersionUID = 50893536986507019L;
 
     /** Mutex */
@@ -54,7 +47,7 @@ public class SimpleListWithMutex<T> extends SimpleList<T> {
      * @param initialSize Initial List Size
      * @param lockOrder Primary lock order level for mutex
      */
-    public SimpleListWithMutex(@SizeT int initialSize, int lockOrder) {
+    public SimpleListWithMutex(int initialSize, int lockOrder) {
         super(initialSize);
         objMutex = new MutexLockOrder(lockOrder);
     }

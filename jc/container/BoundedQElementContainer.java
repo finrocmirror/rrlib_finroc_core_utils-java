@@ -23,62 +23,51 @@ package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.AtomicPtr;
 import org.rrlib.finroc_core_utils.jc.AutoDeleter;
-import org.rrlib.finroc_core_utils.jc.annotation.AtFront;
-import org.rrlib.finroc_core_utils.jc.annotation.Friend;
-import org.rrlib.finroc_core_utils.jc.annotation.InCppFile;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Container for one element in bounded wonder qeueue.
  */
-@AtFront @Friend( {WonderQueueBounded.class, QueueFragment.class}) @Ptr
 public abstract class BoundedQElementContainer extends Reusable {
 
     /** Element containers which have this as object are dummy containers */
     static final Object DUMMY_MARKER = new Object();
 
     /** Number of "dummy elements" - must be 2^x */
-    private static final @SizeT int DUMMY_ELEMENTS = 16;
+    private static final int DUMMY_ELEMENTS = 16;
 
     /** Mask for dummy element index */
-    private static final @SizeT int DUMMY_MASK = DUMMY_ELEMENTS - 1;
+    private static final int DUMMY_MASK = DUMMY_ELEMENTS - 1;
 
     /** Have dummies been initiliazed? */
     private static boolean initialized = false;
 
     /** Dummy elements - purpose: safe setting of next2 of Elements */
-    @Ptr
     private static BoundedQElementContainer[] dummies;
 
     /** Element in this container */
-    protected volatile @VoidPtr Object element;
+    protected volatile Object element;
 
     /**
      * @return Element in this container
      */
-    public @VoidPtr Object getElement() {
+    public Object getElement() {
         return element;
     }
 
     /**
      * @param Element in this container to set
      */
-    public void setElement(@VoidPtr Object element) {
+    public void setElement(Object element) {
         this.element = element;
     }
 
     /** Previous Element queue => doubly-linked list */
-    protected volatile @Ptr BoundedQElementContainer prev = null;
+    protected volatile BoundedQElementContainer prev = null;
 
     /** Reuse Counter */
-    @SizeT protected int reuseCounter = 0;
+    protected int reuseCounter = 0;
 
     /** Next element in queue */
     public final AtomicPtr<BoundedQElementContainer> next2 = new AtomicPtr<BoundedQElementContainer>(getDummy(0));
@@ -92,14 +81,12 @@ public abstract class BoundedQElementContainer extends Reusable {
      *
      * @param recycleContent Also recycle element in container?
      */
-    @JavaOnly
-    @NonVirtual abstract protected void recycle(boolean recycleContent);
+    abstract protected void recycle(boolean recycleContent);
 
     /**
      * Recycle only contents of this container
      */
-    @JavaOnly
-    @NonVirtual abstract protected void recycleContent();
+    abstract protected void recycleContent();
 
     /**
      * Recycle content of possibly another container
@@ -107,11 +94,9 @@ public abstract class BoundedQElementContainer extends Reusable {
      *
      * @param content Content to recycle
      */
-    @JavaOnly
-    @NonVirtual abstract public void recycleContent(@VoidPtr Object content);
+    abstract public void recycleContent(Object content);
 
 
-    @Inline
     protected void recycle() {
         assert(!isDummy());
         reuseCounter++;
@@ -124,21 +109,20 @@ public abstract class BoundedQElementContainer extends Reusable {
         super.recycle();
     }
 
-    @Inline public boolean isDummy() {
+    public boolean isDummy() {
         return element == DUMMY_MARKER;
     }
 
     /**
      * Static initialization. May be done before everything else.
      */
-    @InCppFile
     public static void staticInit() {
         if (initialized) {
             return;
         }
         assert(dummies == null);
         dummies = AutoDeleter.addStatic(new BoundedQElementContainer[DUMMY_ELEMENTS]);
-        for (@SizeT int i = 0; i < DUMMY_ELEMENTS; i++) {
+        for (int i = 0; i < DUMMY_ELEMENTS; i++) {
             BoundedQElementContainer tmp = new Dummy();
             tmp.next2.set(getDummy(0));
             dummies[i] = tmp;
@@ -150,13 +134,13 @@ public abstract class BoundedQElementContainer extends Reusable {
     /**
      * Get Dummy element for specified index
      */
-    @Inline protected static BoundedQElementContainer getDummy(int index) {
+    protected static BoundedQElementContainer getDummy(int index) {
         return dummies[index & DUMMY_MASK];
     }
 }
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Dummy element for safely invalidating next2 AtomicPtr
  */

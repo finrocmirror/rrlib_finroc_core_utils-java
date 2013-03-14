@@ -23,27 +23,16 @@ package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.ArrayWrapper;
 import org.rrlib.finroc_core_utils.jc.AtomicPtr;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 import org.rrlib.finroc_core_utils.jc.thread.SpinLock;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Implementation of class below
  */
-@Include( {"Atomic.h"}) @Inline @NoCpp
 class RawWonderQueue extends Queueable {
 
     /** Spin lock for concurrent access */
-    @InCpp("SpinMutex mutex;")
     private final SpinLock lock = new SpinLock();
 
     /**
@@ -56,7 +45,7 @@ class RawWonderQueue extends Queueable {
      * Temporary last object (for dequeueing) - this way all elements can be dequeued.
      * points to this, if no element is available that has not been read already.
      */
-    private @Ptr Queueable readLast = this;
+    private Queueable readLast = this;
 
     /**
      * Next element after readLast
@@ -65,7 +54,6 @@ class RawWonderQueue extends Queueable {
      */
     private final AtomicPtr<Queueable> nextFirst = new AtomicPtr<Queueable>(null);
 
-    @Init("mutex()")
     public RawWonderQueue() {
         next = null;
     }
@@ -76,10 +64,10 @@ class RawWonderQueue extends Queueable {
      *
      * @param pd Element to enqueue
      */
-    @Inline public void enqueueRaw(@Ptr Queueable pd) {
+    public void enqueueRaw(Queueable pd) {
 
         // swap last pointer
-        @Ptr Queueable prev = last.getAndSet(pd);
+        Queueable prev = last.getAndSet(pd);
 
         if (prev == this) {
             assert(nextFirst.get() == null);
@@ -96,8 +84,8 @@ class RawWonderQueue extends Queueable {
      *
      * @return Element that was dequeued - null if no element is available
      */
-    @Inline public @Ptr Queueable dequeueRaw() {
-        @Ptr Queueable next = this.next;
+    public Queueable dequeueRaw() {
+        Queueable next = this.next;
         if (next == null) { // does readLast need updating?
             next = nextFirst.getAndSet(null);
             if (next == null) {
@@ -110,7 +98,7 @@ class RawWonderQueue extends Queueable {
             this.next = null;
             return next;
         }
-        @Ptr Queueable nextnext = next.next;
+        Queueable nextnext = next.next;
         if (nextnext == null) { // can occur with delayed/preempted enqueue operations (next is set later and is not volatile)
             return null; // queue is not empty, but elements are not fully available yet
         }
@@ -125,10 +113,9 @@ class RawWonderQueue extends Queueable {
      *
      * @return Element that was dequeued - null if no element is available
      */
-    @InCpp( {"SpinLock(mutex);", "return dequeueRaw();"})
-    @Inline public @Ptr Queueable concurrentDequeueRaw() {
+    public Queueable concurrentDequeueRaw() {
         lock.lock();
-        @Ptr Queueable result = dequeueRaw();
+        Queueable result = dequeueRaw();
         lock.release();
         return result;
     }
@@ -141,8 +128,8 @@ class RawWonderQueue extends Queueable {
      * @return Actual number of elements dequeued (can be less if queue has lass elements)
      */
     @SuppressWarnings( { "rawtypes", "unchecked" })
-    public @SizeT int dequeueRaw(@Ptr ArrayWrapper buffer, @SizeT int maxElements) {
-        @SizeT int pos = 0;
+    public int dequeueRaw(ArrayWrapper buffer, int maxElements) {
+        int pos = 0;
 
         // first run: dequeue remaining elements in current chunk
         // second run: dequeue remaining elements in updated chunk
@@ -151,17 +138,13 @@ class RawWonderQueue extends Queueable {
                 if (next == readLast) {
                     next = null;
                 }
-                @Ptr Queueable nextnext = next.next;
+                Queueable nextnext = next.next;
                 if (nextnext == null) { // can occur with delayed/preempted enqueue operations (next is set later and is not volatile)
                     return pos; // queue is not empty, but elements are not fully available yet
                 }
                 next = nextnext;
                 next.next = null;
-
-                // JavaOnlyBlock
                 buffer.set(pos, next);
-
-                //Cpp buffer->set(pos, next);
                 pos++;
             }
 
@@ -180,7 +163,7 @@ class RawWonderQueue extends Queueable {
 }
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is a special concurrent non-blocking FIFO linked queue.
  * It should be real-time-capable, since it does not need to allocate memory.
@@ -192,7 +175,6 @@ class RawWonderQueue extends Queueable {
  * Internally, it does this by dequeueing all elements internally and then returning
  * them one by one.
  */
-@Inline @NoCpp @RawTypeArgs
 public class WonderQueue<T extends Queueable> extends RawWonderQueue {
 
     /**
@@ -201,7 +183,7 @@ public class WonderQueue<T extends Queueable> extends RawWonderQueue {
      *
      * @param pd Element to enqueue
      */
-    @NonVirtual @Inline public void enqueue(@Ptr T pd) {
+    public void enqueue(T pd) {
         enqueueRaw(pd);
     }
 
@@ -212,7 +194,7 @@ public class WonderQueue<T extends Queueable> extends RawWonderQueue {
      * @return Element that was dequeued - null if no elements available
      */
     @SuppressWarnings("unchecked")
-    @NonVirtual @Inline public @Ptr T dequeue() {
+    public T dequeue() {
         return (T)dequeueRaw();
     }
 
@@ -223,7 +205,7 @@ public class WonderQueue<T extends Queueable> extends RawWonderQueue {
      * @param maxElements Maximum number of elements to dequeue
      * @return Actual number of elements dequeued (can be less if queue has lass elements)
      */
-    public int dequeue(@Ptr ArrayWrapper<T> buffer, int maxElements) {
+    public int dequeue(ArrayWrapper<T> buffer, int maxElements) {
         return dequeueRaw(buffer, maxElements);
     }
 
@@ -234,7 +216,7 @@ public class WonderQueue<T extends Queueable> extends RawWonderQueue {
      * @return Element that was dequeued - null if no element is available
      */
     @SuppressWarnings("unchecked")
-    @Inline public @Ptr T concurrentDequeue() {
+    public T concurrentDequeue() {
         return (T)concurrentDequeueRaw();
     }
 
@@ -244,15 +226,11 @@ public class WonderQueue<T extends Queueable> extends RawWonderQueue {
      */
     public void deleteEnqueued() {
         while (true) {
-            @Ptr T r = dequeue();
+            T r = dequeue();
             if (r == null) {
                 break;
             }
-
-            //JavaOnlyBlock
             r.delete();
-
-            //Cpp r->customDelete(false);
         }
     }
 }

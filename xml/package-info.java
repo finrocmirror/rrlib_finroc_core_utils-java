@@ -19,14 +19,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-@Namespace("rrlib::xml2")
-@CppLocation("rrlib/xml2_wrapper")
-
 /**
  * This package contains an xml wrapper - analog to rrlib_xml2_wrapper
  */
 package org.rrlib.finroc_core_utils.xml;
-
-import org.rrlib.finroc_core_utils.jc.annotation.CppLocation;
-import org.rrlib.finroc_core_utils.jc.annotation.Namespace;
-

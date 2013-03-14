@@ -21,15 +21,12 @@
  */
 package org.rrlib.finroc_core_utils.jc.net;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * All classes that receive TCP connections should implement this interface
  * to be able to register at the TCPConnectionHandler.
  */
-@Ptr
 public interface TCPServer {
 
     /**

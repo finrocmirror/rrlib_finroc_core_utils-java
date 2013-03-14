@@ -23,16 +23,14 @@ package org.rrlib.finroc_core_utils.serialization;
 
 import java.util.ArrayList;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 import org.rrlib.finroc_core_utils.rtti.GenericChangeable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Standard Implementation of PortDataList interface.
  */
-@JavaOnly
 public class PortDataListImpl<T extends RRLibSerializable> extends RRLibSerializableImpl implements PortDataList<T> {
 
     /** Wrapped list */

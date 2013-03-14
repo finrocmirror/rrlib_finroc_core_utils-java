@@ -20,14 +20,9 @@
  */
 package org.rrlib.finroc_core_utils.log;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.PostProcess;
-
 /**
  * Java variant of C++ LogStream
  */
-@JavaOnly @PassByValue
 public class LogStream {
 
     private LogLevel level;
@@ -41,32 +36,27 @@ public class LogStream {
         this.description = description;
     }
 
-    @JavaOnly @PostProcess("org.finroc.j2c.LogStream")
     public LogStream append(String s) {
         buffer.append(s);
         return this;
     }
 
-    @JavaOnly @PostProcess("org.finroc.j2c.LogStream")
     public LogStream append(short s) {
         buffer.append(s);
         return this;
     }
 
-    @JavaOnly @PostProcess("org.finroc.j2c.LogStream")
     public LogStream append(int s) {
         buffer.append(s);
         return this;
     }
 
-    @JavaOnly @PostProcess("org.finroc.j2c.LogStream")
     public LogStream appendln(String s) {
         buffer.append(s);
         buffer.append('\n');
         return this;
     }
 
-    @JavaOnly @PostProcess("org.finroc.j2c.LogStream")
     public void close() {
         domain.log(level, description, buffer.toString(), null, 2);
     }

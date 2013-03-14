@@ -21,31 +21,21 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
 import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class wraps timer access.
  * Getting system time is very expensive (~700k possible/second). If the precise time is not needed
  * this class caches the current time (if enabled). Using this can greatly increase performance
  * (factor 100)
  */
-@Inline @NoCpp @Ptr
-@Include("<sys/time.h>")
 public class Time extends LoopThread {
 
     /** Singleton instance - shared ptr for auto-deletion */
-    private static @SharedPtr Time instance; /* = new Time();*/
+    private static Time instance; /* = new Time();*/
 
     /** Interval in which time is updated */
     private static final int INTERVAL = 20;
@@ -67,7 +57,6 @@ public class Time extends LoopThread {
         setPriority(MAX_PRIORITY - 1);
         setName("Time-Caching-Thread");
 
-        //JavaOnlyBlock
         setDaemon(true);
     }
 
@@ -80,7 +69,7 @@ public class Time extends LoopThread {
     /**
      * @return Time loop thread Instance (probably useless method)
      */
-    public static @Const @Ref Time getInstance() {
+    public static Time getInstance() {
         if (RUN_TIMING_THREAD && instance == null) {
             instance = new Time(); // lazy/safe initialization
             instance.start();
@@ -107,11 +96,6 @@ public class Time extends LoopThread {
     /**
      * @return Precise time in ms
      */
-    @InCpp( {"timeval tval;",
-             "_gettimeofday(&tval, NULL);",
-             "int64 sec = tval.tv_sec, usec = tval.tv_usec;",
-             "return (sec * 1000) + (usec / 1000);"
-            })
     public static long getPrecise() {
         return System.currentTimeMillis();
     }
@@ -123,11 +107,6 @@ public class Time extends LoopThread {
      * (only valid on local system).
      * (see Java: System.nanoTime)
      */
-    @InCpp( {"struct timespec t;",
-             "clock_gettime(_CLOCK_MONOTONIC, &t);",
-             "int64 sec = t.tv_sec, nsec = t.tv_nsec;",
-             "return (sec * NSEC_PER_SEC) + nsec;"
-            })
     public static long nanoTime() {
         return System.nanoTime();
     }
@@ -149,11 +128,6 @@ public class Time extends LoopThread {
      *
      * @param nano Point in time in nano-seconds (same scale as nanoTime())
      */
-    @InCpp( {"struct timespec t;",
-             "t.tv_sec = static_cast<int>(nanoTime / NSEC_PER_SEC);",
-             "t.tv_nsec = static_cast<int>(nanoTime % NSEC_PER_SEC);",
-             "clock_nanosleep(_CLOCK_MONOTONIC, _TIMER_ABSTIME, &t, NULL);"
-            })
     public static void sleepUntilNano(long nanoTime) {
         long diff = nanoTime - nanoTime();
         if (diff > 0) {

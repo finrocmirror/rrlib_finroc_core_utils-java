@@ -20,15 +20,10 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Attribute;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SkipArgs;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Allows wrapping any object as GenericObject
  */
@@ -36,25 +31,15 @@ public class GenericObjectWrapper <T extends RRLibSerializable, M extends Generi
 
     /** Manager */
     @SuppressWarnings("unused")
-    @Attribute("aligned(8)")
-    @PassByValue private final M manager;
+    private final M manager;
 
     /**
      * @param wrappedObject Wrapped object
      * @param dt Data type of wrapped object
      */
-    @JavaOnly @SkipArgs("2")
-    public GenericObjectWrapper(@Ptr T wrappedObject, DataTypeBase dt, M manager) {
+    public GenericObjectWrapper(T wrappedObject, DataTypeBase dt, M manager) {
         super(wrappedObject, dt);
         this.jmanager = manager;
         this.manager = null;
     }
-
-    /*Cpp
-    public:
-    GenericObjectWrapper(T* wrappedObject) : GenericObjectBaseImpl<T>(), manager() {
-        assert((reinterpret_cast<char*>(&manager) - reinterpret_cast<char*>(this)) == this->MANAGER_OFFSET && "Manager offset invalid");
-        this->wrapped = wrappedObject;
-    }
-     */
 }

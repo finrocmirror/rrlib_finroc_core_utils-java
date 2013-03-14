@@ -30,9 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.rrlib.finroc_core_utils.jc.Time;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.PostProcess;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
 
 /**
  * The RRLib logging system is structured into hierarchical domains that
@@ -51,7 +48,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
  * @author Max Reichardt
  * @author Tobias Föhst
  */
-@JavaOnly @SharedPtr
 public class LogDomain {
 
     LogDomain parent;
@@ -449,7 +445,6 @@ public class LogDomain {
     * @param callerDescription Description of calling object or context
     * @param msg           The message to output
     */
-    @PostProcess("org.finroc.j2c.LogMessage")
     public void log(LogLevel level, String callerDescription, String msg) {
         log(level, callerDescription, msg, null, 2);
     }
@@ -470,7 +465,6 @@ public class LogDomain {
     * @param msg           The message to output
     * @param e             Exception to output
     */
-    @PostProcess("org.finroc.j2c.LogMessage")
     public void log(LogLevel level, String callerDescription, String msg, Exception e) {
         log(level, callerDescription, msg, e, 2);
     }
@@ -490,7 +484,6 @@ public class LogDomain {
     * @param callerDescription Description of calling object or context
     * @param e             Exception to output
     */
-    @PostProcess("org.finroc.j2c.LogMessage")
     public void log(LogLevel level, String callerDescription, Exception e) {
         log(level, callerDescription, "", e, 2);
     }
@@ -570,7 +563,6 @@ public class LogDomain {
         return LogDomainRegistry.getInstance().getSubDomain(name, this);
     }
 
-    @PostProcess("org.finroc.j2c.LogStream")
     public LogStream getLogStream(LogLevel level, String description) {
         return new LogStream(level, this, description);
     }

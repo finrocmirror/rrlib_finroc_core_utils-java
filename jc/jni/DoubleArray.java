@@ -23,11 +23,9 @@ package org.rrlib.finroc_core_utils.jc.jni;
 
 import java.nio.DoubleBuffer;
 
-import org.rrlib.finroc_core_utils.jc.annotation.AutoVariants;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Array with doubles in C++ (double *)
  *
@@ -35,16 +33,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
  *
  * In auto-generated JNI stuff, the DoubleArrayWrapper is the class to use.
  */
-@JavaOnly
-@AutoVariants( {
-    "DoubleArray;double;8;DoubleBuffer;asDoubleBuffer",
-    "FloatArray;float;4;FloatBuffer;asFloatBuffer",
-    "LongArray;long;8;LongBuffer;asLongBuffer",
-    "IntArray;int;4;IntBuffer;asIntBuffer",
-    "ShortArray;short;2;ShortBuffer;asShortBuffer",
-    "ByteArray;byte;1;ByteBuffer;duplicate",
-    "CharArray;char;1;CharBuffer;asCharBuffer"
-})
 public class DoubleArray extends SharedBuffer {
 
     public DoubleBuffer dbuffer;

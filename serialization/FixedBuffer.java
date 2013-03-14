@@ -26,20 +26,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-import org.rrlib.finroc_core_utils.jc.annotation.Unsigned;
 import org.rrlib.finroc_core_utils.jc.jni.JNICalls;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is a simple fixed-size memory buffer.
  *
@@ -52,10 +42,10 @@ import org.rrlib.finroc_core_utils.jc.jni.JNICalls;
 public class FixedBuffer {
 
     /** Use direct byte buffer? */
-    @JavaOnly protected static final boolean USE_DIRECT_BUFFERS = JNICalls.JNI_AVAILABLE;
+    protected static final boolean USE_DIRECT_BUFFERS = JNICalls.JNI_AVAILABLE;
 
     /** Byte order for this buffer */
-    @JavaOnly protected static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
+    protected static final ByteOrder BYTE_ORDER = ByteOrder.nativeOrder();
 
 //  /** number of times buffer was (re-)allocated */
 //  @JavaOnly protected volatile int allocationCount = 0;
@@ -63,71 +53,30 @@ public class FixedBuffer {
     /** Number of temp buffers to allocate for each fixed buffer */
     private final int TEMP_BUFFER_COUNT = 4;
 
-    @JavaOnly protected final TempBuffer[] tempBufs = new TempBuffer[TEMP_BUFFER_COUNT];
+    protected final TempBuffer[] tempBufs = new TempBuffer[TEMP_BUFFER_COUNT];
 
     /** Actual (wrapped) buffer - may be replaced by subclasses */
-    @InCpp( {"friend class ReadView;", "",
-             "char* buffer; // pointer to buffer start",
-             "size_t capacityX; // buffer capacity",
-             "bool ownsBuf; // owned buffers are deleted when this class is"
-            })
     protected ByteBuffer buffer;
-
-    /*Cpp
-    // @param buffer_ pointer to buffer start
-    // @param capacity_ capacity of wrapped buffer
-    FixedBuffer(char* buffer_, size_t capacity_) :
-            buffer(buffer_),
-            capacityX(capacity_),
-            ownsBuf(false) {}
-
-    FixedBuffer(size_t capacity_) :
-            buffer(capacity_ > 0 ? new char[capacity_] : NULL),
-            capacityX(capacity_),
-            ownsBuf(capacity_ > 0) {}
-
-    FixedBuffer(const FixedBuffer& fb) : buffer(fb.buffer), capacityX(fb.capacity()), ownsBuf(false) {}
-
-    FixedBuffer& operator=(const FixedBuffer& fb) {
-        buffer = fb.buffer;
-        capacityX = fb.capacity();
-        ownsBuf = false;
-        return *this;
-    }
-
-    virtual ~FixedBuffer() {
-        checkDelete();
-    }
-
-    void checkDelete() {
-        if (ownsBuf && buffer != NULL) {
-            delete[] buffer;
-        }
-    }
-     */
 
     /**
      * @return Capacity of buffer (in bytes)
      */
-    @InCpp("return capacityX;")
-    @ConstMethod public @SizeT int capacity() {
+    public int capacity() {
         return buffer.capacity();
     }
 
-    @JavaOnly
-    public FixedBuffer(@SizeT int capacity_) {
+    public FixedBuffer(int capacity_) {
         this(USE_DIRECT_BUFFERS ? ByteBuffer.allocateDirect(capacity_) : ByteBuffer.allocate(capacity_));
     }
 
     /**
      * @param array Array to wrap
      */
-    @JavaOnly
-    public FixedBuffer(@Ref byte[] array) {
+    public FixedBuffer(byte[] array) {
         this(ByteBuffer.wrap(array));
     }
 
-    @JavaOnly public FixedBuffer(ByteBuffer bb) {
+    public FixedBuffer(ByteBuffer bb) {
         buffer = bb;
         buffer.order(BYTE_ORDER);
         for (int i = 0; i < TEMP_BUFFER_COUNT; i++) {
@@ -139,14 +88,14 @@ public class FixedBuffer {
     /**
      * @return Wrapped ByteBuffer
      */
-    @JavaOnly public ByteBuffer getBuffer() {
+    public ByteBuffer getBuffer() {
         return buffer;
     }
 
     /**
      * @return Temporary buffer
      */
-    @JavaOnly public TempBuffer getTempBuffer() {
+    public TempBuffer getTempBuffer() {
         for (int i = 0; i < TEMP_BUFFER_COUNT; i++) {
             TempBuffer tb = tempBufs[i];
             if (tb.inUse.compareAndSet(false, true)) {
@@ -168,11 +117,7 @@ public class FixedBuffer {
      * @param off offset in destination array
      * @param length number of bytes to copy
      */
-    /*@InCpp( {"assert(off + len <= dst.length);",
-             "get(offset, dst.getPointer() + off, len);"
-            })*/
-    @JavaOnly
-    @ConstMethod public void get(@SizeT int offset, @Ref byte[] dst, @SizeT int off, @SizeT int len) {
+    public void get(int offset, byte[] dst, int off, int len) {
         TempBuffer buffer = getTempBuffer();
         buffer.buffer.position(offset);
         buffer.buffer.get(dst, off, len);
@@ -187,11 +132,7 @@ public class FixedBuffer {
      * @param off offset in source array
      * @param length number of bytes to copy
      */
-    /*@InCpp( {"assert(off + len <= src.length);", "" +
-             "put(offset, src.getPointer() + off, len);"
-            })*/
-    @JavaOnly
-    public void put(@SizeT int offset, @Const @Ref byte[] src, @SizeT int off, @SizeT int len) {
+    public void put(int offset, byte[] src, int off, int len) {
         buffer.position(offset);
         buffer.put(src, off, len);
     }
@@ -202,9 +143,7 @@ public class FixedBuffer {
      * @param offset Offset in this buffer
      * @param dst Destination array
      */
-    //@InCpp("get(offset, dst.getPointer(), dst.length);")
-    @JavaOnly
-    @ConstMethod public void get(@SizeT int offset, @Ref byte[] dst) {
+    public void get(int offset, byte[] dst) {
         TempBuffer buffer = getTempBuffer();
         buffer.buffer.position(offset);
         buffer.buffer.get(dst);
@@ -217,9 +156,7 @@ public class FixedBuffer {
      * @param offset Offset in this buffer
      * @param src Source array
      */
-    @JavaOnly
-    //@InCpp("put(offset, src.getPointer(), src.length);")
-    public void put(@SizeT int offset, @Const @Ref byte[] src) {
+    public void put(int offset, byte[] src) {
         buffer.position(offset);
         buffer.put(src);
     }
@@ -232,7 +169,7 @@ public class FixedBuffer {
      * @param off offset in source array
      * @param length number of bytes to copy
      */
-    @JavaOnly public void get(int offset, ByteBuffer dst, int off, int len) {
+    public void get(int offset, ByteBuffer dst, int off, int len) {
         TempBuffer buffer = getTempBuffer();
         dst.clear();
         dst.position(off);
@@ -244,57 +181,6 @@ public class FixedBuffer {
         buffer.inUse.set(false);
     }
 
-    /*Cpp
-
-    // returns raw pointer to buffer start
-    const char* getPointer() const {
-        return buffer;
-    }
-
-    // returns raw pointer to buffer start
-    char* getPointer() {
-        return buffer;
-    }
-
-    // Generic put method... okay... this is MUCH more elegant than Java equivalent
-    // @param offset absolute offset
-    // @param t Data to write
-    template <typename T>
-    void putImpl(size_t offset, T t) {
-        assert(offset + sizeof(T) <= capacityX);
-        T* ptr = (T*)(buffer + offset);
-        (*ptr) = t;
-    }
-
-    // Generic get method... okay... this is MUCH more elegant than Java equivalent again
-    // @param offset absolute offset
-    // @return t Data at offset
-    template <typename T>
-    T getImpl(size_t offset) const {
-        assert(offset + sizeof(T) <= capacityX);
-        T* ptr = (T*)(buffer + offset);
-        return *ptr;
-    }
-
-    // Copy data from source buffer
-    // @param off absolute offset
-    // @param other source buffer
-    // @param len number of bytes to copy
-    void put(size_t off, const void* other, size_t len) {
-        assert(off + len <= capacityX);
-        memcpy(buffer + off, other, len);
-    }
-
-    // Copy data to destination buffer
-    // @param off absolute offset
-    // @param other destination buffer
-    // @param len number of bytes to copy
-    void get(size_t off, void* other, size_t len) const {
-        assert(off + len <= capacityX);
-        memcpy(other, buffer + off, len);
-    }
-     */
-
     /**
      * Copy Data to destination buffer
      *
@@ -303,10 +189,7 @@ public class FixedBuffer {
      * @param off offset in source array
      * @param length number of bytes to copy
      */
-    @InCpp( {"assert(off + len <= dst.capacity());",
-             "get(offset, dst.getPointer() + off, len);"
-            })
-    @ConstMethod public void get(@SizeT int offset, @Ref FixedBuffer dst, @SizeT int off, @SizeT int len) {
+    public void get(int offset, FixedBuffer dst, int off, int len) {
         get(offset, dst.buffer, off, len);
     }
 
@@ -318,7 +201,7 @@ public class FixedBuffer {
      * @param off offset in source buffer
      * @param length number of bytes to copy
      */
-    @JavaOnly public void put(int offset, ByteBuffer src, int off, int len) {
+    public void put(int offset, ByteBuffer src, int off, int len) {
         if (len <= 0) {
             return;
         }
@@ -342,10 +225,7 @@ public class FixedBuffer {
      * @param off offset in source array
      * @param length number of bytes to copy
      */
-    @InCpp( {"assert(off + len <= src.capacity());",
-             "put(offset, src.getPointer() + off, len);"
-            })
-    public void put(@SizeT int offset, @Const @Ref FixedBuffer src, @SizeT int off, @SizeT int len) {
+    public void put(int offset, FixedBuffer src, int off, int len) {
         TempBuffer buffer = src.getTempBuffer();
         put(offset, buffer.buffer, off, len);
         buffer.inUse.set(false);
@@ -358,8 +238,7 @@ public class FixedBuffer {
      * @param offset Offset in this buffer
      * @param dst Destination array
      */
-    @InCpp("get(offset, dst.getPointer(), dst.capacity());")
-    @ConstMethod public void get(@SizeT int offset, @Ref FixedBuffer dst) {
+    public void get(int offset, FixedBuffer dst) {
         TempBuffer buffer = getTempBuffer();
         dst.buffer.clear();
         buffer.buffer.position(offset);
@@ -377,8 +256,7 @@ public class FixedBuffer {
      * @param offset Offset in this buffer
      * @param src Source Buffer
      */
-    @InCpp("put(offset, src.getPointer(), src.capacity());")
-    public void put(@SizeT int offset, @Const @Ref FixedBuffer src) {
+    public void put(int offset, FixedBuffer src) {
         put(offset, src, 0, src.capacity());
         /*src.buffer.clear();
         buffer.rewind();
@@ -391,16 +269,14 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v 8 bit integer
      */
-    @InCpp("putImpl<int8_t>(offset, v);")
-    @Inline public void putByte(@SizeT int offset, int v) {
+    public void putByte(int offset, int v) {
         buffer.put(offset, (byte)(v & 0xFF));
     }
     /**
      * @param offset absolute offset
      * @return 8 bit integer
      */
-    @InCpp("return getImpl<int8_t>(offset);")
-    @ConstMethod @Inline public byte getByte(@SizeT int offset) {
+    public byte getByte(int offset) {
         return buffer.get(offset);
     }
 
@@ -408,14 +284,14 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v (1-byte) boolean
      */
-    @Inline public void putBoolean(@SizeT int offset, boolean v) {
+    public void putBoolean(int offset, boolean v) {
         putByte(offset, v ? 1 : 0);
     }
     /**
      * @param offset absolute offset
      * @return (1-byte) boolean
      */
-    @ConstMethod @Inline public boolean getBoolean(@SizeT int offset) {
+    public boolean getBoolean(int offset) {
         return getByte(offset) != 0;
     }
 
@@ -423,16 +299,14 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v Character
      */
-    @InCpp("putImpl<char>(offset, v);")
-    @Inline public void putChar(@SizeT int offset, char v) {
+    public void putChar(int offset, char v) {
         buffer.putChar(offset, v);
     }
     /**
      * @param offset absolute offset
      * @return Character
      */
-    @InCpp("return getImpl<char>(offset);")
-    @ConstMethod @Inline public char getChar(@SizeT int offset) {
+    public char getChar(int offset) {
         return buffer.getChar(offset);
     }
 
@@ -440,16 +314,14 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v 16 bit integer
      */
-    @InCpp("putImpl<int16_t>(offset, v);")
-    @Inline public void putShort(@SizeT int offset, int v) {
+    public void putShort(int offset, int v) {
         buffer.putShort(offset, (short)v);
     }
     /**
      * @param offset absolute offset
      * @return 16 bit integer
      */
-    @InCpp("return getImpl<int16_t>(offset);")
-    @ConstMethod @Inline public short getShort(@SizeT int offset) {
+    public short getShort(int offset) {
         return buffer.getShort(offset);
     }
 
@@ -457,16 +329,14 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v 32 bit integer
      */
-    @InCpp("putImpl<int>(offset, v);")
-    @Inline public void putInt(@SizeT int offset, int v) {
+    public void putInt(int offset, int v) {
         buffer.putInt(offset, v);
     }
     /**
      * @param offset absolute offset
      * @return 32 bit integer
      */
-    @InCpp("return getImpl<int>(offset);")
-    @ConstMethod @Inline public int getInt(@SizeT int offset) {
+    public int getInt(int offset) {
         return buffer.getInt(offset);
     }
 
@@ -474,16 +344,14 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v 64 bit integer
      */
-    @InCpp("putImpl<int64_t>(offset, v);")
-    @Inline public void putLong(@SizeT int offset, long v) {
+    public void putLong(int offset, long v) {
         buffer.putLong(offset, v);
     }
     /**
      * @param offset absolute offset
      * @return 64 bit integer
      */
-    @InCpp("return getImpl<int64_t>(offset);")
-    @ConstMethod @Inline public long getLong(@SizeT int offset) {
+    public long getLong(int offset) {
         return buffer.getLong(offset);
     }
 
@@ -491,8 +359,7 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v 32 bit floating point
      */
-    @InCpp("putImpl<float>(offset, v);")
-    @Inline public void putFloat(@SizeT int offset, float v) {
+    public void putFloat(int offset, float v) {
         buffer.putFloat(offset, v);
     }
 
@@ -500,8 +367,7 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @return 32 bit floating point
      */
-    @InCpp("return getImpl<float>(offset);")
-    @ConstMethod @Inline public float getFloat(@SizeT int offset) {
+    public float getFloat(int offset) {
         return buffer.getFloat(offset);
     }
 
@@ -509,16 +375,14 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param v 64 bit floating point
      */
-    @InCpp("putImpl<double>(offset, v);")
-    @Inline public void putDouble(@SizeT int offset, double v) {
+    public void putDouble(int offset, double v) {
         buffer.putDouble(offset, v);
     }
     /**
      * @param offset absolute offset
      * @return 64 bit floating point
      */
-    @InCpp("return getImpl<double>(offset);")
-    @ConstMethod @Inline public double getDouble(@SizeT int offset) {
+    public double getDouble(int offset) {
         return buffer.getDouble(offset);
     }
 
@@ -526,8 +390,7 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @return unsigned 1 byte integer
      */
-    @InCpp("return getImpl<uint8_t>(offset);") @ConstMethod
-    public @Unsigned int getUnsignedByte(@SizeT int offset) {
+    public int getUnsignedByte(int offset) {
         int b = getByte(offset);
         return b >= 0 ? b : b + 256;
     }
@@ -536,8 +399,7 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @return unsigned 2 byte integer
      */
-    @InCpp("return getImpl<uint16_t>(offset);") @ConstMethod
-    public @Unsigned int getUnsignedShort(@SizeT int offset) {
+    public int getUnsignedShort(int offset) {
         short s = getShort(offset);
         return s >= 0 ? s : s + 65536;
     }
@@ -549,7 +411,7 @@ public class FixedBuffer {
      * @param s String
      * @param terminate Terminate string with zero?
      */
-    @JavaOnly public void putUnicode(@SizeT int offset, String s, boolean terminate) {
+    public void putUnicode(int offset, String s, boolean terminate) {
         int len = s.length();
         int off = offset;
         for (int i = 0; i < len; i++) {
@@ -567,7 +429,7 @@ public class FixedBuffer {
      * @param offset absolute offset in buffer
      * @param s String
      */
-    @JavaOnly public String getUnicode(@SizeT int offset) {
+    public String getUnicode(int offset) {
         StringBuilder sb = new StringBuilder();
         for (int i = offset, n = buffer.capacity() - 1; i < n; i += 2) {
             char c = buffer.getChar(i);
@@ -586,7 +448,7 @@ public class FixedBuffer {
      * @param s String
      * @param length Length of string to read (including possible termination)
      */
-    @JavaOnly public String getUnicode(@SizeT int offset, @SizeT int length) {
+    public String getUnicode(int offset, int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = offset, n = Math.max(i + (length * 2), buffer.capacity() - 1); i < n; i += 2) {
             char c = buffer.getChar(i);
@@ -604,7 +466,7 @@ public class FixedBuffer {
      * @param offset absolute offset in buffer
      * @param s String
      */
-    @Inline public void putString(@SizeT int offset, @Const @Ref @CppType("std::string") String s) {
+    public void putString(int offset, String s) {
         putString(offset, s, true);
     }
 
@@ -615,8 +477,7 @@ public class FixedBuffer {
      * @param s String
      * @param terminate Terminate string with zero?
      */
-    @InCpp("put(offset, s.c_str(), terminate ? s._size() + 1 : s._size());")
-    public void putString(@SizeT int offset, @Const @Ref @CppType("std::string") String s, boolean terminate) {
+    public void putString(int offset, String s, boolean terminate) {
         int len = s.length();
         for (int i = 0; i < len; i++) {
             putByte(offset + i, (byte)s.charAt(i));
@@ -631,8 +492,7 @@ public class FixedBuffer {
      *
      * @param offset absolute offset in buffer
      */
-    @InCpp("return std::_string(buffer + offset);")
-    @CppType("std::string") @ConstMethod public String getString(@SizeT int offset) {
+    public String getString(int offset) {
         StringBuilder sb = new StringBuilder();
         for (int i = offset, n = capacity(); i < n; i++) {
             char c = (char)getByte(i);
@@ -649,7 +509,7 @@ public class FixedBuffer {
      *
      * @param offset absolute offset in buffer
      */
-    @CppType("std::string") @ConstMethod public String getLine(@SizeT int offset) {
+    public String getLine(int offset) {
         StringOutputStream sb = new StringOutputStream();
         for (int i = offset, n = capacity(); i < n; i++) {
             char c = (char)getByte(i);
@@ -659,10 +519,7 @@ public class FixedBuffer {
             sb.append(c);
         }
 
-        //JavaOnlyBlock
         throw new RuntimeException("String not terminated");
-
-        //Cpp throw std::runtime_error("String not terminated");
     }
 
     /**
@@ -671,7 +528,7 @@ public class FixedBuffer {
      * @param offset absolute offset
      * @param length Length of string to read
      */
-    @ConstMethod @CppType("std::string") public String getString(@SizeT int offset, @SizeT int length) {
+    public String getString(int offset, int length) {
         StringOutputStream sb = new StringOutputStream(length);
         for (int i = offset, n = Math.min(capacity(), offset + length); i < n; i++) {
             char c = (char)getByte(i);
@@ -689,17 +546,10 @@ public class FixedBuffer {
      * @param offset Offset in buffer to start at
      * @param length Length of area to zero out
      */
-    @Inline
-    public void zeroOut(@SizeT int offset, @SizeT int length) {
-        // JavaOnlyBlock
+    public void zeroOut(int offset, int length) {
         for (int i = offset, n = offset + length; i < n; i++) {
             buffer.put(i, (byte)0);
         }
-
-        /*Cpp
-        assert(offset + length <= capacityX);
-        memset(buffer + offset, 0, length);
-         */
     }
 
     /**
@@ -708,19 +558,10 @@ public class FixedBuffer {
      *
      * @param fb
      */
-    protected void setCurrentBuffer(@Ptr FixedBuffer fb) {
-        //JavaOnlyBlock
+    protected void setCurrentBuffer(FixedBuffer fb) {
         buffer = fb.buffer;
-
-        /*Cpp
-        assert(!ownsBuf);
-        buffer = fb->buffer;
-        capacityX = fb->capacityX;
-        ownsBuf = false;
-         */
     }
 
-    @JavaOnly
     class TempBuffer {
         ByteBuffer buffer;
         AtomicBoolean inUse = new AtomicBoolean();
@@ -733,10 +574,8 @@ public class FixedBuffer {
         }
     }
 
-    @JavaOnly
     long pointer = -1;
 
-    @JavaOnly
     public long getPointer() {
         if (pointer == -1) {
             if (buffer.isDirect() && JNICalls.JNI_AVAILABLE) {
@@ -748,7 +587,6 @@ public class FixedBuffer {
         return pointer;
     }
 
-    @JavaOnly
     public void dumpToFile(String filename, int size) {
         try {
             BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(filename));

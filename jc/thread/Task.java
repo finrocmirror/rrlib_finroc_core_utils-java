@@ -21,14 +21,11 @@
  */
 package org.rrlib.finroc_core_utils.jc.thread;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Abstract interface for almost any task
  */
-@Ptr
 public interface Task {
 
     /**

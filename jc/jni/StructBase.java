@@ -21,10 +21,8 @@
  */
 package org.rrlib.finroc_core_utils.jc.jni;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
 
-@JavaOnly
 public abstract class StructBase {
 
     /** bool constants */

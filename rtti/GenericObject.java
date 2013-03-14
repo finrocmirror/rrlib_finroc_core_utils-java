@@ -20,16 +20,6 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppDefault;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
 import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
@@ -37,7 +27,7 @@ import org.rrlib.finroc_core_utils.serialization.Serialization;
 import org.rrlib.finroc_core_utils.serialization.Serialization.DataEncoding;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Container/wrapper for an arbitrary object.
  *
@@ -49,16 +39,13 @@ import org.rrlib.finroc_core_utils.serialization.Serialization.DataEncoding;
  *
  * Memory Layout of all subclasses: vtable ptr | datatype ptr | object ptr | management info raw memory of size M
  */
-@Inline @NoCpp
 public abstract class GenericObject extends TypedObjectImpl {
 
     /** Wrapped object */
-    protected @VoidPtr Object wrapped;
+    protected Object wrapped;
 
     /** Management information for this generic object. */
-    @JavaOnly protected GenericObjectManager jmanager;
-
-    //Cpp static const size_t MANAGER_OFFSET = (sizeof(void*) == 4) ? 16 : 24;
+    protected GenericObjectManager jmanager;
 
     /**
      * @param wrapped Wrapped object
@@ -68,31 +55,18 @@ public abstract class GenericObject extends TypedObjectImpl {
         type = dt;
     }
 
-    /*Cpp
-    template <typename T>
-    const T* getData() const {
-        assert(typeid(T).name() == type.getRttiName());
-        return static_cast<const T*>(wrapped);
-    }
-     */
-
     /**
      * @return Wrapped object (type T must match original type)
      */
     @SuppressWarnings("unchecked")
-    @Ptr @Inline public <T extends RRLibSerializable> T getData() {
-
-        //JavaOnlyBlock
+    public <T extends RRLibSerializable> T getData() {
         return (T)wrapped;
-
-        //Cpp assert(typeid(T).name() == type.getRttiName());
-        //Cpp return static_cast<T*>(wrapped);
     }
 
     /**
      * Raw void pointer to wrapped object
      */
-    @ConstMethod public @Const @VoidPtr Object getRawDataPtr() {
+    public Object getRawDataPtr() {
         return wrapped;
     }
 
@@ -103,8 +77,7 @@ public abstract class GenericObject extends TypedObjectImpl {
      * @param source Source object
      */
     @SuppressWarnings( { "unchecked", "rawtypes" })
-    @Inline
-    public void deepCopyFrom(@Const @Ptr GenericObject source, @CppDefault("NULL") @Ptr Factory f) {
+    public void deepCopyFrom(GenericObject source, Factory f) {
         if (source.type == type) {
             deepCopyFrom((Object)source.wrapped, f);
         } else if (Copyable.class.isAssignableFrom(type.getJavaClass())) {
@@ -112,16 +85,7 @@ public abstract class GenericObject extends TypedObjectImpl {
         } else {
             throw new RuntimeException("Types must match");
         }
-
-        //Cpp ... keep assert ...
-        //Cpp deepCopyFrom(source->wrapped, f);
     }
-
-    /*Cpp
-    #if __SIZEOF_POINTER__ == 4
-    int fill_dummy; // fill 4 byte to ensure that managers are 8-byte-aligned on 32 bit platforms
-    #endif
-     */
 
     /**
      * Deep copy source object to this object
@@ -129,13 +93,11 @@ public abstract class GenericObject extends TypedObjectImpl {
      *
      * @param source Source object
      */
-    protected abstract void deepCopyFrom(@Const @VoidPtr Object source, @CppDefault("NULL") @Ptr Factory f);
+    protected abstract void deepCopyFrom(Object source, Factory f);
 
     /**
      * @return Management information for this generic object.
      */
-    @NonVirtual
-    @InCpp("return reinterpret_cast<GenericObjectManager*>(reinterpret_cast<char*>(this) + MANAGER_OFFSET);")
     public GenericObjectManager getManager() {
         return jmanager;
     }

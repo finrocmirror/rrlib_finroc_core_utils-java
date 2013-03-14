@@ -21,14 +21,9 @@
  */
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the thread-local ("TL")/not-thread-safe variant of RawWonderQueue.
  * (non-blocking FIFO linked queue - real-time-capable, since it does not need
@@ -37,11 +32,10 @@ import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
  * In this variant, all elements are dequeued.
  * It's also the fastest variant.
  */
-@Inline @NoCpp
 class RawWonderQueueTL extends Queueable {
 
     /** Pointer to last element in queue - never null */
-    private @Ptr Queueable last = this;
+    private Queueable last = this;
 
     public RawWonderQueueTL() {
         next = this;
@@ -53,7 +47,7 @@ class RawWonderQueueTL extends Queueable {
      *
      * @param pd Element to enqueue
      */
-    @Inline public void enqueueRaw(@Ptr Queueable pd) {
+    public void enqueueRaw(Queueable pd) {
         last.next = pd;
 //      pd.next = this;
         last = pd;
@@ -65,12 +59,12 @@ class RawWonderQueueTL extends Queueable {
      *
      * @return Element that was dequeued - null if no elements available
      */
-    @Inline public @Ptr Queueable dequeueRaw() {
-        @Ptr Queueable result = next;
+    public Queueable dequeueRaw() {
+        Queueable result = next;
         if (result == this) {
             return null;
         }
-        @Ptr Queueable nextnext = result.next;
+        Queueable nextnext = result.next;
         if (nextnext == null) { // now empty
             last = this;
             nextnext = this;
@@ -85,8 +79,8 @@ class RawWonderQueueTL extends Queueable {
      *
      * @return First element in queue - null if there's none
      */
-    @Inline public @Ptr Queueable peekRaw() {
-        @Ptr Queueable result = next;
+    public Queueable peekRaw() {
+        Queueable result = next;
         if (result == this) {
             return null;
         }
@@ -95,7 +89,7 @@ class RawWonderQueueTL extends Queueable {
 }
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the thread-local ("TL")/not-thread-safe variant of WonderQueue.
  * (non-blocking FIFO linked queue - real-time-capable, since it does not need
@@ -104,7 +98,6 @@ class RawWonderQueueTL extends Queueable {
  * In this variant, all elements are dequeued.
  * It's also the fastest variant.
  */
-@Inline @NoCpp @RawTypeArgs
 public class WonderQueueTL<T extends Queueable> extends RawWonderQueueTL {
 
     /**
@@ -113,7 +106,7 @@ public class WonderQueueTL<T extends Queueable> extends RawWonderQueueTL {
      *
      * @param pd Element to enqueue
      */
-    @NonVirtual @Inline public void enqueue(@Ptr T pd) {
+    public void enqueue(T pd) {
         enqueueRaw(pd);
     }
 
@@ -124,7 +117,7 @@ public class WonderQueueTL<T extends Queueable> extends RawWonderQueueTL {
      * @return Element that was dequeued - null if no elements available
      */
     @SuppressWarnings("unchecked")
-    @NonVirtual @Inline public @Ptr T dequeue() {
+    public T dequeue() {
         return (T)dequeueRaw();
     }
 
@@ -134,7 +127,7 @@ public class WonderQueueTL<T extends Queueable> extends RawWonderQueueTL {
      * @return First element in queue - null if there's none
      */
     @SuppressWarnings("unchecked")
-    @NonVirtual @Inline public @Ptr T peek() {
+    public T peek() {
         return (T)peekRaw();
     }
 
@@ -144,15 +137,11 @@ public class WonderQueueTL<T extends Queueable> extends RawWonderQueueTL {
      */
     public void deleteEnqueued() {
         while (true) {
-            @Ptr T r = dequeue();
+            T r = dequeue();
             if (r == null) {
                 break;
             }
-
-            //JavaOnlyBlock
             r.delete();
-
-            //Cpp r->customDelete(false);
         }
     }
 

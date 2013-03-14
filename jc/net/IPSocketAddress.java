@@ -28,10 +28,6 @@
  */
 package org.rrlib.finroc_core_utils.jc.net;
 
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
 import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 
@@ -53,7 +49,6 @@ import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 * @see java.net.ServerSocket
 * @since 1.4
 */
-@PassByValue
 public class IPSocketAddress {
 
     /* The hostname of the Socket Address
@@ -71,7 +66,6 @@ public class IPSocketAddress {
 
     private static final long serialVersionUID = 5076001401234631237L;
 
-    @Init("hostname()")
     private IPSocketAddress() {
     }
 
@@ -90,7 +84,6 @@ public class IPSocketAddress {
      * @throws IllegalArgumentException if the port parameter is outside the specified
      * range of valid port values.
      */
-    @Init("hostname()")
     public IPSocketAddress(IPAddress addr, int port) {
         if (port < 0 || port > 0xFFFF) {
             throw new IllegalArgumentException("port out of range:" + port);
@@ -127,13 +120,11 @@ public class IPSocketAddress {
      *                           denied.
      * @see     #isUnresolved()
      */
-    @Init("hostname()")
     public IPSocketAddress(String hostname, int port) {
         if (port < 0 || port > 0xFFFF) {
             throw new IllegalArgumentException("port out of range:" + port);
         }
 
-        //JavaOnlyBlock
         if (hostname == null) {
             throw new IllegalArgumentException("hostname can't be null");
         }
@@ -142,11 +133,6 @@ public class IPSocketAddress {
             addr = IPAddress.getByName(hostname);
         } catch (UnknownHostException e) {
             this.hostname = hostname;
-
-            //JavaOnlyBlock
-            if (hostname == null) {
-                hostname = "";
-            }
             addr = null;
 
         }
@@ -174,13 +160,11 @@ public class IPSocketAddress {
      *          socket address
      * @since 1.5
      */
-    @Init("hostname()")
     public static IPSocketAddress createUnresolved(String host, int port) {
         if (port < 0 || port > 0xFFFF) {
             throw new IllegalArgumentException("port out of range:" + port);
         }
 
-        //JavaOnlyBlock
         if (host == null) {
             throw new IllegalArgumentException("hostname can't be null");
         }
@@ -189,7 +173,6 @@ public class IPSocketAddress {
         s.port = port;
         s.hostname = host;
 
-        //JavaOnlyBlock
         if (s.hostname == null) {
             s.hostname = "";
         }
@@ -223,7 +206,7 @@ public class IPSocketAddress {
      * @return <code>true</code> if the hostname couldn't be resolved into
      *          an <code>InetAddress</code>.
      */
-    @ConstMethod public final boolean isUnresolved() {
+    public final boolean isUnresolved() {
         return noAddress();
     }
 
@@ -264,15 +247,8 @@ public class IPSocketAddress {
      * @see java.net.InetAddress#equals(java.lang.Object)
      */
     public final boolean equals(Object obj) {
-        //JavaOnlyBlock
         if (obj == null || !(obj instanceof IPSocketAddress))
             return false;
-
-        /*Cpp
-        if (!(typeid(obj) == typeid(IPSocketAddress))) {
-            return false;
-        }
-        */
 
         IPSocketAddress sockAddr = (IPSocketAddress) obj;
         boolean sameIP = false;
@@ -295,14 +271,8 @@ public class IPSocketAddress {
         if (!noAddress())
             return addr.hashCode() + port;
 
-        //JavaOnlyBlock
         if (hostname.length() > 0)
             return hostname.toLowerCase().hashCode() + port;
-
-        /*Cpp
-        if (hostname.length() > 0)
-            return hostname.toLowerCase().hashCode() + port;
-         */
 
         return port;
     }
@@ -332,8 +302,7 @@ public class IPSocketAddress {
     /**
      * @return Has address not been set yet?
      */
-    @InCpp("return !addr.isSet();")
-    @ConstMethod private boolean noAddress() {
+    private boolean noAddress() {
         return addr == null;
     }
 }

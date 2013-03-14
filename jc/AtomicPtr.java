@@ -23,16 +23,11 @@ package org.rrlib.finroc_core_utils.jc;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * this class represents an atomic pointer
  */
-@JavaOnly @RawTypeArgs
 public class AtomicPtr<T> {
 
     /** UID */
@@ -47,23 +42,23 @@ public class AtomicPtr<T> {
     /**
      * @param pointTo initiallay point to this object
      */
-    public AtomicPtr(@Ptr T pointTo) {
+    public AtomicPtr(T pointTo) {
         wrapped = new AtomicReference<T>(pointTo);
     }
 
-    public final @Ptr T get() {
+    public final T get() {
         return wrapped.get();
     }
 
-    public final @Ptr T getAndSet(@Ptr T newValue) {
+    public final T getAndSet(T newValue) {
         return wrapped.getAndSet(newValue);
     }
 
-    public final void set(@Ptr T newValue) {
+    public final void set(T newValue) {
         wrapped.set(newValue);
     }
 
-    public final boolean compareAndSet(@Ptr T expect, @Ptr T update) {
+    public final boolean compareAndSet(T expect, T update) {
         return wrapped.compareAndSet(expect, update);
     }
 

@@ -25,9 +25,6 @@ import java.io.StringWriter;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.rrlib.finroc_core_utils.jc.annotation.CppName;
-import org.rrlib.finroc_core_utils.jc.annotation.PostProcess;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -499,7 +496,7 @@ public class XMLNode {
     /**
      * @return An end-iterator mark to mark the end of children traversal
      */
-    public @Ptr XMLNode getChildrenEnd() {
+    public XMLNode getChildrenEnd() {
         return null;
     }
 
@@ -509,7 +506,6 @@ public class XMLNode {
      * Iteration should look like this:
      *  for (ConstChildIterator it = node.getChildrenBegin(); it.get() != node.getChildrenEnd(); it.next())
      */
-    @CppName("const_iterator")
     public class ConstChildIterator {
 
         private XMLNode current = getNextNode(node.getFirstChild());
@@ -527,15 +523,13 @@ public class XMLNode {
         /**
          * @return Current node
          */
-        @PostProcess("org.finroc.j2c.XMLIterator")
-        public @Ptr XMLNode get() {
+        public XMLNode get() {
             return current;
         }
 
         /**
          * Advance to next node
          */
-        @PostProcess("org.finroc.j2c.XMLIterator")
         public void next() {
             current = getNextNode(current.node.getNextSibling());
         }
@@ -545,7 +539,6 @@ public class XMLNode {
     /**
      * @return Number of children
      */
-    @PostProcess("org.finroc.j2c.XMLIterator")
     public int childCount() {
         int i = 0;
         for (ConstChildIterator it = getChildrenBegin(); it.get() != getChildrenEnd(); it.next()) {

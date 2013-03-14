@@ -20,13 +20,8 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Like boost output devices.
  * Somewhat simpler variant of Java output streams.
@@ -35,7 +30,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
  *
  * Sinks may only be written to by one OutputStream at the same time.
  */
-@Ptr
 public interface Sink {
 
     /**
@@ -44,7 +38,7 @@ public interface Sink {
      * @param outputStreamBuffer Buffer that requests operation
      * @param buffer Buffer that is managed - and was possibly allocated by - sink
      */
-    void close(@Ptr OutputStreamBuffer outputStreamBuffer, @Ref BufferInfo buffer);
+    void close(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer);
 
     /**
      * Reset sink for writing content (again)
@@ -53,7 +47,7 @@ public interface Sink {
      * @param outputStreamBuffer Buffer that requests operation
      * @param buffer Buffer that is managed - and was possibly allocated by - sink
      */
-    void reset(@Ptr OutputStreamBuffer outputStreamBuffer, @Ref BufferInfo buffer);
+    void reset(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer);
 
     /**
      * Write/flush data to sink/"device".
@@ -64,7 +58,7 @@ public interface Sink {
      * @param writeSizeHint Hint about how much data we plan to write additionally (mostly makes sense, when there's no direct read support); -1 indicates manual flush without need for size increase
      * @return Invalidate any Placeholder? (usually true, when buffer changes)
      */
-    boolean write(@Ptr OutputStreamBuffer outputStreamBuffer, @Ref BufferInfo buffer, int writeSizeHint);
+    boolean write(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer, int writeSizeHint);
 
     /**
      * @return Does Sink support direct writing
@@ -82,7 +76,7 @@ public interface Sink {
      * @param offset Offset to start reading in buffer
      * @param len Number of bytes to write
      */
-    void directWrite(@Ptr OutputStreamBuffer outputStreamBuffer, @Const @Ref FixedBuffer buffer, @SizeT int offset, @SizeT int len);
+    void directWrite(OutputStreamBuffer outputStreamBuffer, FixedBuffer buffer, int offset, int len);
 
     /**
      * Flush/Commit data written to sink
@@ -90,5 +84,5 @@ public interface Sink {
      * @param outputStreamBuffer Buffer that requests operation
      * @param buffer Buffer that contains data to write - managed by client
      */
-    void flush(@Ptr OutputStreamBuffer outputStreamBuffer, @Const @Ref BufferInfo buffer);
+    void flush(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer);
 }

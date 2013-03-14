@@ -19,14 +19,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-@Namespace("finroc::util")
-@CppLocation("rrlib/finroc_core_utils/log")
-
 /**
  * This package contains finroc customization and utility classes for rrlib_logging
  */
 package org.rrlib.finroc_core_utils.jc.log;
-
-import org.rrlib.finroc_core_utils.jc.annotation.CppLocation;
-import org.rrlib.finroc_core_utils.jc.annotation.Namespace;
-

@@ -21,16 +21,14 @@
  */
 package org.rrlib.finroc_core_utils.jc.log;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogDomainRegistry;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Log domain definitions "finroc" and "finroc.util" are defined here
  */
-@JavaOnly
 public class LogDefinitions {
 
     /** finroc logging domain */

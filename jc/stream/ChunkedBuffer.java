@@ -24,22 +24,6 @@ package org.rrlib.finroc_core_utils.jc.stream;
 import org.rrlib.finroc_core_utils.jc.AutoDeleter;
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
-import org.rrlib.finroc_core_utils.jc.annotation.AtFront;
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppDefault;
-import org.rrlib.finroc_core_utils.jc.annotation.CppPrepend;
-import org.rrlib.finroc_core_utils.jc.annotation.CppUnused;
-import org.rrlib.finroc_core_utils.jc.annotation.Friend;
-import org.rrlib.finroc_core_utils.jc.annotation.HAppend;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.PostInclude;
-import org.rrlib.finroc_core_utils.jc.annotation.PostProcess;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-import org.rrlib.finroc_core_utils.jc.annotation.Superclass2;
 import org.rrlib.finroc_core_utils.jc.container.ReusablesPoolCR;
 import org.rrlib.finroc_core_utils.rtti.Clearable;
 import org.rrlib.finroc_core_utils.rtti.DataType;
@@ -54,7 +38,7 @@ import org.rrlib.finroc_core_utils.serialization.Sink;
 import org.rrlib.finroc_core_utils.serialization.Source;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Buffer that increases its size (when necessary) by appending chunks
  * to form virtual contiguous memory block.
@@ -78,21 +62,13 @@ import org.rrlib.finroc_core_utils.serialization.Source;
  * in buffer an exception is thrown. So check with available() whether data is available
  * and only commit complete chunks.
  */
-@CppPrepend( {"const size_t BufferChunk::CHUNK_SIZE;", "}} template class rrlib::serialization::DataType<finroc::util::ChunkedBuffer>; namespace finroc { namespace util {"})
-@HAppend( {"namespace rrlib { namespace serialization { namespace clear {",
-           "inline void clear(finroc::util::ChunkedBuffer* buf) { buf->clear(); }",
-           "}}}\n",
-           "extern template class rrlib::serialization::DataType<finroc::util::ChunkedBuffer>;"
-          })
-@PostInclude("rrlib/serialization/DataType.h")
-@Superclass2( {"rrlib::serialization::Serializable", "rrlib::serialization::ConstSource", "rrlib::serialization::Sink", "boost::noncopyable"})
 public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Clearable {
 
     /** First chunk in buffer - only changed by reader - next ones can be determined following links through "next"-attributes*/
-    @Ptr protected BufferChunk first;
+    protected BufferChunk first;
 
     /** Pool with chunks */
-    @Ptr private static ReusablesPoolCR<BufferChunk> chunks;
+    private static ReusablesPoolCR<BufferChunk> chunks;
 
     /** Use blocking readers? */
     protected final boolean blockingReaders;
@@ -101,26 +77,25 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     protected volatile long writtenBytes = 0;
 
     /** "Destructive source" */
-    @PassByValue protected DestructiveSource destructiveSource = new DestructiveSource();
+    protected DestructiveSource destructiveSource = new DestructiveSource();
 
     /** Must be locked before AllocationRegister */
     @SuppressWarnings("unused")
     private static final MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 160);
 
     /** Data type of Chunked Buffer */
-    @Const public final static DataTypeBase TYPE = new DataType<ChunkedBuffer>(ChunkedBuffer.class);
+    public final static DataTypeBase TYPE = new DataType<ChunkedBuffer>(ChunkedBuffer.class);
 
     public static void staticInit() {
         chunks = new ReusablesPoolCR<BufferChunk>();
         AutoDeleter.addStatic(chunks);
     }
 
-    @JavaOnly
     public ChunkedBuffer() {
         this(false);
     }
 
-    public ChunkedBuffer(@CppDefault("false") boolean blockingReaders) {
+    public ChunkedBuffer(boolean blockingReaders) {
         first = getUnusedChunk();
         first.virtualPosition = 0;
 //      last = first;
@@ -195,7 +170,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
      * @param destructive Implementation for destructive source?
      * @return Has a buffer switch occured?
      */
-    @ConstMethod public boolean readImpl(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, @SizeT int len) {
+    public boolean readImpl(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, int len) {
 
         BufferChunk bc = (BufferChunk)buffer.customData;
 
@@ -224,17 +199,16 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
         }
 
         // Get current buffer status
-        @SizeT int raw = bc.curSize.getRaw();
-        @CppUnused
+        int raw = bc.curSize.getRaw();
         boolean nextAv = bc.curSize.getVal1(raw) != 0;
-        @SizeT int curSize = bc.curSize.getVal2(raw);
+        int curSize = bc.curSize.getVal2(raw);
 
         // Are more bytes in current buffer?
         //assert(bc.virtualPosition + buffer.position <= writtenBytes) : "Programming error as it seeems " + bc.virtualPosition + " " + buffer.position + " " + writtenBytes;
         if (buffer.end < curSize) {
 
             // Keep buffer and perform size increase
-            @SizeT int currentWritePosInBuffer = (int)(written - bc.virtualPosition);
+            int currentWritePosInBuffer = (int)(written - bc.virtualPosition);
             buffer.end = minSizeT(curSize, currentWritePosInBuffer);
             assert(curSize - buffer.position >= len) : "Minimal buffer size increase causes problem - probably incorrectly aligned data (eliminating obsolete flushes might also help)?";
         } else {
@@ -250,7 +224,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
 //          }
             bc = next;
             buffer.buffer = bc.buffer;
-            @SizeT int nextSize = minSizeT(bc.curSize.getVal2(), (int)(written - bc.virtualPosition));
+            int nextSize = minSizeT(bc.curSize.getVal2(), (int)(written - bc.virtualPosition));
             buffer.setRange(0, nextSize);
             buffer.customData = bc;
             buffer.position = 0;
@@ -331,7 +305,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     /**
      * @return Current Size of chunked buffer
      */
-    @ConstMethod public @SizeT int getCurrentSize() {
+    public int getCurrentSize() {
         long relevantPos = Math.max(destructiveSource.readPos, first.virtualPosition);
         return (int)(writtenBytes - relevantPos);
     }
@@ -425,14 +399,13 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     /**
      * @return "Destructive source"
      */
-    public @Ref DestructiveSource getDestructiveSource() {
+    public DestructiveSource getDestructiveSource() {
         return destructiveSource;
     }
 
     /**
      * "Desctructive Source"
      */
-    @AtFront @Friend(ChunkedBuffer.class)
     private class DestructiveSource implements Source {
 
         /** Current read position; */
@@ -495,12 +468,11 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     /**
      * Helper function for convenience (without, we have all these casting issues...)
      */
-    @PostProcess("") @JavaOnly
-    private static @SizeT int minSizeT(@SizeT int a, @SizeT int b) {
+    private static int minSizeT(int a, int b) {
         return Math.min(a, b);
     }
 
-    @Override @JavaOnly
+    @Override
     public void clearObject() {
         clear();
     }

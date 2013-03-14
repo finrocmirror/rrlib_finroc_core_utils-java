@@ -21,31 +21,26 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Two unsigned integer numbers with together max. 31 bit that can be set atomically at the same time.
  *
  * Convention with all set operations: If numbers are too large - bits are simply cut off
  */
-@NoCpp @Inline
 public class AtomicDoubleInt {
 
     /** Wrapped AtomicInt 32 */
     private AtomicInt wrapped = new AtomicInt();
 
     /** Bit mask for first and second number; Number of bits to shift first number */
-    private final @SizeT int mask1, mask2, shift1;
+    private final int mask1, mask2, shift1;
 
     /**
      * @param num1Bits Number of bits for first number
      * @param num2Bits Number of bits for second number
      */
-    public AtomicDoubleInt(@SizeT int num1Bits, @SizeT int num2Bits) {
+    public AtomicDoubleInt(int num1Bits, int num2Bits) {
         this(num1Bits, num2Bits, 0, 0);
     }
 
@@ -55,7 +50,7 @@ public class AtomicDoubleInt {
      * @param num1 Initial value for first number
      * @param num2 Initial value for second number
      */
-    public AtomicDoubleInt(@SizeT int num1Bits, @SizeT int num2Bits, @SizeT int num1, @SizeT int num2) {
+    public AtomicDoubleInt(int num1Bits, int num2Bits, int num1, int num2) {
         assert(num1Bits + num2Bits <= 31) : "Max 31 bits for both numbers";
         mask1 = (1 << num1Bits) - 1;
         mask2 = (1 << num2Bits) - 1;
@@ -67,7 +62,7 @@ public class AtomicDoubleInt {
      * @param num1 Value for first number
      * @param num2 Value for second number
      */
-    public void set(@SizeT int num1, @SizeT int num2) {
+    public void set(int num1, int num2) {
         wrapped.set(combine(num1, num2));
     }
 
@@ -78,7 +73,7 @@ public class AtomicDoubleInt {
      * @param num2 Value for second number
      * @return Combined int32 value
      */
-    public @SizeT int combine(@SizeT int num1, @SizeT int num2) {
+    public int combine(int num1, int num2) {
         return ((num1 & mask1) << shift1) | (num2 & mask2);
     }
 
@@ -89,7 +84,7 @@ public class AtomicDoubleInt {
      * @param rawSet Value to set (raw combined integer)
      * @return Did old value match expection? Was new value set?
      */
-    public boolean compareAndSet(@SizeT int rawExpect, @SizeT int rawSet) {
+    public boolean compareAndSet(int rawExpect, int rawSet) {
         return wrapped.compareAndSet(rawExpect, rawSet);
     }
 
@@ -102,7 +97,7 @@ public class AtomicDoubleInt {
      * @param set2 New Value for second value
      * @return Did old value match expectation? Was new value set?
      */
-    public boolean compareAndSet(@SizeT int expect1, @SizeT int expect2, @SizeT int set1, @SizeT int set2) {
+    public boolean compareAndSet(int expect1, int expect2, int set1, int set2) {
         return wrapped.compareAndSet(combine(expect1, expect2), combine(set1, set2));
     }
 
@@ -114,14 +109,14 @@ public class AtomicDoubleInt {
      * @param set2 New Value for second value
      * @return Did old value match expectation? Was new value set?
      */
-    public boolean compareAndSet(@SizeT int expectRaw, @SizeT int set1, @SizeT int set2) {
+    public boolean compareAndSet(int expectRaw, int set1, int set2) {
         return wrapped.compareAndSet(expectRaw, combine(set1, set2));
     }
 
     /**
      * @return Raw integer value that contains both values
      */
-    public @SizeT int getRaw() {
+    public int getRaw() {
         return wrapped.get();
     }
 
@@ -129,7 +124,7 @@ public class AtomicDoubleInt {
      * @param raw "Raw" Integer value that contains both values
      * @return value 1
      */
-    public @SizeT int getVal1(@SizeT int raw) {
+    public int getVal1(int raw) {
         return raw >> shift1;
     }
 
@@ -137,21 +132,21 @@ public class AtomicDoubleInt {
      * @param raw "Raw" Integer value that contains both values
      * @return value 2
      */
-    public @SizeT int getVal2(@SizeT int raw) {
+    public int getVal2(int raw) {
         return raw & mask2;
     }
 
     /**
      * @return value 1
      */
-    public @SizeT int getVal1() {
+    public int getVal1() {
         return getVal1(getRaw());
     }
 
     /**
      * @return value 2
      */
-    public @SizeT int getVal2() {
+    public int getVal2() {
         return getVal2(getRaw());
     }
 

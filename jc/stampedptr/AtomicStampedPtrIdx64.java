@@ -22,21 +22,17 @@
 package org.rrlib.finroc_core_utils.jc.stampedptr;
 
 import org.rrlib.finroc_core_utils.jc.AtomicInt64;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.rrlib.finroc_core_utils.jc.container.AbstractReusable;
 import org.rrlib.finroc_core_utils.jc.container.AllocationRegister;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Stamped Pointer implementation.
  * Pointer is not a direct pointer - but rather an index in the ReusablesRegister.
  *
  * Stamp can be 0-255 ; there can be a maximum of 16.7 million objects in the ReusablesRegister
  */
-@Inline
 public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractAtomicStampedPtr<T> {
 
     /** wrapped atomic pointer */
@@ -61,17 +57,17 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
     }
 
     @Override
-    public boolean compareAndSet(@Ptr T expectedPointer, int expectedStamp, @Ptr T setPointer, int setStamp) {
+    public boolean compareAndSet(T expectedPointer, int expectedStamp, T setPointer, int setStamp) {
         return compareAndSet(merge(expectedPointer, expectedStamp), merge(setPointer, setStamp));
     }
 
     /** Convenience wrapper */
-    public boolean compareAndSet(long expect, @Ptr T setPointer, int setStamp) {
+    public boolean compareAndSet(long expect, T setPointer, int setStamp) {
         return compareAndSet(expect, merge(setPointer, setStamp));
     }
 
     /** Convenience wrapper */
-    public boolean compareAndSet(@Ptr T expectedPointer, int expectedStamp, long set) {
+    public boolean compareAndSet(T expectedPointer, int expectedStamp, long set) {
         return compareAndSet(merge(expectedPointer, expectedStamp), set);
     }
 
@@ -88,7 +84,7 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
 
 
     @Override
-    public void set(@Ptr T pointer, int stamp) {
+    public void set(T pointer, int stamp) {
         wrapped.set(merge(pointer, stamp));
     }
 
@@ -115,7 +111,7 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
      * @param stamp Stamp
      * @return Raw integer value that contains stamp and pointer
      */
-    public long merge(@Ptr T pointer, int stamp) {
+    public long merge(T pointer, int stamp) {
         //JavaOnlyBlock
         assert(pointer.getRegisterIndex() <= MAX_INDEX);
         assert(stamp <= MAX_STAMP);
@@ -130,7 +126,7 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
      * @return Pointer
      */
     @SuppressWarnings("unchecked")
-    public @Ptr T getPointer(long raw) {
+    public T getPointer(long raw) {
         //return (T)ReusablesRegister.get((int)(raw >>> STAMP_BITS));
         return (T)AllocationRegister.getByIndex((int)(raw & MAX_INDEX));
     }
@@ -145,7 +141,7 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
     }
 
     @Override
-    public @Ptr T getPointer() {
+    public T getPointer() {
         return getPointer(wrapped.get());
     }
 
@@ -154,13 +150,11 @@ public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractA
         return getStamp(wrapped.get());
     }
 
-    @JavaOnly
     public String toString() {
-        @Ptr T ptr = getPointer();
+        T ptr = getPointer();
         return "Stamp: " + getStamp() + " Object: " + (ptr != null ? ptr.toString() : "null");
     }
 
-    @JavaOnly
     public static void main(String[] args) {
 
         // self-test

@@ -21,21 +21,6 @@
 package org.rrlib.finroc_core_utils.serialization;
 
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppDefault;
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.HAppend;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.InCppFile;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
-import org.rrlib.finroc_core_utils.jc.annotation.Superclass2;
-import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
@@ -45,7 +30,7 @@ import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 import org.rrlib.finroc_core_utils.rtti.GenericChangeable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Memory buffer that can be used as source and concurrent sink.
  *
@@ -54,87 +39,45 @@ import org.rrlib.finroc_core_utils.rtti.GenericChangeable;
  *
  * Writing and reading concurrently is not supported - due to resize.
  */
-@HAppend( {
-    "/*!",
-    " * memory buffer with initial buffer allocated from stack (with size SIZE)",
-    " */",
-    "template <size_t _SIZE>",
-    "class StackMemoryBuffer : public MemoryBuffer {",
-    "    char initialBuffer[_SIZE];",
-    "    FixedBuffer buffer;",
-    "public:",
-    "    StackMemoryBuffer(float resizeFactor = DEFAULT_RESIZE_FACTOR) : MemoryBuffer(0, resizeFactor), initialBuffer(), buffer(initialBuffer, _SIZE) { backend = &buffer; }",
-    "",
-    "    virtual ~StackMemoryBuffer() { if (backend == &buffer) { backend = NULL; } }",
-    "",
-    "    virtual void deleteOldBackend(FixedBuffer* b) { if (b != &buffer) { delete b; } }",
-    "};"
-})
-@IncludeClass( {RRLibSerializableImpl.class, ConstSource.class, Sink.class})
-@Include( {"rrlib/logging/definitions.h", "StlContainerSuitable.h"})
-@Superclass2( {"Serializable", "ConstSource", "Sink", "boost::noncopyable", "StlSuitable"})
 public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Copyable<MemoryBuffer>, GenericChangeable<MemoryBuffer> {
 
     /** Size of temporary array */
-    @Const @SizeT public final static int TEMP_ARRAY_SIZE = 2048;
+    public final static int TEMP_ARRAY_SIZE = 2048;
 
     /** Default size of temp buffer */
-    @Const @SizeT public final static int DEFAULT_SIZE = 8192;
+    public final static int DEFAULT_SIZE = 8192;
 
     /** Default factor for buffer size increase */
-    @Const public final static int DEFAULT_RESIZE_FACTOR = 2;
+    public final static int DEFAULT_RESIZE_FACTOR = 2;
 
     /** Wrapped memory buffer */
-    @Ptr protected FixedBuffer backend;
+    protected FixedBuffer backend;
 
     /** When buffer needs to be reallocated, new size is multiplied with this factor to have some bytes in reserve */
     protected float resizeReserveFactor;
 
     /** Current size of buffer */
-    @SizeT protected int curSize;
+    protected int curSize;
 
     /** Log domain for this class */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"serialization\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("serialization");
 
     /** Data type of this class */
-    @Const public final static DataTypeBase TYPE = new DataType<MemoryBuffer>(MemoryBuffer.class);
+    public final static DataTypeBase TYPE = new DataType<MemoryBuffer>(MemoryBuffer.class);
 
-    @JavaOnly
     public MemoryBuffer() {
         this(DEFAULT_SIZE);
     }
 
-    @JavaOnly
-    public MemoryBuffer(@SizeT int size) {
+    public MemoryBuffer(int size) {
         this(size, DEFAULT_RESIZE_FACTOR);
     }
-
-    /*Cpp
-    MemoryBuffer(MemoryBuffer&& o) :
-        backend(NULL),
-        resizeReserveFactor(DEFAULT_RESIZE_FACTOR),
-        curSize(0)
-    {
-        std::_swap(backend, o.backend);
-        std::_swap(resizeReserveFactor, o.resizeReserveFactor);
-        std::_swap(curSize, o.curSize);
-    }
-
-    MemoryBuffer& operator=(MemoryBuffer&& o)
-    {
-        std::_swap(backend, o.backend);
-        std::_swap(resizeReserveFactor, o.resizeReserveFactor);
-        std::_swap(curSize, o.curSize);
-        return *this;
-    }
-     */
 
     /**
      * @param size Initial buffer size
      * @param resizeFactor When buffer needs to be reallocated, new size is multiplied with this factor to have some bytes in reserve
      */
-    public MemoryBuffer(@CppDefault("DEFAULT_SIZE") @SizeT int size, @CppDefault("DEFAULT_RESIZE_FACTOR") float resizeFactor) {
+    public MemoryBuffer(int size, float resizeFactor) {
         backend = new FixedBuffer(size);
         resizeReserveFactor = resizeFactor;
     }
@@ -170,10 +113,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
 
     @Override
     public void directRead(InputStreamBuffer inputStreamBuffer, FixedBuffer buffer, int offset, int len) {
-        //JavaOnlyBlock
         throw new RuntimeException("Unsupported - shouldn't be called");
-
-        //Cpp throw std::logic_error("Unsupported - shouldn't be called");
     }
 
     @Override
@@ -185,10 +125,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     public void read(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, int len) {
         buffer.setRange(0, curSize);
         if (buffer.position >= curSize) {
-            //JavaOnlyBlock
             throw new RuntimeException("Attempt to read outside of buffer");
-
-            //Cpp throw std::out_of_range("Attempt to read outside of buffer");
         }
     }
 
@@ -209,11 +146,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
 
     @Override
     public void directWrite(OutputStreamBuffer outputStreamBuffer, FixedBuffer buffer, int offset, int len) {
-
-        //JavaOnlyBlock
         throw new RuntimeException("Unsupported - shouldn't be called");
-
-        //Cpp throw std::logic_error("Unsupported - shouldn't be called");
     }
 
     @Override
@@ -236,12 +169,9 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
      * @param keepContents Keep contents when reallocating?
      * @param oldSize Old Size (only relevant if contents are to be kept)
      */
-    protected void ensureCapacity(int newSize, boolean keepContents, @SizeT int oldSize) {
+    protected void ensureCapacity(int newSize, boolean keepContents, int oldSize) {
         if (resizeReserveFactor <= 1) {
-            //JavaOnlyBlock
             throw new RuntimeException("Attempt to write outside of buffer");
-
-            //Cpp throw std::out_of_range("Attempt to write outside of buffer");
         }
         if (resizeReserveFactor <= 1.2) {
             //System.out.println("warning: small resizeReserveFactor");
@@ -254,7 +184,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     /**
      * @return description
      */
-    public @Const @CppType("char*") String getDescription() {
+    public String getDescription() {
         return "MemoryBuffer";
     }
 
@@ -263,7 +193,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
 
         // do we need size increase?
         if (hint >= 0) {
-            @SizeT int newSize = Math.max(8, (int)((backend.capacity() + hint) * resizeReserveFactor));
+            int newSize = Math.max(8, (int)((backend.capacity() + hint) * resizeReserveFactor));
             ensureCapacity(newSize, true, buffer.position);
             buffer.buffer = backend;
         }
@@ -278,12 +208,12 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
      * @param keepContents Keep contents of backend?
      * @param oldSize Old Size (only relevant of contents are to be kept)
      */
-    protected void reallocate(@SizeT int newSize, boolean keepContents, @SizeT int oldSize) {
+    protected void reallocate(int newSize, boolean keepContents, int oldSize) {
         if (newSize <= backend.capacity()) {
             return;
         }
 
-        @Ptr FixedBuffer newBuffer = new FixedBuffer(newSize);
+        FixedBuffer newBuffer = new FixedBuffer(newSize);
 
         if (keepContents) {
 
@@ -301,9 +231,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
      *
      * @param b Buffer to delete
      */
-    @Virtual
-    protected void deleteOldBackend(@Ptr FixedBuffer b) {
-        //Cpp delete b;
+    protected void deleteOldBackend(FixedBuffer b) {
     }
 
     // CustomSerializable implementation
@@ -314,7 +242,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
         deserialize(rv, size);
     }
 
-    @Override @InCppFile
+    @Override
     public void serialize(OutputStreamBuffer sb) {
         sb.writeInt(curSize);
         sb.write(backend, 0, curSize);
@@ -322,7 +250,6 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
 
     @Override
     public void delete() {
-        //Cpp delete backend;
         backend = null;
     }
 
@@ -334,39 +261,21 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     /**
      * @return Buffer size
      */
-    @ConstMethod public int getSize() {
+    public int getSize() {
         return curSize;
     }
 
     /**
      * @return Buffer capacity
      */
-    @ConstMethod public int getCapacity() {
+    public int getCapacity() {
         return backend.capacity();
     }
-
-    /*Cpp
-
-    //! returns buffer backend
-    inline FixedBuffer* getBuffer() {
-        return backend;
-    }
-
-    //! returns pointer to buffer backend - with specified offset in bytes
-    inline char* getBufferPointer(int offset) {
-        return getBuffer()->getPointer() + offset;
-    }
-
-    //! returns pointer to buffer backend - with specified offset in bytes
-    inline const char* getBufferPointer(int offset) const {
-        return getBuffer()->getPointer() + offset;
-    }
-     */
 
     /**
      * @return Raw buffer backend
      */
-    @ConstMethod public @Ptr @Const FixedBuffer getBuffer() {
+    public FixedBuffer getBuffer() {
         return backend;
     }
 
@@ -375,22 +284,20 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
         curSize = buffer.position; // update buffer size
     }
 
-    @JavaOnly
     public void dumpToFile(String filename) {
         backend.dumpToFile(filename, curSize);
     }
 
     @Override
-    public void applyChange(@Const @Ref MemoryBuffer t, long offset, long dummy) {
+    public void applyChange(MemoryBuffer t, long offset, long dummy) {
         ensureCapacity((int)(t.getSize() + offset), true, getSize());
         backend.put((int)offset, t.backend, 0, t.getSize());
-        @InCpp("size_t requiredSize = static_cast<size_t>(offset + t.getSize());")
         int requiredSize = (int)offset + t.getSize();
         curSize = Math.max(curSize, requiredSize);
     }
 
     @Override
-    public void copyFrom(@Const @Ref MemoryBuffer source) {
+    public void copyFrom(MemoryBuffer source) {
         ensureCapacity(source.getSize(), false, getSize());
         backend.put(0, source.backend, 0, source.getSize());
         curSize = source.getSize();
@@ -402,7 +309,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
      *
      * @param size Number of bytes to
      */
-    public void deserialize(@Ref InputStreamBuffer rv, @SizeT int size) {
+    public void deserialize(InputStreamBuffer rv, int size) {
         curSize = 0;
         reallocate(size, false, -1);
         rv.readFully(backend, 0, size);

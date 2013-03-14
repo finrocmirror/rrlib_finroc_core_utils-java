@@ -22,23 +22,18 @@
 package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.rrlib.finroc_core_utils.jc.log.LogUser;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the base class of a queueable object. It contains the pointer
  * to the next element in singly-linked queue.
  */
-@Inline @NoCpp
 public class Queueable extends LogUser implements HasDestructor {
 
     /** Terminator (not null for efficiency reasons) */
-    public final static @PassByValue Queueable terminator = new Queueable(true);
+    public final static Queueable terminator = new Queueable(true);
 
     /**
      * Pointer to next element in reuse queue... null if there's none
@@ -46,7 +41,7 @@ public class Queueable extends LogUser implements HasDestructor {
      * thread regarding terminator/null (and reader thread sets this himself)...
      * writer changes may be delayed without problem
      */
-    @Ptr public Queueable next = null;
+    public Queueable next = null;
 
     public Queueable() {}
 

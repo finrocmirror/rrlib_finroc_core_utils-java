@@ -21,11 +21,10 @@
  */
 package org.rrlib.finroc_core_utils.jc.jni;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class is similar to Javolution's Struct class.
  * It can be used to access C++ Classes and Structs from Java
@@ -33,7 +32,6 @@ import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
  *
  * It is used for automatic code generation.
  */
-@JavaOnly
 public abstract class Struct extends StructBase2 {
 
     private static final boolean _64 = JNIInfo.is64BitPlatform();

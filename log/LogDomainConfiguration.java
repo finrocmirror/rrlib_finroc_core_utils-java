@@ -22,7 +22,6 @@
 package org.rrlib.finroc_core_utils.log;
 
 import org.rrlib.finroc_core_utils.jc.AtomicInt;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 
 /**
  * tLoggingDomainConfiguration encapsulates the configuration of logging
@@ -39,7 +38,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
  * @author Max Reichardt
  * @author Tobias Föhst
  */
-@JavaOnly
 public class LogDomainConfiguration {
 
     final LogLevel DEFAULT_MAX_LOG_LEVEL = LogLevel.LL_DEBUG;   //!< Default max log level for reduced output mode

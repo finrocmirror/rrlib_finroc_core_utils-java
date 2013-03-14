@@ -24,14 +24,11 @@ package org.rrlib.finroc_core_utils.jc.jni;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * String array in C++ representation (char **)
  */
-@JavaOnly
 public class CStrings extends PointerArray {
 
     public CStrings(String[] strings) {

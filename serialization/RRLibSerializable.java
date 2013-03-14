@@ -20,34 +20,27 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppDelegate;
-import org.rrlib.finroc_core_utils.jc.annotation.CppName;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.rtti.DataType;
 import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 import org.rrlib.finroc_core_utils.xml.XMLNode;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Classes that implement this interface can be serialized and deserialized from
  * a binary stream very efficiently (without unnecessary object allocation)
  *
  * Classes that cannot implement this interface should overload the >> and << operators.
  */
-@JavaOnly @CppDelegate(RRLibSerializableImpl.class) @CppName("Serializable")
 public interface RRLibSerializable {
 
     /** Data type of this class */
-    @Const public final static DataTypeBase TYPE = new DataType<RRLibSerializable>(RRLibSerializable.class);
+    public final static DataTypeBase TYPE = new DataType<RRLibSerializable>(RRLibSerializable.class);
 
     /**
      * @param os Stream to serialize object to
      */
-    @ConstMethod public void serialize(@Ref OutputStreamBuffer os);
+    public void serialize(OutputStreamBuffer os);
 
     /**
      * Deserialize object. Object has to exists already.
@@ -55,14 +48,14 @@ public interface RRLibSerializable {
      *
      * @param is Stream to deserialize from
      */
-    public void deserialize(@Ref InputStreamBuffer is);
+    public void deserialize(InputStreamBuffer is);
 
     /**
      * Serialize object as string (e.g. for xml output)
      *
      * @param os String output stream
      */
-    @ConstMethod public void serialize(@Ref StringOutputStream os);
+    public void serialize(StringOutputStream os);
 
     /**
      * Deserialize object. Object has to exists already.
@@ -73,26 +66,25 @@ public interface RRLibSerializable {
      *
      * @param s String stream to deserialize from
      */
-    public void deserialize(@Ref StringInputStream is) throws Exception;
+    public void deserialize(StringInputStream is) throws Exception;
 
     /**
      * Serialize object to XML
      *
      * @param node XML node (name shouldn't be changed, attributes "name" and "type" neither)
      */
-    @ConstMethod public void serialize(@Ref XMLNode node) throws Exception;
+    public void serialize(XMLNode node) throws Exception;
 
     /**
      * Deserialize from XML Node
      *
      * @param node Node to deserialize from
      */
-    public void deserialize(@Const @Ref XMLNode node) throws Exception;
+    public void deserialize(XMLNode node) throws Exception;
 
     /**
-     * Empty String List
+     * Empty Serializable
      */
-    @JavaOnly
     public class EmptySerialiazble extends RRLibSerializableImpl {
 
         public final static DataType<EmptySerialiazble> TYPE = new DataType<EmptySerialiazble>(EmptySerialiazble.class, "Empty Serializable");

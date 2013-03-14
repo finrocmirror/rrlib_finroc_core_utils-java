@@ -21,14 +21,9 @@
  */
 package org.rrlib.finroc_core_utils.jc.stampedptr;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class maintains a pointer together with an integer "stamp".
  * _Both_ can be set in an atomic operation.
@@ -39,7 +34,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
  * They differ in counter bits and implementation (raw pointers vs. array index).
  * Some only work in C++.
  */
-@Inline @NoCpp @JavaOnly
 public abstract class AbstractAtomicStampedPtr<T> {
 
     /**
@@ -48,8 +42,7 @@ public abstract class AbstractAtomicStampedPtr<T> {
      * @param pointer Pointer
      * @param stamp Stamp
      */
-    @NonVirtual
-    public abstract void set(@Ptr T pointer, int stamp);
+    public abstract void set(T pointer, int stamp);
 
     /**
      * Compare expected pointer and stamp to current values. If they are equal, set current value to new values.
@@ -60,18 +53,15 @@ public abstract class AbstractAtomicStampedPtr<T> {
      * @param setStamp new Stamp
      * @return Did values match - and have new values been set?
      */
-    @NonVirtual
-    public abstract boolean compareAndSet(@Ptr T expectedPointer, int expectedStamp, @Ptr T setPointer, int setStamp);
+    public abstract boolean compareAndSet(T expectedPointer, int expectedStamp, T setPointer, int setStamp);
 
     /**
      * @return Pointer
      */
-    @NonVirtual
-    public abstract @Ptr T getPointer();
+    public abstract T getPointer();
 
     /**
      * @return Stamp
      */
-    @NonVirtual
     public abstract int getStamp();
 }

@@ -20,11 +20,10 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Used for initially creating/instantiating GenericObject.
  *
@@ -36,21 +35,8 @@ public class GenericObjectInstance <T extends RRLibSerializable> extends Generic
      * @param wrappedObject Wrapped object
      * @param dt Data type of wrapped object
      */
-    @JavaOnly
     public GenericObjectInstance(T wrappedObject, DataTypeBase dt, GenericObjectManager manager) {
         super(wrappedObject, dt);
         this.jmanager = manager;
     }
-
-    /*Cpp
-    public:
-    GenericObjectInstance(T* wrappedObject) : GenericObjectBaseImpl<T>() {
-        this->wrapped = wrappedObject;
-    }
-
-    virtual ~GenericObjectInstance() {
-        T* t = GenericObject::getData<T>();
-        t->~T();
-    }
-     */
 }

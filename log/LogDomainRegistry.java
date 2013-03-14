@@ -27,8 +27,6 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -53,7 +51,6 @@ import org.w3c.dom.Node;
  * @author Max Reichardt
  * @author Tobias Föhst
  */
-@JavaOnly
 public class LogDomainRegistry {
     String fileNamePrefix;
     ArrayList<LogDomain> domains = new ArrayList<LogDomain>();
@@ -245,7 +242,7 @@ public class LogDomainRegistry {
      *
      * @return The only instance of this class that should exist
      */
-    public static @SharedPtr LogDomainRegistry getInstance() {
+    public static LogDomainRegistry getInstance() {
         return instance;
     }
 

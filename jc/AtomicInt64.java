@@ -23,13 +23,10 @@ package org.rrlib.finroc_core_utils.jc;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  */
-@JavaOnly
 public class AtomicInt64 extends AtomicLong {
 
     /**

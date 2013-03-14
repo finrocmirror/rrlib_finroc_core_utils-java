@@ -21,13 +21,8 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Stores order for locking objects.
  * Contains two integer numbers - primary and secondary - and
@@ -36,7 +31,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.Ref;
  * Object should be locked from small to high lock numbers.
  * In C++ this order is enforced, if #defines are set accordingly.
  */
-@JavaOnly
 public class MutexLockOrder {
 
     /** Primary is evaluated first, if equal, secondary is compared */
@@ -47,7 +41,6 @@ public class MutexLockOrder {
         this.secondary = secondary;
     }
 
-    @JavaOnly
     public MutexLockOrder(int primary) {
         this.primary = primary;
         this.secondary = 0;
@@ -57,7 +50,7 @@ public class MutexLockOrder {
      * @param other Other Lock order
      * @return Is it valid to lock this object after object with the other mutex lock order?
      */
-    @ConstMethod public boolean validAfter(@Const @Ref MutexLockOrder other) {
+    public boolean validAfter(MutexLockOrder other) {
         if (primary < other.primary) {
             return false;
         } else if (primary > other.primary) {

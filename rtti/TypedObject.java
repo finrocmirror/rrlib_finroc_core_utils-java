@@ -21,25 +21,20 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.CppDelegate;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializable;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the abstract base class for any object that has additional
  * type information as provided in this package.
  *
  * Such classes can be cleanly serialized to the network
  */
-@Ptr @JavaOnly @CppDelegate(TypedObjectImpl.class)
 public interface TypedObject extends RRLibSerializable {
 
     /**
      * @return Type of object
      */
-    @NonVirtual public DataTypeBase getType();
+    public DataTypeBase getType();
 }

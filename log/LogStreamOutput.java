@@ -20,15 +20,12 @@
  */
 package org.rrlib.finroc_core_utils.log;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
 * The enumeration that encodes the streams used by a logging domain.
 * Messages can be streams to stdout, stderr, into on file per domain
 * or into on combined file for all domains that are recursively
 * configured in one subtree of the domain hierarchy.
  */
-@JavaOnly
 public enum LogStreamOutput {
     LS_STDOUT,          //!< Messages are printed to stdout
     LS_STDERR,          //!< Messages are printed to stderr

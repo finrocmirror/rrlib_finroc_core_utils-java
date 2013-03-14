@@ -22,15 +22,9 @@
 package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.AtomicPtr;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is a special concurrent non-blocking FIFO linked queue (untyped version).
  * It should be real-time-capable, since it does not need to allocate memory.
@@ -44,8 +38,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
  * is that 'last' will point to reused element if last element is dequeued; maybe
  * there's a better way (?) )
  */
-@Inline @NoCpp
-@Include( {"Atomic.h"})
 class RawWonderQueueFast extends Queueable {
 
     /** Pointer to last element in queue - never null */
@@ -67,10 +59,10 @@ class RawWonderQueueFast extends Queueable {
      *
      * @param pd Element to enqueue
      */
-    @Inline public void enqueueRaw(@Ptr Queueable pd) {
+    public void enqueueRaw(Queueable pd) {
 
         // swap last pointer
-        @Ptr Queueable prev = last.getAndSet(pd);
+        Queueable prev = last.getAndSet(pd);
 
         // set "next" of previous element
         //assert(!(pd instanceof RawWonderQueueTL));
@@ -84,9 +76,9 @@ class RawWonderQueueFast extends Queueable {
      *
      * @return Element that was dequeued - null if no elements available
      */
-    @Inline public @Ptr Queueable dequeueRaw() {
-        @Ptr Queueable result = next;
-        @Ptr Queueable nextnext = result.next;
+    public Queueable dequeueRaw() {
+        Queueable result = next;
+        Queueable nextnext = result.next;
         if (nextnext == terminator || nextnext == null) {
             return null;
         }
@@ -101,10 +93,10 @@ class RawWonderQueueFast extends Queueable {
      *
      * @return Element that was dequeued - null if no elements available
      */
-    @Inline public @Ptr Queueable concurrentDequeueRaw() {
+    public Queueable concurrentDequeueRaw() {
         while (true) {
-            @Ptr Queueable result = nextCR.get();
-            @Ptr Queueable nextnext = result.next;
+            Queueable result = nextCR.get();
+            Queueable nextnext = result.next;
             if (nextnext == this || nextnext == null) {
                 return null;
             }
@@ -117,7 +109,7 @@ class RawWonderQueueFast extends Queueable {
 }
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is a special concurrent non-blocking FIFO linked queue.
  * It should be real-time-capable, since it does not need to allocate memory.
@@ -132,7 +124,6 @@ class RawWonderQueueFast extends Queueable {
  * is that 'last' will point to reused element if last element is dequeued; maybe
  * there's a better way (?) )
  */
-@Inline @NoCpp @RawTypeArgs
 public class WonderQueueFast<T extends Queueable> extends RawWonderQueueFast {
 
     public WonderQueueFast() {
@@ -145,7 +136,7 @@ public class WonderQueueFast<T extends Queueable> extends RawWonderQueueFast {
      *
      * @param pd Element to enqueue
      */
-    @NonVirtual @Inline public void enqueue(@Ptr T pd) {
+    public void enqueue(T pd) {
         //System.out.println("enqueueing " + pd.toString());
         enqueueRaw(pd);
     }
@@ -157,7 +148,7 @@ public class WonderQueueFast<T extends Queueable> extends RawWonderQueueFast {
      * @return Element that was dequeued - null if no elements available
      */
     @SuppressWarnings("unchecked")
-    @NonVirtual @Inline public @Ptr T dequeue() {
+    public T dequeue() {
         return (T)dequeueRaw();
     }
 
@@ -168,7 +159,7 @@ public class WonderQueueFast<T extends Queueable> extends RawWonderQueueFast {
      * @return Element that was dequeued - null if no elements available
      */
     @SuppressWarnings("unchecked")
-    @NonVirtual @Inline public @Ptr T concurrentDequeue() {
+    public T concurrentDequeue() {
         return (T)dequeueRaw();
     }
 
@@ -178,24 +169,16 @@ public class WonderQueueFast<T extends Queueable> extends RawWonderQueueFast {
      */
     public void deleteEnqueued() {
         while (true) {
-            @Ptr T r = dequeue();
+            T r = dequeue();
             if (r == null) {
                 break;
             }
-
-            //JavaOnlyBlock
             r.delete();
-
-            //Cpp r->customDelete(false);
         }
 
         // delete last element
         if ((this.next != Queueable.terminator) && this.next != this) {
-
-            //JavaOnlyBlock
             this.next.delete();
-
-            //Cpp this->next->customDelete(false);
         }
     }
 }

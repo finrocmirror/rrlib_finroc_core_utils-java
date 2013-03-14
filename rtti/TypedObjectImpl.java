@@ -21,25 +21,12 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppFilename;
-import org.rrlib.finroc_core_utils.jc.annotation.CppName;
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializableImpl;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the abstract base class for any object that has additional
  * type information as provided in this package.
@@ -48,33 +35,27 @@ import org.rrlib.finroc_core_utils.serialization.RRLibSerializableImpl;
  *
  * C++ issue: Typed objects are not automatically jc objects!
  */
-@Ptr @Inline @NoCpp
-@CppName("TypedObject") @CppFilename("TypedObject")
-@Superclass( {RRLibSerializableImpl.class})
 public abstract class TypedObjectImpl extends RRLibSerializableImpl implements TypedObject {
 
     /** Type of object */
     protected DataTypeBase type;
 
     /** Log domain for serialization */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"serialization\");")
     public static final LogDomain logDomain = LogDefinitions.finroc.getSubDomain("serialization");
 
     /**
      * @return Type of object
      */
-    @Init("type(NULL)")
     public TypedObjectImpl() {}
 
-    @NonVirtual @ConstMethod public DataTypeBase getType() {
+    public DataTypeBase getType() {
         return type;
     }
 
     /**
      * @return Log description (default implementation is "<class name> (<pointer>)"
      */
-    @InCpp("return *this;") @NonVirtual
-    public @ConstMethod @Const @Ref @CppType("TypedObject") String getLogDescription() {
+    public String getLogDescription() {
         return getClass().getSimpleName() + " (@" + Integer.toHexString(hashCode()) + ")";
     }
 }

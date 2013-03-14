@@ -22,16 +22,13 @@
 package org.rrlib.finroc_core_utils.jc.thread;
 
 import org.rrlib.finroc_core_utils.jc.AtomicInt64;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Efficient, very simple lock variation.
  * Reentrant spin-lock
  */
-@Inline @NoCpp
 public class ReentrantSpinLock {
 
     /** Stores uid of thread that currently has exclusive access - -1 means none */

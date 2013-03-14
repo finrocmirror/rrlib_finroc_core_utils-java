@@ -23,103 +23,22 @@ package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.ArrayWrapper;
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppInclude;
-import org.rrlib.finroc_core_utils.jc.annotation.HAppend;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.InCppFile;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Implementation of class below.
  */
-@CppInclude("GarbageCollector.h")
-@HAppend( {
-    "//RESIZEFACTOR: Factor by which list is enlarged, when backend is too small",
-    "//DELETEELEMSWITHLIST: Delete elements when List is deleted? (relevant for C++ only)",
-    "template <typename T, size_t _RESIZE_FACTOR = 4, bool _DELETE_ELEMS_WITH_LIST = false>",
-    "class SafeConcurrentlyIterableList : public SafeConcurrentlyIterableListBase<T> {",
-    "",
-    "public:",
-    "	// initialSize: Initial size of first backend",
-    "	// resizeFactor: Dummy in C++ - retained for Java compatibility",
-    "	SafeConcurrentlyIterableList(size_t initialSize, size_t resizeFactor = -1) :",
-    "			SafeConcurrentlyIterableListBase<T>(initialSize) {}",
-    "",
-    "   virtual ~SafeConcurrentlyIterableList() {",
-    "       clearAndDelete();",
-    "   }",
-    "",
-    "   virtual void clearAndDelete() {",
-    "       ArrayWrapper<T>* iterable = this->getIterable();",
-    "       for (size_t i = 0, n = iterable->size(); i < n; i++) {",
-    "           GarbageCollector::deleteDeferred(iterable->get(i));",
-    "       }",
-    "       this->clear();",
-    "   }",
-    "",
-    "protected:",
-    "",
-    "	virtual size_t getResizeFactor() {",
-    "		return _RESIZE_FACTOR;",
-    "	}",
-    "",
-    "	virtual bool deleteElemsWithList() {",
-    "		return _DELETE_ELEMS_WITH_LIST;",
-    "	}",
-    "",
-    "};",
-    "",
-    "//RESIZEFACTOR: Factor by which list is enlarged, when backend is too small",
-    "//DELETEELEMSWITHLIST: Delete elements when List is deleted? (relevant for C++ only)",
-    "template <typename T, size_t _RESIZE_FACTOR>",
-    "class SafeConcurrentlyIterableList<T, _RESIZE_FACTOR, false> : public SafeConcurrentlyIterableListBase<T> {",
-    "",
-    "public:",
-    "   // initialSize: Initial size of first backend",
-    "   // resizeFactor: Dummy in C++ - retained for Java compatibility",
-    "   SafeConcurrentlyIterableList(size_t initialSize, size_t resizeFactor = -1) :",
-    "           SafeConcurrentlyIterableListBase<T>(initialSize) {}",
-    "",
-    "   virtual ~SafeConcurrentlyIterableList() {",
-    "       this->clear();",
-    "   }",
-    "",
-    "protected:",
-    "",
-    "   virtual size_t getResizeFactor() {",
-    "       return _RESIZE_FACTOR;",
-    "   }",
-    "",
-    "   virtual bool deleteElemsWithList() {",
-    "       return false;",
-    "   }",
-    "",
-    "};"
-})
-
 abstract class SafeConcurrentlyIterableListBase<T> {
-
-    /*Cpp
-    // Will store old arrays until object is deleted
-    //AutoDeleter autoDeleter;
-    */
 
     /** Mutex for list - Since we call garbage collector lock for list needs to be before in order */
     public final MutexLockOrder objMutex;
 
     /** Current list backend */
-    protected volatile @Ptr ArrayWrapper<T> currentBackend;
+    protected volatile ArrayWrapper<T> currentBackend;
 
     /** optimization variable: There are no free entries before this index */
-    @SizeT private int firstFreeFromHere = 0;
+    private int firstFreeFromHere = 0;
 
     /**
      * @param initialSize Initial size of backend
@@ -127,17 +46,10 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      * @param deleteElemsWithList Delete elements when List is deleted? (relevant for C++ only)
      */
     @SuppressWarnings("unchecked")
-    @Init( {"currentBackend(initialSize > 0 ? new ArrayWrapper<T>((size_t)0, initialSize) : &(ArrayWrapper<T>::getEmpty()))"})
-    public SafeConcurrentlyIterableListBase(@SizeT int initialSize) {
+    public SafeConcurrentlyIterableListBase(int initialSize) {
         objMutex = new MutexLockOrder(Integer.MAX_VALUE - 20);
         currentBackend = initialSize > 0 ? new ArrayWrapper<T>(0, initialSize) : ArrayWrapper.getEmpty();
     }
-
-    /*Cpp
-    virtual ~SafeConcurrentlyIterableListBase() {
-        deleteBackend(currentBackend); // clear() is done in non-abstract subclass
-    }
-     */
 
     /**
      * Add element
@@ -146,8 +58,8 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      * @param appendToBack Append new element to back O(1)? (or rather search for hole => O(n), but possibly smaller list and faster iteration)
      * @return Array index at which element was inserted
      */
-    public synchronized @SizeT int add(@Const T element, boolean appendToBack) {
-        @Ptr ArrayWrapper<T> backend = currentBackend; // acquire non-volatile pointer
+    public synchronized int add(T element, boolean appendToBack) {
+        ArrayWrapper<T> backend = currentBackend; // acquire non-volatile pointer
         if (!appendToBack) {
             for (int i = firstFreeFromHere, n = backend.size(); i < n; i++) {
                 if (backend.get(i) == getNullElement()) {
@@ -161,9 +73,8 @@ abstract class SafeConcurrentlyIterableListBase<T> {
         if (backend.freeCapacity()) {
             backend.add(element);
         } else {
-            @Ptr ArrayWrapper<T> old = currentBackend;
-            @InCpp("ArrayWrapper<T>* newBackend = new ArrayWrapper<T>((size_t)0, std::_max<size_t>(1, backend->getCapacity()) * getResizeFactor());")
-            @Ptr ArrayWrapper<T> newBackend = new ArrayWrapper<T>(0, Math.max(1, backend.getCapacity()) * getResizeFactor());
+            ArrayWrapper<T> old = currentBackend;
+            ArrayWrapper<T> newBackend = new ArrayWrapper<T>(0, Math.max(1, backend.getCapacity()) * getResizeFactor());
             newBackend.copyAllFrom(backend);
             newBackend.add(element);
             currentBackend = newBackend;
@@ -175,27 +86,20 @@ abstract class SafeConcurrentlyIterableListBase<T> {
         return currentBackend.size() - 1;
     }
 
-    @InCppFile
-    private void deleteBackend(@Ptr ArrayWrapper<T> b) {
-        /*Cpp
-        if (b != &(ArrayWrapper<T>::getEmpty())) {
-            GarbageCollector::deleteDeferred(b);
-        }
-        */
+    private void deleteBackend(ArrayWrapper<T> b) {
     }
 
     /**
      * @return Null/empty element (marks free slots in array)
      */
-    @InCpp("return (T)NULL;")
-    @ConstMethod private T getNullElement() {
+    private T getNullElement() {
         return (T)null;
     }
 
     /**
      * @return Factor by which list is enlarged, when backend is too small
      */
-    protected abstract @SizeT int getResizeFactor();
+    protected abstract int getResizeFactor();
 
     /**
      * @return Delete elements when List is deleted? (relevant for C++ only)
@@ -207,11 +111,11 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      *
      * @param cap Capacity
      */
-    public synchronized void ensureCapacity(@SizeT int cap) {
-        @Ptr ArrayWrapper<T> backend = currentBackend; // acquire non-volatile pointer
+    public synchronized void ensureCapacity(int cap) {
+        ArrayWrapper<T> backend = currentBackend; // acquire non-volatile pointer
         if (backend.getCapacity() < cap) {
-            @Ptr ArrayWrapper<T> old = currentBackend;
-            @Ptr ArrayWrapper<T> newBackend = new ArrayWrapper<T>(0, cap * getResizeFactor());
+            ArrayWrapper<T> old = currentBackend;
+            ArrayWrapper<T> newBackend = new ArrayWrapper<T>(0, cap * getResizeFactor());
             newBackend.copyAllFrom(backend);
             currentBackend = newBackend;
 
@@ -222,7 +126,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     /**
      * @return Safe View for iterating over list
      */
-    @ConstMethod public @Ptr ArrayWrapper<T> getIterable() {
+    public ArrayWrapper<T> getIterable() {
         return currentBackend;
     }
 
@@ -231,17 +135,10 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      *
      * @param element Element to remove
      */
-    public synchronized void remove(@Const T element) {
-        @Ptr ArrayWrapper<T> iterable = getIterable();
-        for (@SizeT int i = 0, n = iterable.size(); i < n; i++) {
+    public synchronized void remove(T element) {
+        ArrayWrapper<T> iterable = getIterable();
+        for (int i = 0, n = iterable.size(); i < n; i++) {
             if (iterable.get(i) == element) {
-
-                /*Cpp
-                if (deleteElemsWithList()) {
-                    GarbageCollector::deleteDeferred(iterable->get(i));
-                    //delete iterable.get(i);
-                }
-                */
 
                 iterable.set(i, getNullElement());
                 firstFreeFromHere = Math.min(firstFreeFromHere, i);
@@ -264,17 +161,17 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     /**
      * @return Returns size of list
      */
-    @ConstMethod public @SizeT int size() {
+    public int size() {
         return getIterable().size();
     }
 
     /**
      * @return Returns number of elements currently in list (in parallel - so can already be invalid due to concurrent modifications)
      */
-    @ConstMethod public @SizeT int countElements() {
-        @Ptr ArrayWrapper<T> iterable = getIterable();
+    public int countElements() {
+        ArrayWrapper<T> iterable = getIterable();
         int count = 0;
-        for (@SizeT int i = 0, n = iterable.size(); i < n; i++) {
+        for (int i = 0, n = iterable.size(); i < n; i++) {
             if (iterable.get(i) != getNullElement()) {
                 count++;
             }
@@ -294,8 +191,8 @@ abstract class SafeConcurrentlyIterableListBase<T> {
      * Are any non-null elements in current backend?
      */
     public boolean isEmpty() {
-        @Ptr ArrayWrapper<T> iterable = getIterable();
-        for (@SizeT int i = 0, n = iterable.size(); i < n; i++) {
+        ArrayWrapper<T> iterable = getIterable();
+        for (int i = 0, n = iterable.size(); i < n; i++) {
             if (iterable.get(i) != getNullElement()) {
                 return false;
             }
@@ -305,7 +202,7 @@ abstract class SafeConcurrentlyIterableListBase<T> {
 }
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This list is thread-safe. It can be iterated over (concurrently to modifications)
  * by many threads without blocking. Iterations are very efficient (both C++ and Java).
@@ -339,7 +236,6 @@ abstract class SafeConcurrentlyIterableListBase<T> {
  * (C++) This list may only contain pointers (no shared pointers etc. because of thread-safety)...
  *       because only this allows atomic deletion by overwriting with null
  */
-@JavaOnly /*@CppDelegate(SafeConcurrentlyIterableListBase.class)*/
 public class SafeConcurrentlyIterableList<T> extends SafeConcurrentlyIterableListBase<T> {
 
     /** Empty Dummy List */
@@ -347,13 +243,13 @@ public class SafeConcurrentlyIterableList<T> extends SafeConcurrentlyIterableLis
     private static final SafeConcurrentlyIterableList EMPTY = new SafeConcurrentlyIterableList(0, 0);
 
     /** Factor by which list is enlarged, when backend is too small */
-    private final @SizeT int resizeFactor;
+    private final int resizeFactor;
 
     /**
      * @return Empty Dummy List
      */
     @SuppressWarnings("rawtypes")
-    @Ref public static SafeConcurrentlyIterableList getEmptyInstance() {
+    public static SafeConcurrentlyIterableList getEmptyInstance() {
         return EMPTY;
     }
 
@@ -361,7 +257,7 @@ public class SafeConcurrentlyIterableList<T> extends SafeConcurrentlyIterableLis
      * @param initialSize Initial size of backend
      * @param resizeFactor Factor by which list is enlarged, when backend is too small (dummy in C++, template parameter specifies it here)
      */
-    public SafeConcurrentlyIterableList(@SizeT int initialSize, @SizeT int resizeFactor_) {
+    public SafeConcurrentlyIterableList(int initialSize, int resizeFactor_) {
         super(initialSize);
         resizeFactor = resizeFactor_;
     }

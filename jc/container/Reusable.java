@@ -21,18 +21,12 @@
  */
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Friend;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is an element of a ReusablePool or a ReusablePoolCR
  */
-@Inline @NoCpp @Friend( {ReusablesPool.class, ReusablesPoolCR.class}) @Ptr
 public class Reusable extends AbstractReusable {
 
     /**
@@ -40,15 +34,14 @@ public class Reusable extends AbstractReusable {
      * in this case this Reusable will be deleted when recycled
      * shouldn't need to be volatile, since owner deletion is deferred
      */
-    @Ptr protected RawWonderQueueFast owner;
+    protected RawWonderQueueFast owner;
 
     /** Next element in this buffer pool - new elements are prepended  - set to null, when pool is deleted */
-    @Ptr protected Reusable nextInBufferPool;
+    protected Reusable nextInBufferPool;
 
     /** Recycle object - after calling this method, object is available in ReusablesPool it originated from */
-    @Inline @NonVirtual
     protected void recycle() {
-        @Ptr RawWonderQueueFast o = owner;
+        RawWonderQueueFast o = owner;
         assert(stateChange((byte)(Reusable.UNKNOWN | Reusable.USED | POST_QUEUED), Reusable.RECYCLED, owner));
         if (o != null) {
             owner.enqueueRaw(this);

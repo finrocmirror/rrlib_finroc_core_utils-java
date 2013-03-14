@@ -21,11 +21,10 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Class to encode and decode types in InputStream and OutputStream.
  */
@@ -35,11 +34,11 @@ public interface TypeEncoder {
      * @param is Input Stream
      * @return Type decoded from input stream
      */
-    public DataTypeBase readType(@Ref InputStreamBuffer is);
+    public DataTypeBase readType(InputStreamBuffer is);
 
     /**
      * @param os Output stream
      * @param type Type to encode to output stream
      */
-    public void writeType(@Ref OutputStreamBuffer os, DataTypeBase type);
+    public void writeType(OutputStreamBuffer os, DataTypeBase type);
 }

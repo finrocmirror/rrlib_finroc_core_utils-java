@@ -20,33 +20,21 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.ConstMethod;
-import org.rrlib.finroc_core_utils.jc.annotation.CppFilename;
-import org.rrlib.finroc_core_utils.jc.annotation.CppName;
-import org.rrlib.finroc_core_utils.jc.annotation.InCppFile;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
-import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 import org.rrlib.finroc_core_utils.jc.log.LogUser;
 import org.rrlib.finroc_core_utils.xml.XMLNode;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Default implementation of Serializable
  */
-@CppName("Serializable") @CppFilename("Serializable")
-@Superclass( {})
 public abstract class RRLibSerializableImpl extends LogUser implements RRLibSerializable {
 
     /**
      * @param os Stream to serialize object to
      */
-    @Override @Virtual @ConstMethod
-    public abstract void serialize(@Ref OutputStreamBuffer os);
-
-    //Cpp virtual ~Serializable() {}
+    @Override
+    public abstract void serialize(OutputStreamBuffer os);
 
     /**
      * Deserialize object. Object has to already exists.
@@ -54,16 +42,16 @@ public abstract class RRLibSerializableImpl extends LogUser implements RRLibSeri
      *
      * @param readView Stream to deserialize from
      */
-    @Override @Virtual
-    public abstract void deserialize(@Ref InputStreamBuffer is);
+    @Override
+    public abstract void deserialize(InputStreamBuffer is);
 
     /**
      * Serialize object as string (e.g. for xml output)
      *
      * @param os String output stream
      */
-    @Override @InCppFile @Virtual @ConstMethod
-    public void serialize(@Ref StringOutputStream os) {
+    @Override
+    public void serialize(StringOutputStream os) {
         Serialization.serializeToHexString(this, os);
     }
 
@@ -76,8 +64,8 @@ public abstract class RRLibSerializableImpl extends LogUser implements RRLibSeri
      *
      * @param s String to deserialize from
      */
-    @Override @InCppFile @Virtual
-    public void deserialize(@Ref StringInputStream s) throws Exception {
+    @Override
+    public void deserialize(StringInputStream s) throws Exception {
         Serialization.deserializeFromHexString(this, s);
     }
 
@@ -86,8 +74,8 @@ public abstract class RRLibSerializableImpl extends LogUser implements RRLibSeri
      *
      * @param node Empty XML node (name shouldn't be changed)
      */
-    @Override @InCppFile @Virtual @ConstMethod
-    public void serialize(@Ref XMLNode node) throws Exception {
+    @Override
+    public void serialize(XMLNode node) throws Exception {
         node.setContent(Serialization.serialize(this));
     }
 
@@ -96,8 +84,8 @@ public abstract class RRLibSerializableImpl extends LogUser implements RRLibSeri
      *
      * @param node Node to deserialize from
      */
-    @Override @InCppFile @Virtual
-    public void deserialize(@Const @Ref XMLNode node) throws Exception {
+    @Override
+    public void deserialize(XMLNode node) throws Exception {
         StringInputStream is = new StringInputStream(node.hasTextContent() ? node.getTextContent() : "");
         deserialize(is);
     }

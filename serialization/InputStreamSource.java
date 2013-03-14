@@ -23,8 +23,6 @@ package org.rrlib.finroc_core_utils.serialization;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.log.LogUser;
 import org.rrlib.finroc_core_utils.jc.net.EOFException;
@@ -32,11 +30,10 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Wraps Java Input Stream as source
  */
-@JavaOnly
 public class InputStreamSource extends LogUser implements Source {
 
     /** Wrapped input stream */
@@ -47,7 +44,6 @@ public class InputStreamSource extends LogUser implements Source {
     State state = State.INITIAL;
 
     /** Log domain for this class */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"serialization\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("serialization");
 
     public InputStreamSource(InputStream is) {

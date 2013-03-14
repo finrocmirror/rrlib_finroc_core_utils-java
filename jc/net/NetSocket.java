@@ -24,15 +24,6 @@ package org.rrlib.finroc_core_utils.jc.net;
 import java.net.Socket;
 import java.net.SocketException;
 
-import org.rrlib.finroc_core_utils.jc.annotation.CppPrepend;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
-import org.rrlib.finroc_core_utils.jc.annotation.Superclass;
-import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.net.IOException;
 import org.rrlib.finroc_core_utils.log.LogDomain;
@@ -45,72 +36,30 @@ import org.rrlib.finroc_core_utils.serialization.Sink;
 import org.rrlib.finroc_core_utils.serialization.Source;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class wraps a Java TCP Socket
  * and works similarly in C++.
  */
-@IncludeClass( {BufferInfo.class, FixedBuffer.class})
-@Include( {"<boost/asio/ip/tcp.hpp>", "<boost/asio/error.hpp>", "<boost/asio/completion_condition.hpp>", "<boost/asio/read.hpp>" })
-@SharedPtr @Superclass( {Object.class, Source.class, Sink.class})
-@CppPrepend("const size_t NetSocket::BUFSIZE;")
 public class NetSocket {
 
-    /*Cpp
-
-    // shared pointer to this
-    std::weak_ptr<NetSocket> thizz;
-
-    // has input/output stream been closed?
-    //bool inputClosed, outputClosed;
-
-    // buffer size for input and output streams
-    static const size_t BUFSIZE = 8192;
-
-    // inputStream and outputStream buffers
-    rrlib::serialization::FixedBuffer inputStreamBuf, outputStreamBuf;
-
-     */
-
     /** Wrapped Java Socket */
-    @InCpp("boost::asio::ip::tcp::socket wrapped;")
     private final Socket wrapped;
 
-    @JavaOnly
     public NetSocket(Socket socket) {
         wrapped = socket;
     }
 
     /** Log domain for this class */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"net\");")
     private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
 
-    /*Cpp
-    NetSocket() : thizz(), inputStreamBuf(BUFSIZE), outputStreamBuf(BUFSIZE), wrapped(TCPUtil::io_service) {}
-     */
-
-    @Init( {"thizz()",
-            "wrapped(TCPUtil::io_service)",
-            "inputStreamBuf(BUFSIZE)",
-            "outputStreamBuf(BUFSIZE)"
-           })
     private NetSocket(IPSocketAddress isa) throws ConnectException {
-
-        // JavaOnlyBlock
         try {
             Socket tmp = new Socket(isa.getAddress().wrapped, isa.getPort());
             wrapped = tmp;
         } catch (java.io.IOException e) {
             throw new ConnectException(e.getMessage());
         }
-
-        /*Cpp
-        boost::system::error_code ec;
-        wrapped._connect(boost::asio::ip::tcp::_endpoint(isa.getAddress().wrapped, isa.getPort()), ec);
-        if (ec) {
-            throw ConnectException();
-        }
-         */
     }
 
     /**
@@ -121,33 +70,14 @@ public class NetSocket {
      * @param isa IP and socket address of connection partner
      * @return Created & connected NetSocket instance
      */
-    public static @SharedPtr NetSocket createInstance(IPSocketAddress isa) throws ConnectException {
-        @SharedPtr NetSocket tmp = new NetSocket(isa);
-        //Cpp tmp->thizz = tmp;
+    public static NetSocket createInstance(IPSocketAddress isa) throws ConnectException {
+        NetSocket tmp = new NetSocket(isa);
         return tmp;
     }
-
-    /*Cpp
-    static std::shared_ptr<NetSocket> createInstance() {
-        std::shared_ptr<NetSocket> tmp(new NetSocket());
-        tmp->thizz = tmp;
-        return tmp;
-    }
-
-    virtual ~NetSocket() {
-        //wrapped._shutdown();
-        close();
-    }
-
-    boost::asio::ip::tcp::socket& getSocket() {
-        return wrapped;
-    }
-     */
 
     /**
      * @return Remote port
      */
-    @InCpp("return wrapped.remote_endpoint().port();")
     public int getPort() {
         return wrapped.getPort();
     }
@@ -155,7 +85,6 @@ public class NetSocket {
     /**
      * @return Wrapped Java Socket
      */
-    @JavaOnly
     public Socket getSocket() {
         return wrapped;
     }
@@ -163,7 +92,6 @@ public class NetSocket {
     /**
      * @return Remote IP address
      */
-    @InCpp("return IPAddress(wrapped.remote_endpoint().address());")
     public IPAddress getIP() {
         return new IPAddress(wrapped.getInetAddress());
     }
@@ -171,8 +99,7 @@ public class NetSocket {
     /**
      * @return Returns Source for this socket
      */
-    @InCpp( {"assert (!thizz._expired());", "return std::shared_ptr<Source>(thizz);"})
-    public @SharedPtr Source getSource() throws IOException {
+    public Source getSource() throws IOException {
         try {
             return new InputStreamSource(wrapped.getInputStream());
         } catch (java.io.IOException e) {
@@ -183,8 +110,7 @@ public class NetSocket {
     /**
      * @return Returns Sink for this socket
      */
-    @InCpp( {"assert (!thizz._expired());", "return std::shared_ptr<Sink>(thizz);"})
-    public @SharedPtr Sink getSink() throws IOException {
+    public Sink getSink() throws IOException {
         try {
             return new OutputStreamSink(wrapped.getOutputStream());
         } catch (java.io.IOException e) {
@@ -192,169 +118,10 @@ public class NetSocket {
         }
     }
 
-    /*Cpp
-
-    // Source implementation
-
-    virtual void close(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
-        buffer.reset();
-    //      inputClosed = true;
-    //      if (inputClosed && outputClosed) {
-    //          close();
-    //      }
-    }
-
-    virtual void directRead(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t len) {
-        size_t remaining = buffer.capacity() - offset;
-        assert(len <= remaining);
-        boost::asio::mutable_buffers_1 buf(buffer.getPointer() + offset, len);
-        boost::system::error_code ec;
-        __attribute__((unused))
-        size_t read = boost::asio::_read(wrapped, buf, boost::asio::transfer_at_least(std::_min(len, remaining)), ec);
-        assert(read == len);
-        if (ec == boost::asio::error::eof) {
-            throw EOFException();
-        } else if (ec) {
-            throw IOException();
-        }
-    }
-
-    virtual bool directReadSupport() const {
-        return true;
-    }
-
-    virtual bool moreDataAvailable(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
-        return moreDataAvailable();
-    }
-
-    bool moreDataAvailable() {
-        return wrapped._available() > 0;
-    }
-
-    bool waitUntilMoreDataAvailable(int64_t waitFor = 2000, int64_t queryEvery = 100) {
-        int64_t waitUntil = Time::getCoarse() + waitFor;
-        while((!moreDataAvailable()) && Time::getCoarse() < waitUntil) {
-            Thread::sleep(100);
-        }
-        return moreDataAvailable();
-    }
-
-    virtual void read(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer, size_t len = 0) {
-        boost::asio::mutable_buffers_1 buf(buffer.buffer->getPointer(), BUFSIZE);
-        boost::system::error_code ec;
-        size_t read = 0;
-        if (len <= 0) {
-            read = wrapped._receive(buf, 0, ec);
-        } else {
-            read = boost::asio::_read(wrapped, buf, boost::asio::transfer_at_least(std::_min(BUFSIZE, len)), ec);
-        }
-        if (ec == boost::asio::error::eof) {
-            throw EOFException();
-        } else if (ec) {
-            throw Exception();
-        }
-        buffer.setRange(0, read);
-        buffer.position = 0;
-    }
-
-    virtual void reset(rrlib::serialization::InputStream* inputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
-        buffer.buffer = &inputStreamBuf;
-        buffer.position = 0;
-        buffer.setRange(0, 0);
-    }
-
-    // Sink implementation
-
-    virtual void close(rrlib::serialization::OutputStream* outputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
-        buffer.reset();
-    //      outputClosed = true;
-    //      if (inputClosed && outputClosed) {
-    //          close();
-    //      }
-    }
-
-    virtual void directWrite(rrlib::serialization::OutputStream* outputStreamBuffer, const rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t len) {
-        while(len > 0) {
-            boost::asio::const_buffers_1 buf(buffer.getPointer() + offset, len);
-            //boost::system::error_code ec;
-            size_t written = wrapped._send(buf);
-            offset += written;
-            len -= written;
-        }
-    }
-
-    virtual void flush(rrlib::serialization::OutputStream* outputStreamBuffer, const rrlib::serialization::BufferInfo& buffer) {
-        // do nothing... flushing should be done automatically by boost
-    }
-
-    virtual bool directWriteSupport() {
-        return true;
-    }
-
-    virtual void reset(rrlib::serialization::OutputStream* outputStreamBuffer, rrlib::serialization::BufferInfo& buffer) {
-        buffer.buffer = &outputStreamBuf;
-        buffer.position = 0;
-        buffer.setRange(0, BUFSIZE);
-    }
-
-    virtual bool write(rrlib::serialization::OutputStream* outputStreamBuffer, rrlib::serialization::BufferInfo& buffer, int writeSizeHint) {
-        size_t len = buffer.position;
-        size_t offset = 0;
-        while(len > 0) {
-            boost::asio::const_buffers_1 buf(buffer.buffer->getPointer() + offset, len);
-            //boost::system::error_code ec;
-            size_t written = wrapped._send(buf);
-            offset += written;
-            len -= written;
-        }
-        buffer.position = 0;
-        buffer.setRange(0, BUFSIZE);
-        return true;
-    }
-
-    virtual int read(rrlib::serialization::FixedBuffer& buffer, size_t offset) {
-        size_t remaining = buffer.capacity() - offset;
-        boost::asio::mutable_buffers_1 buf(buffer.getPointer() + offset, remaining);
-        boost::system::error_code ec;
-        size_t read = wrapped._receive(buf, 0, ec);
-        if (ec == boost::asio::error::eof) {
-            return -1;
-        } else if (ec) {
-            throw Exception();
-        }
-        return read;
-    }
-
-    virtual void readFully(rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t len) {
-        size_t remaining = buffer.capacity() - offset;
-        assert(len <= remaining);
-        boost::asio::mutable_buffers_1 buf(buffer.getPointer() + offset, remaining);
-        boost::system::error_code ec;
-        //size_t read =
-        boost::asio::_read(wrapped, buf, boost::asio::transfer_at_least(len), ec);
-        if (ec == boost::asio::error::eof) {
-            throw EOFException();
-        } else if (ec) {
-            throw IOException();
-        }
-    }
-
-    virtual void write(const rrlib::serialization::FixedBuffer& buffer, size_t offset, size_t length) {
-        while(length > 0) {
-            boost::asio::const_buffers_1 buf(buffer.getPointer() + offset, length);
-            boost::system::error_code ec;
-            size_t written = wrapped._send(buf);
-            offset += written;
-            length -= written;
-        }
-    }
-    */
-
     /**
      * Closes network socket
      */
-    @InCpp( {"shutdownReceive();", "wrapped._close();"})
-    @Virtual public void close() throws IOException {
+    public void close() throws IOException {
         try {
             shutdownReceive();
             wrapped.close();
@@ -377,7 +144,6 @@ public class NetSocket {
     /**
      * Shutdown socket (does nothing if socket is already closed)
      */
-    @InCpp( {"boost::system::error_code ec;", "wrapped._shutdown(boost::asio::socket_base::shutdown_send, ec);"})
     public void shutdownSend() {
         try {
             wrapped.shutdownOutput();
@@ -389,7 +155,6 @@ public class NetSocket {
     /**
      * Shutdown socket (does nothing if socket is already closed)
      */
-    @InCpp( {"boost::system::error_code ec;", "wrapped._shutdown(boost::asio::socket_base::shutdown_receive, ec);"})
     public void shutdownReceive() {
         try {
             wrapped.shutdownInput();

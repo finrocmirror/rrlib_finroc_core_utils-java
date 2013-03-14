@@ -21,25 +21,19 @@
  */
 package org.rrlib.finroc_core_utils.jc.thread;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
-import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * A Thread that calls a callback function with a specified rate
  */
-@Include("Thread.h")
 public abstract class LoopThread extends Thread {
 
     /** Signals for state change */
-    @JavaOnly // already in thread base class
+    // already in thread base class
     private volatile boolean stopSignal = false;
     private volatile boolean pauseSignal = false;
 
@@ -47,7 +41,7 @@ public abstract class LoopThread extends Thread {
     private long cycleTime;
 
     /** Display warning, if cycle time is exceeded? */
-    @Const private final boolean warnOnCycleTimeExceed;
+    private final boolean warnOnCycleTimeExceed;
 
     /** Display warnings on console? */
     private static final boolean DISPLAYWARNINGS = false;
@@ -67,7 +61,6 @@ public abstract class LoopThread extends Thread {
     private long lastCycleStart;
 
     /** Log domain for this class */
-    @JavaOnly
     public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("thread");
 
     /**
@@ -223,7 +216,7 @@ public abstract class LoopThread extends Thread {
     /**
      * Stop Loop. Cannot be restarted.
      */
-    @Virtual public synchronized void stopThread() {
+    public synchronized void stopThread() {
         if (waiting) {
             notify();
         }
@@ -297,13 +290,11 @@ public abstract class LoopThread extends Thread {
      *
      * (dummy method in Java - simplifies calling C++ equivalent in Thread)
      */
-    @JavaOnly
-    public void lockObject(@SharedPtr Object o) {}
+    public void lockObject(Object o) {}
 
     /**
      * @return log description
      */
-    @JavaOnly
     public String getLogDescription() {
         return getName();
     }

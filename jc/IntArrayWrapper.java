@@ -22,8 +22,6 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.RRLibSerializableImpl;
@@ -31,8 +29,6 @@ import org.rrlib.finroc_core_utils.serialization.RRLibSerializableImpl;
 /**
  * Wraps an array
  */
-@JavaOnly
-
 public class IntArrayWrapper extends RRLibSerializableImpl {
 
     /** size of array... may be smaller than backend capacity */
@@ -57,7 +53,6 @@ public class IntArrayWrapper extends RRLibSerializableImpl {
     public IntArrayWrapper(int size) {
         this.size = size;
         this.backend = new int[size];
-        // in cpp mit 0 füllen
     }
 
     public int get(int index) {
@@ -104,10 +99,6 @@ public class IntArrayWrapper extends RRLibSerializableImpl {
      * @param deleteElements Delete elements in List (relevant for C++ only)
      */
     public void clear(boolean deleteElements) {
-        /*for (int i = 0; i < size; i++) {
-            set(i, null);
-        }*/
-        // in Cpp evtl. deletes...
     }
 
     /**
@@ -131,7 +122,7 @@ public class IntArrayWrapper extends RRLibSerializableImpl {
         return backend[size];
     }
 
-    public void setSize(@SizeT int i) {
+    public void setSize(int i) {
         size = 0;
     }
 

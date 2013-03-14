@@ -21,14 +21,11 @@
  */
 package org.rrlib.finroc_core_utils.jc.net;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * equivalent to Java UnknownHostException
  */
-@JavaOnly
 public class UnknownHostException extends Exception {
 
     public UnknownHostException() {}
@@ -40,7 +37,6 @@ public class UnknownHostException extends Exception {
     }
 
     /** UID */
-    @JavaOnly
     private static final long serialVersionUID = -1807043576546682531L;
 
 }

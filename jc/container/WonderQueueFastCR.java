@@ -21,14 +21,9 @@
  */
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NoCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * (CR = "Concurrent Read")
  *
@@ -44,7 +39,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
  * is that 'last' will point to reused element if last element is dequeued; maybe
  * there's a better way (?) )
  */
-@Inline @NoCpp @RawTypeArgs
 public class WonderQueueFastCR<T extends Queueable> extends RawWonderQueueFast {
 
     public WonderQueueFastCR() {
@@ -57,7 +51,7 @@ public class WonderQueueFastCR<T extends Queueable> extends RawWonderQueueFast {
      *
      * @param pd Element to enqueue
      */
-    @NonVirtual @Inline public void enqueue(@Ptr T pd) {
+    public void enqueue(T pd) {
         enqueueRaw(pd);
     }
 
@@ -68,7 +62,7 @@ public class WonderQueueFastCR<T extends Queueable> extends RawWonderQueueFast {
      * @return Element that was dequeued - null if no elements available
      */
     @SuppressWarnings("unchecked")
-    @NonVirtual @Inline public @Ptr T dequeue() {
+    public T dequeue() {
         return (T)concurrentDequeueRaw();
     }
 
@@ -78,25 +72,17 @@ public class WonderQueueFastCR<T extends Queueable> extends RawWonderQueueFast {
      */
     public void deleteEnqueued() {
         while (true) {
-            @Ptr T r = dequeue();
+            T r = dequeue();
             if (r == null) {
                 break;
             }
-
-            //JavaOnlyBlock
             r.delete();
-
-            //Cpp r->customDelete(false);
         }
 
         // delete last element
-        @Ptr Queueable last = this.nextCR.get();
+        Queueable last = this.nextCR.get();
         if (last != Queueable.terminator && last != this) {
-
-            //JavaOnlyBlock
             last.delete();
-
-            //Cpp last->customDelete(false);
         }
     }
 }

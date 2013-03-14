@@ -21,22 +21,18 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.rtti.Copyable;
 import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Generic enum value.
  * Currently only meant for use in static parameters.
  * (In port-classes it's probably better to wrap port classes)
  */
-@JavaOnly
 public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumValue>, NumericRepresentation {
 
     /** Data Type of this enum value */
@@ -84,7 +80,7 @@ public class EnumValue extends RRLibSerializableImpl implements Copyable<EnumVal
     }
 
     @Override
-    public void copyFrom(@Const @Ref EnumValue source) {
+    public void copyFrom(EnumValue source) {
         value = source.value;
         type = source.type;
     }

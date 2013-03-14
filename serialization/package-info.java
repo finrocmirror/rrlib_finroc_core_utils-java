@@ -19,16 +19,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-@Namespace("rrlib::serialization")
-@CppLocation("rrlib/serialization")
-@NoJC
-
 /**
  * This is the RRLib for serializing objects.
  */
 package org.rrlib.finroc_core_utils.serialization;
-
-import org.rrlib.finroc_core_utils.jc.annotation.CppLocation;
-import org.rrlib.finroc_core_utils.jc.annotation.Namespace;
-import org.rrlib.finroc_core_utils.jc.annotation.NoJC;
-

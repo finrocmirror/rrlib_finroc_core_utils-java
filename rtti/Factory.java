@@ -20,13 +20,8 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
-import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Factory to create objects (as shared_ptr) needed in input streams or
  * during deep copy operations.
@@ -35,16 +30,7 @@ import org.rrlib.finroc_core_utils.jc.annotation.VoidPtr;
  *
  * It may be specialized for more efficient buffer management.
  */
-@Ptr
 public interface Factory {
-
-    /*Cpp
-    // Create buffer and place it in provided shared pointer
-    template <typename T>
-    void createBuffer(std::shared_ptr<T>& ptr, DataTypeBase dt) {
-        ptr = std::static_pointer_cast<T>(createBuffer(dt));
-    }
-     */
 
     /**
      * Create buffer
@@ -53,7 +39,7 @@ public interface Factory {
      * @param dt Data type
      * @return Created buffer
      */
-    public @SharedPtr @CppType("void") Object createBuffer(DataTypeBase dt);
+    public Object createBuffer(DataTypeBase dt);
 
     /**
      * Create generic object
@@ -63,6 +49,6 @@ public interface Factory {
      * @param factoryParameter Custom factory parameter
      * @return Created buffer
      */
-    public @Ptr GenericObject createGenericObject(DataTypeBase dt, @VoidPtr Object factoryParameter);
+    public GenericObject createGenericObject(DataTypeBase dt, Object factoryParameter);
 
 }

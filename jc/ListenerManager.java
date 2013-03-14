@@ -21,64 +21,44 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.IncludeClass;
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.NonVirtual;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SizeT;
 import org.rrlib.finroc_core_utils.jc.container.SafeConcurrentlyIterableList;
 import org.rrlib.finroc_core_utils.jc.container.SimpleList;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Generic manager for listeners (observer pattern)
  *
  * Allows notifications concurrently to add/remove-operations
  */
-@IncludeClass(SafeConcurrentlyIterableList.class)
 public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T extends ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, ? >> {
 
     /** Single listener - unused, but != NULL when there are more than one listeners */
-    private @Ptr LISTENERTYPE listener;
+    private LISTENERTYPE listener;
 
     /** If we have more than a single listener - this list will be created and contains ALL listeners */
-    @InCpp("SafeConcurrentlyIterableList<_LISTENERTYPE*, 4>* listenerList;")
-    private @Ptr SafeConcurrentlyIterableList<LISTENERTYPE> listenerList = null;
+    private SafeConcurrentlyIterableList<LISTENERTYPE> listenerList = null;
 
     /** Mutex for list - Since we call garbage collector lock for list needs to be before in order */
     public final MutexLockOrder objMutex = new MutexLockOrder(Integer.MAX_VALUE - 40);
 
-    @Init("listenerList(NULL)")
     public ListenerManager() {
         //this(false);
     }
 
-    /*Cpp
-    virtual ~ListenerManager() {
-        delete listenerList;
-    }
-     */
-
     /**
      * @param listener Listener to add
      */
-    public synchronized void add(@Ptr LISTENERTYPE listener) {
+    public synchronized void add(LISTENERTYPE listener) {
         if (this.listener == null) {
             this.listener = listener;
         } else {
 
             // is listener already in list? ... then return and do nothing
             if (listenerList != null) {
-                @InCpp("ArrayWrapper<_LISTENERTYPE*>* it = listenerList->getIterable();")
-                @Ptr ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();
-                for (@SizeT int i = 0, n = it.size(); i < n; i++) {
-                    @InCpp("_LISTENERTYPE* lt = it->get(i);")
-                    @Ptr LISTENERTYPE lt = it.get(i);
+                ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();
+                for (int i = 0, n = it.size(); i < n; i++) {
+                    LISTENERTYPE lt = it.get(i);
                     if (lt == listener) {
                         return;
                     }
@@ -87,45 +67,23 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
                 return;
             }
 
-            //JavaOnlyBlock
             if (listenerList == null) {
                 listenerList = new SafeConcurrentlyIterableList<LISTENERTYPE>(2, 4);
                 listenerList.add(this.listener, false);
             }
             listenerList.add(listener, false);
-
-            /*Cpp
-            if (listenerList == NULL)
-            {
-              listenerList = new SafeConcurrentlyIterableList<_LISTENERTYPE*>(2, 4);
-              listenerList->add(this->listener, false);
-            }
-            listenerList->add(listener_, false);
-            */
-
-
         }
     }
 
     /**
      * @param listener Listener to remove
      */
-    public synchronized void remove(@Ptr LISTENERTYPE listener2) {
-
-        //JavaOnlyBlock
+    public synchronized void remove(LISTENERTYPE listener2) {
         if (listenerList != null) {
             listenerList.remove(listener2);
         } else if (listener == listener2) {
             listener = null;
         }
-
-        /*Cpp
-        if (listenerList != NULL) {
-            listenerList->remove(listener2);
-        } else if (listener == listener2) {
-            listener = NULL;
-        }
-        */
     }
 
     /**
@@ -134,7 +92,7 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
      * @param origin Source of event
      * @param parameter Parameter of event
      */
-    @Inline public void notify(@Ptr ORIGIN origin, @Const @Ptr PARAMETER parameter) {
+    public void notify(ORIGIN origin, PARAMETER parameter) {
         if (listener != null) {
             notify2(origin, parameter, 0);
         }
@@ -147,7 +105,7 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
      * @param parameter Parameter of event
      * @param callId ID of method to call
      */
-    @Inline public void notify(@Ptr ORIGIN origin, @Const @Ptr PARAMETER parameter, int callId) {
+    public void notify(ORIGIN origin, PARAMETER parameter, int callId) {
         if (listener != null) {
             notify2(origin, parameter, callId);
         }
@@ -162,14 +120,12 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
      * @param callId ID of method to call
      */
     @SuppressWarnings("unchecked")
-    private void notify2(@Ptr ORIGIN origin, @Const @Ptr PARAMETER parameter, int callId) {
+    private void notify2(ORIGIN origin, PARAMETER parameter, int callId) {
         if (listener != null) {
             if (listenerList != null) {
-                @InCpp("ArrayWrapper<_LISTENERTYPE*>* it = listenerList->getIterable();")
-                @Ptr ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();
-                for (@SizeT int i = 0, n = it.size(); i < n; i++) {
-                    @InCpp("_LISTENERTYPE* lt = it->get(i);")
-                    @Ptr LISTENERTYPE lt = it.get(i);
+                ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();
+                for (int i = 0, n = it.size(); i < n; i++) {
+                    LISTENERTYPE lt = it.get(i);
                     if (lt != null) {
                         ((T)this).singleNotify(lt, origin, parameter, callId);
                     }
@@ -183,28 +139,18 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
     /**
      * @param result List to write result to: Contains all current listeners after call
      */
-    public void getListenersCopy(@CppType("SimpleList< _LISTENERTYPE*>") SimpleList<LISTENERTYPE> result) {
+    public void getListenersCopy(SimpleList<LISTENERTYPE> result) {
         result.clear();
         if (listenerList != null) {
-            @InCpp("ArrayWrapper<_LISTENERTYPE*>* it = listenerList->getIterable();")
-            @Ptr ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();
-            for (@SizeT int i = 0, n = it.size(); i < n; i++) {
-                @InCpp("_LISTENERTYPE* lt = it->get(i);")
-                @Ptr LISTENERTYPE lt = it.get(i);
+            ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();
+            for (int i = 0, n = it.size(); i < n; i++) {
+                LISTENERTYPE lt = it.get(i);
                 if (lt != null) {
-
-                    //JavaOnlyBlock
                     result.add(lt);
-
-                    //Cpp result.add(lt);
                 }
             }
         } else if (listener != null) {
-
-            //JavaOnlyBlock
             result.add(listener);
-
-            //Cpp result.add(listener);
         }
     }
 
@@ -217,6 +163,5 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
      * @param parameter Parameter of event
      * @param listener Listener to notify
      */
-    @NonVirtual public void singleNotify(@Ptr LISTENERTYPE listener, @Ptr ORIGIN origin, @Const @Ptr PARAMETER parameter, int callId) {}
-    // non-virtual, because we have cast to T in C++
+    public void singleNotify(LISTENERTYPE listener, ORIGIN origin, PARAMETER parameter, int callId) {}
 }

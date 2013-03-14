@@ -21,14 +21,12 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Marks classes that should be notified when recycled
  */
-@JavaOnly
 public interface Clearable {
 
     /**

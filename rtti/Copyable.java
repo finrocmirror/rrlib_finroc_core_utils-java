@@ -21,16 +21,11 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Marks classes that can be conveniently duplicated and copied.
  */
-@JavaOnly
 public interface Copyable<T> {
 
     /**
@@ -39,5 +34,5 @@ public interface Copyable<T> {
      *
      * copyFrom must not be called concurrently.
      */
-    public void copyFrom(@Const @Ref T source);
+    public void copyFrom(T source);
 }

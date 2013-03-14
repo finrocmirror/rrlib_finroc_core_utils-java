@@ -21,10 +21,9 @@
  */
 package org.rrlib.finroc_core_utils.jc.jni;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Base class for "hybrid classes". These can be created and used
  * from both C++ and Java.
@@ -33,7 +32,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
  *
  * (Preferably memory is allocated using Java byte buffer)
  */
-@JavaOnly
 public abstract class HybridClass extends SharedBuffer {
 
     /** Delete C++ class with garbage collection? */

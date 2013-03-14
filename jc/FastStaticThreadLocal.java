@@ -21,13 +21,8 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.ConvertInterfaceOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class implements a fast static thread local variable.
  *
@@ -37,8 +32,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
  *
  * In C++ this class is very fast (~10x faster than an ordinary thread local).
  */
-@ConvertInterfaceOnly @JavaOnly
-@RawTypeArgs
 public class FastStaticThreadLocal<T, User> extends ThreadLocal<T> {
 
     /**
@@ -46,7 +39,7 @@ public class FastStaticThreadLocal<T, User> extends ThreadLocal<T> {
      * May be called in places where it is guaranteed that the value
      * has been initialized or where it may be null.
      */
-    public @Ptr T getFast() {
+    public T getFast() {
         return get();
     }
 }

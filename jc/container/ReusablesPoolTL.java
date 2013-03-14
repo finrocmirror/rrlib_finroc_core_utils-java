@@ -21,24 +21,16 @@
  */
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Protected;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
-import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This is the static thread-local ("TL")/not-thread-safe variant of ReusablesPoolTL.
  */
-@Ptr @RawTypeArgs
-@Include("definitions.h")
 public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool<T> {
 
     /** Wrapped Queue */
-    private @PassByValue WonderQueueTL<T> wrapped = new WonderQueueTL<T>();
+    private WonderQueueTL<T> wrapped = new WonderQueueTL<T>();
 
     /**
      * Attaches (and enqueues) a Reusable object to this pool.
@@ -51,15 +43,13 @@ public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool
      * @param r Reusable to attach and enqueue
      * @param enqueueNow Enqueue attached element or use directly?
      */
-    public void attach(@Ptr T r, boolean enqueueNow) {
+    public void attach(T r, boolean enqueueNow) {
         assert r.nextInBufferPool == null;
         assert r.owner == null;
         r.nextInBufferPool = lastCreated;
         lastCreated = r;
         r.owner = wrapped;
-        //Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         allocationRegisterLock.trackReusable(r);
-        //Cpp #endif
         if (enqueueNow) {
             wrapped.enqueue(r);
         }
@@ -68,8 +58,8 @@ public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool
     /**
      * @return Element from pool - or null, if all are currently in use
      */
-    public @Ptr T getUnused() {
-        @Ptr T result = wrapped.dequeue();
+    public T getUnused() {
+        T result = wrapped.dequeue();
         assert(result == null || result.stateChange((byte)(Reusable.UNKNOWN | Reusable.RECYCLED), Reusable.USED, wrapped));
         return result;
     }
@@ -81,13 +71,13 @@ public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool
      *
      * Should only be called by owner thread.
      */
-    @Virtual public void controlledDelete() {
+    public void controlledDelete() {
 
         // Set pool pointers of all elements to null
-        @Ptr ReusableTL elem = lastCreated;
+        ReusableTL elem = lastCreated;
         while (elem != null) {
             elem.owner = null;
-            @Ptr ReusableTL temp = elem.nextInBufferPool;
+            ReusableTL temp = elem.nextInBufferPool;
             elem.nextInBufferPool = null; // safer and avoids unnecessary memory consumption in Java
             elem = temp;
         }
@@ -95,8 +85,7 @@ public class ReusablesPoolTL<T extends ReusableTL> extends AbstractReusablesPool
         this.delete(); // my favourite line :-)  Due to thread-local-nature we do not need safe delete using garbage collector
     }
 
-    // destructor is intentionally protected: call controlledDelete() instead
-    @Override @Protected
+    @Override
     public void delete() {
         wrapped.deleteEnqueued();
     }

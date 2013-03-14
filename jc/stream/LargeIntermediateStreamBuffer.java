@@ -21,9 +21,6 @@
  */
 package org.rrlib.finroc_core_utils.jc.stream;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Init;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
 import org.rrlib.finroc_core_utils.serialization.BufferInfo;
 import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
 import org.rrlib.finroc_core_utils.serialization.MemoryBuffer;
@@ -31,7 +28,7 @@ import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
 import org.rrlib.finroc_core_utils.serialization.Sink;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * A problem with ordinary stream buffers is that skip offsets often cannot be written
  * when the data in between is very large.
@@ -40,24 +37,13 @@ import org.rrlib.finroc_core_utils.serialization.Sink;
  */
 public class LargeIntermediateStreamBuffer extends MemoryBuffer {
 
-    /*Cpp
-    // for "locking" object sink as long as this buffer exists
-    std::shared_ptr<const rrlib::serialization::Sink> sinkLock;
-    */
-
     /** Sink for intermediate buffer */
     private final Sink sink;
 
     /** Dummy buffer info */
-    @PassByValue private BufferInfo dummyInfo = new BufferInfo();
+    private BufferInfo dummyInfo = new BufferInfo();
 
-    /*Cpp
-    LargeIntermediateStreamBuffer(Sink* sink_) : sinkLock(), sink(sink_), dummyInfo()
-    {}
-     */
-
-    @Init("sinkLock(sink_)")
-    public LargeIntermediateStreamBuffer(@PassByValue @SharedPtr Sink sink) {
+    public LargeIntermediateStreamBuffer(Sink sink) {
         this.sink = sink;
     }
 

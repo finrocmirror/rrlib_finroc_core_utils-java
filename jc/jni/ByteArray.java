@@ -24,10 +24,8 @@ package org.rrlib.finroc_core_utils.jc.jni;
 
 import java.nio.ByteBuffer;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Array with doubles in C++ (byte *)
  *
@@ -35,7 +33,6 @@ import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
  *
  * In auto-generated JNI stuff, the DoubleArrayWrapper is the class to use.
  */
-@JavaOnly
 
 public class ByteArray extends SharedBuffer {
 

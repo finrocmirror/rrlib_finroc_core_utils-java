@@ -22,17 +22,9 @@
 package org.rrlib.finroc_core_utils.jc.container;
 
 import org.rrlib.finroc_core_utils.jc.GarbageCollector;
-import org.rrlib.finroc_core_utils.jc.annotation.Friend;
-import org.rrlib.finroc_core_utils.jc.annotation.Include;
-import org.rrlib.finroc_core_utils.jc.annotation.Inline;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Protected;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.RawTypeArgs;
-import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * (CR = "Concurrent Read")
  *
@@ -49,13 +41,10 @@ import org.rrlib.finroc_core_utils.jc.annotation.Virtual;
  * - The owningPool field of its element will be set to NULL
  * - It will be deleted deferred (by the garbage collector to avoid dangerous race conditions)
  */
-@Friend(GarbageCollector.class)
-@Ptr @RawTypeArgs
-@Include("definitions.h")
 public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T> {
 
     /** Wrapped Queue */
-    private @PassByValue WonderQueueFastCR<T> wrapped = new WonderQueueFastCR<T>();
+    private WonderQueueFastCR<T> wrapped = new WonderQueueFastCR<T>();
 
     /**
      * Attaches (and enqueues) a Reusable object to this pool.
@@ -68,15 +57,13 @@ public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T
      * @param r Reusable to attach and enqueue
      * @param enqueueNow Enqueue attached element or use directly?
      */
-    public void attach(@Ptr T r, boolean enqueueNow) {
+    public void attach(T r, boolean enqueueNow) {
         assert r.nextInBufferPool == null;
         assert r.owner == null;
         r.nextInBufferPool = lastCreated;
         lastCreated = r;
         r.owner = wrapped;
-        //Cpp #ifdef __JC_BASIC_REUSABLE_TRACING_ENABLED__
         allocationRegisterLock.trackReusable(r);
-        //Cpp #endif
         if (enqueueNow) {
             wrapped.enqueue(r);
         }
@@ -85,9 +72,8 @@ public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T
     /**
      * @return Element from pool - or null, if all are currently in use
      */
-    @Inline
-    public @Ptr T getUnused() {
-        @Ptr T result = wrapped.dequeue();
+    public T getUnused() {
+        T result = wrapped.dequeue();
         assert(result == null || result.stateChange((byte)(Reusable.UNKNOWN | Reusable.RECYCLED), Reusable.USED, wrapped));
         return result;
     }
@@ -99,38 +85,21 @@ public class ReusablesPoolCR<T extends Reusable> extends AbstractReusablesPool<T
      *
      * Should only be called by owner thread.
      */
-    @Virtual public void controlledDelete() {
+    public void controlledDelete() {
 
         // Set pool pointers of all elements to null
-        @Ptr Reusable elem = lastCreated;
+        Reusable elem = lastCreated;
         while (elem != null) {
             elem.owner = null;
-            @Ptr Reusable temp = elem.nextInBufferPool;
+            Reusable temp = elem.nextInBufferPool;
             elem.nextInBufferPool = null; // safer and avoids unnecessary memory consumption in Java
             elem = temp;
         }
 
-        // JavaOnlyBlock
         GarbageCollector.deleteDeferred(this); // should be last instruction
-
-        /*Cpp
-        // this is actually meant: GarbageCollector::deleteDeferred(this);
-        GarbageCollectorForwardDecl::deleteDeferred(this);
-         */
     }
 
-    /*Cpp
-    virtual void customDelete(bool calledFromGc) {
-        if (calledFromGc) {
-            SafeDestructible::customDelete(calledFromGc);
-        } else {
-            controlledDelete();
-        }
-    }
-    */
-
-    // destructor is intentionally protected: call controlledDelete() instead
-    @Override @Protected
+    @Override
     public void delete() {
         wrapped.deleteEnqueued();
     }

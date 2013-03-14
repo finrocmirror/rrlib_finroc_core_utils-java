@@ -21,15 +21,12 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Same as MutexLockOrder - but also contains a monitor
  * for notify() and wait() operations.
  */
-@JavaOnly
 public class MutexLockOrderWithMonitor extends MutexLockOrder {
 
     public MutexLockOrderWithMonitor(int primary, int secondary) {

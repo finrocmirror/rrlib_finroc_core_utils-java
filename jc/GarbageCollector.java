@@ -21,15 +21,6 @@
  */
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.annotation.AtFront;
-import org.rrlib.finroc_core_utils.jc.annotation.CppPrepend;
-import org.rrlib.finroc_core_utils.jc.annotation.CppType;
-import org.rrlib.finroc_core_utils.jc.annotation.InCpp;
-import org.rrlib.finroc_core_utils.jc.annotation.InCppFile;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.PassByValue;
-import org.rrlib.finroc_core_utils.jc.annotation.Ptr;
-import org.rrlib.finroc_core_utils.jc.annotation.SharedPtr;
 import org.rrlib.finroc_core_utils.jc.container.ConcurrentQueue;
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
@@ -38,7 +29,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class/thread deletes objects passed to it - deferred, after a safety period.
  *
@@ -61,15 +52,13 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
  *
  * Thread may only be stopped by Thread::stopThreads() in C++.
  */
-@Ptr
-@CppPrepend( { "rrlib::logging::LogDomainSharedPointer gcClassInitDomainDummy = GarbageCollector::_V_logDomain(); // make sure log domain exists" })
 public class GarbageCollector extends LoopThread {
 
     /** Current tasks of Garbage Collector */
     private final ConcurrentQueue<DeferredDeleteTask> tasks = new ConcurrentQueue<DeferredDeleteTask>();
 
     /** Singleton instance - non-null while thread is running */
-    private volatile static @Ptr GarbageCollector instance; /*= new GarbageCollector();*/
+    private volatile static GarbageCollector instance; /*= new GarbageCollector();*/
 
     /** Constants for below - weird numbers to detect any memory corruption (shouldn't happen I think) */
     private static final int YES = 0x37347377, NO = 0x1946357;
@@ -87,7 +76,6 @@ public class GarbageCollector extends LoopThread {
     private DeferredDeleteTask next = new DeferredDeleteTask();
 
     /** Log domain for this class */
-    @InCpp("_RRLIB_LOG_CREATE_NAMED_DOMAIN(logDomain, \"garbage_collector\");")
     public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("garbage_collector");
 
     private GarbageCollector() {
@@ -145,20 +133,12 @@ public class GarbageCollector extends LoopThread {
      * Creates and starts single instance of GarbageCollector thread
      */
     public static void createAndStartInstance() {
-        /*Cpp
-        if (Thread::stoppingThreads()) {
-            _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, "starting gc in this phase is not allowed");
-            return;
-        }
-         */
-
         if (started == NO) {
-            @SharedPtr GarbageCollector tmp = ThreadUtil.getThreadSharedPtr(new GarbageCollector());
+            GarbageCollector tmp = ThreadUtil.getThreadSharedPtr(new GarbageCollector());
             tmp.start();
             instance = tmp;
             started = YES;
         } else {
-            //Cpp _FINROC_LOG_STREAM(rrlib::logging::eLL_WARNING, logDomain, "Cannot start gc thread twice. This attempt is possibly dangerous, since this method is not thread-safe");
         }
     }
 
@@ -166,28 +146,9 @@ public class GarbageCollector extends LoopThread {
      * @param t Thread
      * @return Is this the garbage collector?
      */
-    public static boolean isGC(@SharedPtr Thread t) {
+    public static boolean isGC(Thread t) {
         return t != null && (t instanceof GarbageCollector);
     }
-
-    /*Cpp
-
-    // Delete object deferred
-    static void deleteDeferred(SafeDestructible* elementToDelete) {
-        deleteDeferredImpl(elementToDelete);
-    }
-
-    // Delete object deferred
-    // (Helper for when SafeDestructible is ambiguous)
-    static void deleteDeferred(Object* elementToDelete) {
-        deleteDeferredImpl(static_cast<SafeDestructible*>(elementToDelete));
-    }
-
-    static const char* getLogDescription() {
-        return "GarbageCollector";
-    }
-
-    */
 
     public void mainLoopCallback() throws Exception {
         long time = Time.getCoarse();
@@ -215,22 +176,9 @@ public class GarbageCollector extends LoopThread {
      *
      * @param elementToDelete Pointer to object that will be deleted
      */
-    @JavaOnly
-    public static void deleteDeferred(@CppType("SafeDestructible") @Ptr Object elementToDelete) {
+    public static void deleteDeferred(Object elementToDelete) {
         deleteDeferredImpl(elementToDelete);
     }
-
-    /*Cpp
-    // Safer than calling toString() directly - for use in log output
-    static util::String getObjectString(util::Object* element) {
-        String s("");
-        finroc::util::Object* obj = dynamic_cast<finroc::util::Object*>(element);
-        if (obj != NULL) {
-          s = obj->toString();
-        }
-        return s;
-    }
-     */
 
     /**
      * Delete this object deferred (implementation)
@@ -238,15 +186,12 @@ public class GarbageCollector extends LoopThread {
      *
      * @param elementToDelete Pointer to object that will be deleted
      */
-    @InCppFile
-    private static void deleteDeferredImpl(@CppType("SafeDestructible") @Ptr Object elementToDelete) {
+    private static void deleteDeferredImpl(Object elementToDelete) {
 
-        //Cpp _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, "Delete requested for: ", elementToDelete /*, " ", s.toCString()*/);
-        @Ptr GarbageCollector gc = instance;
+        GarbageCollector gc = instance;
         if (gc == null) {
             assert(started == NO || ThreadUtil.getCurrentThreadId() == deleterThreadId);
             // safe to delete object now
-            //Cpp elementToDelete->customDelete(true);
             return;
         }
 
@@ -257,61 +202,26 @@ public class GarbageCollector extends LoopThread {
     /**
      * Garbage Collector task
      */
-    @PassByValue @AtFront
     private static class DeferredDeleteTask {
 
-        /*Cpp
-        friend class GarbageCollector;
-         */
-
         /** Element to delete */
-        private @CppType("SafeDestructible") @Ptr Object elementToDelete;
+        private Object elementToDelete;
 
         /** When to delete element - timestamp in ms */
         private long timeWhen;
 
         public DeferredDeleteTask() {}
 
-        public DeferredDeleteTask(@CppType("SafeDestructible") @Ptr Object elementToDelete_, long timeWhen_) {
+        public DeferredDeleteTask(Object elementToDelete_, long timeWhen_) {
             elementToDelete = elementToDelete_;
             timeWhen = timeWhen_;
         }
 
         public void execute() {
-
-            // JavaOnlyBlock
             if (elementToDelete instanceof HasDestructor) {
                 ((HasDestructor)elementToDelete).delete();
             }
-
-            /*Cpp
-            elementToDelete->customDelete(true);
-             */
-
             elementToDelete = null;
         }
     }
-
-    /*Cpp
-    // Functor for use in shared_ptr - deletes objects deferred (via GarbageCollector)
-    class Functor {
-    public:
-
-        void operator()(SafeDestructible* elementToDelete) {
-            //printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
-            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, "invoking GarbageCollector Functor for ", elementToDelete);
-            GarbageCollector::deleteDeferred(elementToDelete);
-        }
-
-        void operator()(Object* elementToDelete) {
-            //printf("invoking GarbageCollector Functor for %p\n", elementToDelete);
-            _FINROC_LOG_STREAM(rrlib::logging::eLL_DEBUG_VERBOSE_1, logDomain, "invoking GarbageCollector Functor for ", elementToDelete);
-            GarbageCollector::deleteDeferred(elementToDelete);
-        }
-
-        const char* getLogDescription() {
-            return "GarbageCollector::Functor";
-        }
-    };
-    */
 }

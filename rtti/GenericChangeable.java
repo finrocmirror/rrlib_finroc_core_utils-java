@@ -21,16 +21,11 @@
  */
 package org.rrlib.finroc_core_utils.rtti;
 
-import org.rrlib.finroc_core_utils.jc.annotation.Const;
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-import org.rrlib.finroc_core_utils.jc.annotation.Ref;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Interface for data types that can be changed using transactions T.
  */
-@JavaOnly
 public interface GenericChangeable<T> {
 
     /**
@@ -38,5 +33,5 @@ public interface GenericChangeable<T> {
      * @param parameter1 Custom parameter (e.g. start index)
      * @param parameter2 Custom parameter 2 (e.g. length)
      */
-    public void applyChange(@Const @Ref T t, long parameter1, long parameter2);
+    public void applyChange(T t, long parameter1, long parameter2);
 }

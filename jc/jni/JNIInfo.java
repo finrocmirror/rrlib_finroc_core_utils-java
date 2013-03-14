@@ -23,14 +23,11 @@ package org.rrlib.finroc_core_utils.jc.jni;
 
 import java.nio.ByteOrder;
 
-import org.rrlib.finroc_core_utils.jc.annotation.JavaOnly;
-
 /**
- * @author max
+ * @author Max Reichardt
  *
  * This class provides general information about C++ code on this machine
  */
-@JavaOnly
 public class JNIInfo {
 
     /** Size of Pointers on this platform (only valid when JNI is available) (*/

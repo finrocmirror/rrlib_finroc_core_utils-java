@@ -25,7 +25,7 @@ import org.rrlib.finroc_core_utils.rtti.DataType;
 
 
 /**
- * @author max
+ * @author Max Reichardt
  *
  * Abstract interface for all types that have a numeric representation
  */
