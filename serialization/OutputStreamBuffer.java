@@ -71,6 +71,9 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
     /** -1 by default - buffer position when a skip offset placeholder has been set/written */
     private int curSkipOffsetPlaceholder = -1;
 
+    /** if true, indicates that only 1 byte has been reserved for skip offset placeholder */
+    private boolean shortSkipOffset;
+
     /** hole Buffers are only buffered/copied, when they are smaller than this */
     private int bufferCopyFraction;
 
@@ -485,11 +488,31 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      *
      * As soon as the stream has reached the position to which are reader might want to skip
      * call setSkipTargetHere()
+     *
+     * @param short_skip_offset If skip offset will be smaller than 256, can be set to true, to make stream 3 bytes shorter
      */
-    public void writeSkipOffsetPlaceholder() {
+    public void writeSkipOffsetPlaceholder(boolean shortSkipOffset) {
         assert(curSkipOffsetPlaceholder < 0);
         curSkipOffsetPlaceholder = buffer.position;
-        writeInt(Integer.MIN_VALUE);
+        this.shortSkipOffset = shortSkipOffset;
+
+        if (shortSkipOffset) {
+            writeByte(Byte.MIN_VALUE);
+        } else {
+            writeInt(Integer.MIN_VALUE);
+        }
+    }
+
+    /**
+     * A "skip offset" will be written to this position in the stream.
+     *
+     * (only one such position can be set/remembered at a time)
+     *
+     * As soon as the stream has reached the position to which are reader might want to skip
+     * call setSkipTargetHere()
+     */
+    public void writeSkipOffsetPlaceholder() {
+        writeSkipOffsetPlaceholder(false);
     }
 
     /**
@@ -497,7 +520,11 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
      */
     public void skipTargetHere() {
         assert(curSkipOffsetPlaceholder >= 0);
-        buffer.buffer.putInt(curSkipOffsetPlaceholder, buffer.position - curSkipOffsetPlaceholder - 4);
+        if (shortSkipOffset) {
+            buffer.buffer.putByte(curSkipOffsetPlaceholder, buffer.position - curSkipOffsetPlaceholder - 1);
+        } else {
+            buffer.buffer.putInt(curSkipOffsetPlaceholder, buffer.position - curSkipOffsetPlaceholder - 4);
+        }
         curSkipOffsetPlaceholder = -1;
     }
 

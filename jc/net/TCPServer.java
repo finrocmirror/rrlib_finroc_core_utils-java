@@ -21,6 +21,8 @@
  */
 package org.rrlib.finroc_core_utils.jc.net;
 
+import java.net.Socket;
+
 /**
  * @author Max Reichardt
  *
@@ -42,8 +44,8 @@ public interface TCPServer {
      * Accept this connection
      * (is started in a new thread by handler)
      *
-     * @param s Socket
+     * @param socket Socket
      * @param firstByte First byte of the input stream that was already read
      */
-    public void acceptConnection(NetSocket s, byte firstByte);
+    public void acceptConnection(Socket socket, byte firstByte);
 }

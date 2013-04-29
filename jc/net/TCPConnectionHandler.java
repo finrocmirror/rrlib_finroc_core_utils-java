@@ -23,6 +23,7 @@ package org.rrlib.finroc_core_utils.jc.net;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 import org.rrlib.finroc_core_utils.jc.ArrayWrapper;
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
@@ -105,7 +106,7 @@ public class TCPConnectionHandler extends Thread {
         assert(serverSocket != null);
         while (!close) {
             try {
-                handle(new NetSocket(serverSocket.accept()));
+                handle(serverSocket.accept());
             } catch (IOException e) {
                 logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
             }
@@ -124,23 +125,23 @@ public class TCPConnectionHandler extends Thread {
     /**
      * "Handles" incoming TCP connection
      *
-     * @param s Socket of incoming connection
+     * @param socket Socket of incoming connection
      */
-    private void handle(NetSocket s) throws IOException {
+    private void handle(Socket socket) throws IOException {
 
         // read first byte
         byte first = 0;
 
-        s.getSocket().setSoTimeout(2000);
-        first = (byte)s.getSocket().getInputStream().read();
-        s.getSocket().setSoTimeout(0);
+        socket.setSoTimeout(2000);
+        first = (byte)socket.getInputStream().read();
+        socket.setSoTimeout(0);
 
         // look for server that handles connection
         ArrayWrapper<TCPServer> it = servers.getIterable();
         for (int i = 0, n = it.size(); i < n; i++) {
             TCPServer ts = it.get(i);
             if (ts != null && ts.accepts(first)) {
-                HandlerThread ht = ThreadUtil.getThreadSharedPtr(new HandlerThread(s, ts, first));
+                HandlerThread ht = ThreadUtil.getThreadSharedPtr(new HandlerThread(socket, ts, first));
                 ht.start();
                 return;
             }
@@ -150,9 +151,9 @@ public class TCPConnectionHandler extends Thread {
         //System.out.println("No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
         logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
         try {
-            s.getSocket().getInputStream().close();
-            s.close();
-        } catch (org.rrlib.finroc_core_utils.jc.net.IOException e) {
+            socket.getInputStream().close();
+            socket.close();
+        } catch (IOException e) {
             logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
         }
     }
@@ -161,7 +162,7 @@ public class TCPConnectionHandler extends Thread {
     static class HandlerThread extends Thread {
 
         /** Socket that was accepted */
-        private NetSocket socket;
+        private Socket socket;
 
         /** Server to handler request */
         private TCPServer server;
@@ -169,7 +170,7 @@ public class TCPConnectionHandler extends Thread {
         /** First byte of request */
         private byte firstByte;
 
-        public HandlerThread(NetSocket socketX, TCPServer serverX, byte firstByteX) {
+        public HandlerThread(Socket socketX, TCPServer serverX, byte firstByteX) {
             setName("TCP HandlerThread");
             socket = socketX;
             server = serverX;

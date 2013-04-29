@@ -38,24 +38,24 @@ public interface RRLibSerializable {
     public final static DataTypeBase TYPE = new DataType<RRLibSerializable>(RRLibSerializable.class);
 
     /**
-     * @param os Stream to serialize object to
+     * @param stream Stream to serialize object to
      */
-    public void serialize(OutputStreamBuffer os);
+    public void serialize(OutputStreamBuffer stream);
 
     /**
      * Deserialize object. Object has to exists already.
      * Should be suitable for reusing old objects.
      *
-     * @param is Stream to deserialize from
+     * @param stream Stream to deserialize from
      */
-    public void deserialize(InputStreamBuffer is);
+    public void deserialize(InputStreamBuffer stream);
 
     /**
      * Serialize object as string (e.g. for xml output)
      *
-     * @param os String output stream
+     * @param stream String output stream
      */
-    public void serialize(StringOutputStream os);
+    public void serialize(StringOutputStream stream);
 
     /**
      * Deserialize object. Object has to exists already.
@@ -64,9 +64,9 @@ public interface RRLibSerializable {
      * Parsing errors should throw an Exception - and set object to
      * sensible (default?) value
      *
-     * @param s String stream to deserialize from
+     * @param stream String stream to deserialize from
      */
-    public void deserialize(StringInputStream is) throws Exception;
+    public void deserialize(StringInputStream stream) throws Exception;
 
     /**
      * Serialize object to XML
@@ -90,11 +90,11 @@ public interface RRLibSerializable {
         public final static DataType<EmptySerialiazble> TYPE = new DataType<EmptySerialiazble>(EmptySerialiazble.class, "Empty Serializable");
 
         @Override
-        public void serialize(OutputStreamBuffer os) {
+        public void serialize(OutputStreamBuffer stream) {
         }
 
         @Override
-        public void deserialize(InputStreamBuffer is) {
+        public void deserialize(InputStreamBuffer stream) {
         }
     }
 }

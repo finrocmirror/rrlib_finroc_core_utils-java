@@ -20,12 +20,12 @@
  */
 package org.rrlib.finroc_core_utils.serialization;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.log.LogUser;
-import org.rrlib.finroc_core_utils.jc.net.EOFException;
 import org.rrlib.finroc_core_utils.log.LogDomain;
 import org.rrlib.finroc_core_utils.log.LogLevel;
 
