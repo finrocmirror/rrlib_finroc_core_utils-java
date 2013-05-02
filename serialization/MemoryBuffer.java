@@ -70,15 +70,16 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
     }
 
     public MemoryBuffer(int size) {
-        this(size, DEFAULT_RESIZE_FACTOR);
+        this(size, DEFAULT_RESIZE_FACTOR, true);
     }
 
     /**
      * @param size Initial buffer size
      * @param resizeFactor When buffer needs to be reallocated, new size is multiplied with this factor to have some bytes in reserve
+     * @param allocatDirectIfJniAvailable Allocate direct byte buffer if finroc_core_utils_jni is available?
      */
-    public MemoryBuffer(int size, float resizeFactor) {
-        backend = new FixedBuffer(size);
+    public MemoryBuffer(int size, float resizeFactor, boolean allocatDirectIfJniAvailable) {
+        backend = new FixedBuffer(size, allocatDirectIfJniAvailable);
         resizeReserveFactor = resizeFactor;
     }
 

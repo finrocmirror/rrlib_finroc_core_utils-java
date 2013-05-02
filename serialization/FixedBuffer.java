@@ -58,15 +58,17 @@ public class FixedBuffer {
     /** Actual (wrapped) buffer - may be replaced by subclasses */
     protected ByteBuffer buffer;
 
-    /**
-     * @return Capacity of buffer (in bytes)
-     */
-    public int capacity() {
-        return buffer.capacity();
+
+    public FixedBuffer(int capacity) {
+        this(capacity, true);
     }
 
-    public FixedBuffer(int capacity_) {
-        this(USE_DIRECT_BUFFERS ? ByteBuffer.allocateDirect(capacity_) : ByteBuffer.allocate(capacity_));
+    /**
+     * @param capacity Capacity of buffer to allocate
+     * @param allocatDirectIfJniAvailable Allocate direct byte buffer if finroc_core_utils_jni is available?
+     */
+    public FixedBuffer(int capacity, boolean allocatDirectIfJniAvailable) {
+        this(USE_DIRECT_BUFFERS && allocatDirectIfJniAvailable ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity));
     }
 
     /**
@@ -83,6 +85,13 @@ public class FixedBuffer {
             tempBufs[i] = new TempBuffer();
             tempBufs[i].init();
         }
+    }
+
+    /**
+     * @return Capacity of buffer (in bytes)
+     */
+    public int capacity() {
+        return buffer.capacity();
     }
 
     /**
