@@ -62,6 +62,10 @@ public class DataTypeBase {
      */
     private static final int MAX_ANNOTATIONS = 10;
 
+    /** we need to avoid reallocation in order to make ArrayList thread safe. Therefore it is created with this capacity. */
+    private final static int MAX_TYPES = 2000;
+
+
     /** Data type info */
     static public class DataTypeInfoRaw implements HasDestructor {
 
@@ -172,7 +176,7 @@ public class DataTypeBase {
     protected final DataTypeInfoRaw info;
 
     /** List with all registered data types */
-    private static ArrayList<DataTypeBase> types = new ArrayList<DataTypeBase>();
+    private static ArrayList<DataTypeBase> types = new ArrayList<DataTypeBase>(MAX_TYPES);
 
     /** Null type */
     private static DataTypeBase NULL_TYPE = new DataTypeBase(null);
@@ -204,6 +208,10 @@ public class DataTypeBase {
      */
     private void addType(DataTypeInfoRaw nfo) {
         nfo.uid = (short)getTypes().size();
+        if (getTypes().size() >= MAX_TYPES) {
+            logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Maximum number of data types exceeded. Increase cMAX_TYPES.");
+            throw new RuntimeException("Maximum number of data types exceeded. Increase MAX_TYPES.");
+        }
         getTypes().add(this);
         nfo.newInfo = false;
         String msg = "Adding data type " + getName();
