@@ -39,7 +39,7 @@ public class JNICalls {
         boolean temp = false;
         try {
             //System.load(RuntimeSettings.getRootDir() + File.separator + "libjnibase.so");
-            System.loadLibrary("rrlib_finroc_core_utils_jni_base");
+            System.loadLibrary("rrlib_jni");
             temp = true;
         } catch (Exception e) {
         } catch (UnsatisfiedLinkError e) {}
