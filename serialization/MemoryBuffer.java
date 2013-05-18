@@ -252,13 +252,13 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
 
     @Override
     public void deserialize(InputStreamBuffer rv) {
-        int size = rv.readInt(); // Buffer size is limited to 2 GB
-        deserialize(rv, size);
+        long size = rv.readLong();
+        deserialize(rv, (int)size);
     }
 
     @Override
     public void serialize(OutputStreamBuffer sb) {
-        sb.writeInt(curSize);
+        sb.writeLong(curSize);
         sb.write(backend, 0, curSize);
     }
 

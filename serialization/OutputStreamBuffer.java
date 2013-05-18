@@ -52,7 +52,7 @@ import org.rrlib.finroc_core_utils.rtti.GenericObject;
  *  1) flush immediately
  *  2) flush when requested or full
  */
-public class OutputStreamBuffer implements Sink, HasDestructor {
+public class OutputStreamBuffer implements HasDestructor {
 
     /** Committed buffers are buffered/copied (not forwarded directly), when smaller than 1/(2^n) of buffer capacity */
     private static double BUFFER_COPY_FRACTION = 0.25;
@@ -529,36 +529,6 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
         curSkipOffsetPlaceholder = -1;
     }
 
-    // Sink implementation - for chaining OutputStreamBuffers together
-
-    @Override
-    public void close(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
-        sink.close(this, buffer);
-    }
-
-    @Override
-    public void directWrite(OutputStreamBuffer outputStreamBuffer, FixedBuffer buffer, int offset, int len) {
-        sink.directWrite(this, buffer, offset, len);
-    }
-
-    @Override
-    public boolean directWriteSupport() {
-        return sink.directWriteSupport();
-    }
-
-    @Override
-    public void reset(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
-        sink.reset(this, this.buffer);
-        buffer.assign(this.buffer);
-    }
-
-    @Override
-    public boolean write(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer, int sizeHint) {
-        boolean result = sink.write(this, buffer, sizeHint);
-        this.buffer.assign(buffer); // synchronize
-        return result;
-    }
-
     /**
      * Write all available data from input stream to this output stream buffer
      *
@@ -570,11 +540,6 @@ public class OutputStreamBuffer implements Sink, HasDestructor {
             write(inputStream.curBuffer.buffer, inputStream.curBuffer.position, inputStream.curBuffer.remaining());
             inputStream.curBuffer.position = inputStream.curBuffer.end;
         }
-    }
-
-    @Override
-    public void flush(OutputStreamBuffer outputStreamBuffer, BufferInfo info) {
-        flush();
     }
 
     /**

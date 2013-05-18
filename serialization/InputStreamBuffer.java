@@ -36,7 +36,7 @@ import org.rrlib.finroc_core_utils.rtti.GenericObject;
  * A manager class customizes its behaviour (whether it reads from file, memory block, chunked buffer, etc.)
  * It handles, where the data blocks actually come from.
  */
-public class InputStreamBuffer implements Source, HasDestructor {
+public class InputStreamBuffer implements HasDestructor {
 
     /** Buffer that is managed by source */
     protected BufferInfo sourceBuffer = new BufferInfo();
@@ -692,52 +692,11 @@ public class InputStreamBuffer implements Source, HasDestructor {
         curSkipOffsetTarget = 0;
     }
 
-    // Source methods for efficient chaining of buffers
-
-    @Override
-    public void close(InputStreamBuffer buf, BufferInfo buffer) {
-        close();
-    }
-
-    @Override
-    public void read(InputStreamBuffer buf, BufferInfo buffer, int len) {
-
-        // read next chunk - and copy this info to chained input stream buffer
-        curBuffer.position = curBuffer.end; // move marker to end so that ensureAvailable fetches next bytes
-        ensureAvailable(len);
-        buffer.assign(curBuffer);
-    }
-
-    @Override
-    public void reset(InputStreamBuffer buf, BufferInfo buffer) {
-        reset();
-        buffer.assign(curBuffer);
-    }
-
-    @Override
-    public void directRead(InputStreamBuffer inputStreamBuffer, FixedBuffer buffer, int offset, int len) {
-        directRead(this, buffer, offset, len);
-    }
-
-    @Override
-    public boolean directReadSupport() {
-        return source != null ? source.directReadSupport() : constSource.directReadSupport();
-    }
-
     public String toString() {
         if (curBuffer.buffer != null) {
             return "InputStreamBuffer - position: " + curBuffer.position + " start: " + curBuffer.start + " end: " + curBuffer.end;
         } else {
             return "InputStreamBuffer - no buffer backend";
-        }
-    }
-
-    @Override
-    public boolean moreDataAvailable(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
-        if (source != null) {
-            return source.moreDataAvailable(this, buffer);
-        } else {
-            return constSource.moreDataAvailable(this, buffer);
         }
     }
 
