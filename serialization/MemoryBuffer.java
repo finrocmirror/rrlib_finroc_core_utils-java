@@ -104,7 +104,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
      * @param newSize New size of buffer
      */
     public void setSize(int newSize) {
-        if (newSize < getCapacity()) {
+        if (newSize > getCapacity()) {
             ensureCapacity(newSize, true, this.curSize);
         }
         this.curSize = newSize;
