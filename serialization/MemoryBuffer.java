@@ -227,7 +227,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
             return;
         }
 
-        FixedBuffer newBuffer = new FixedBuffer(newSize);
+        FixedBuffer newBuffer = new FixedBuffer(newSize, backend.getBuffer().isDirect());
 
         if (keepContents) {
 
