@@ -394,6 +394,11 @@ public class DataTypeBase {
                 return dt;
             }
         }
+
+        if (name.contains(".")) {
+            return findType(removeNamespaces(name));
+        }
+
         return null;
     }
 
@@ -445,13 +450,28 @@ public class DataTypeBase {
     }
 
     /**
-     * Get uniform data type name from rtti type name
-     *
-     * @param rtti mangled rtti type name
-     * @return Uniform data type name
+     * @param typeName Type name (in rrlib::rtti) format
+     * @param The same type name without any namespaces (e.g. returns 'Pose2D' for 'rrlib.math.Pose2D')
      */
-    public static String getDataTypeNameFromRtti(String rtti) {
-        return null;
+    static String removeNamespaces(String typeName) {
+        StringBuilder sb = new StringBuilder();
+        boolean inNamespace = false;
+        for (int i = typeName.length() - 1; i >= 0; i--) {
+            char c = typeName.charAt(i);
+            if (c == '.') {
+                inNamespace = true;
+            }
+            if (c == ',' || c == '<' || c == ' ') {
+                inNamespace = false;
+            }
+            if (!inNamespace) {
+                sb.append(c);
+            }
+        }
+        sb.reverse();
+
+        logDomain.log(LogLevel.LL_DEBUG, "DataTypeBase", "Input: " + typeName + " Output: " + sb.toString());
+        return sb.toString();
     }
 
     /**
