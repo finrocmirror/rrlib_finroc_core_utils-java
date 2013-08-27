@@ -470,7 +470,7 @@ public class DataTypeBase {
         }
         sb.reverse();
 
-        logDomain.log(LogLevel.LL_DEBUG, "DataTypeBase", "Input: " + typeName + " Output: " + sb.toString());
+        logDomain.log(LogLevel.LL_DEBUG_VERBOSE_2, "DataTypeBase", "Input: " + typeName + " Output: " + sb.toString());
         return sb.toString();
     }
 
