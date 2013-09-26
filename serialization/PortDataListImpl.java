@@ -146,4 +146,11 @@ public class PortDataListImpl<T extends RRLibSerializable> extends RRLibSerializ
             }
         }
     }
+
+    /**
+     * @return Data type of list elements
+     */
+    public DataTypeBase getElementType() {
+        return elementType;
+    }
 }
