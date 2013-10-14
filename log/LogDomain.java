@@ -168,13 +168,13 @@ public class LogDomain {
             outputStreams.clear();
             Set<PrintStream> tmp = new HashSet<PrintStream>();
             for (LogStreamOutput ls : configuration.streamMask) {
-                if (ls == LogStreamOutput.LS_STDOUT) {
+                if (ls == LogStreamOutput.STDOUT) {
                     tmp.add(System.out);
-                } else if (ls == LogStreamOutput.LS_STDERR) {
+                } else if (ls == LogStreamOutput.STDERR) {
                     tmp.add(System.err);
-                } else if (ls == LogStreamOutput.LS_FILE) {
+                } else if (ls == LogStreamOutput.FILE) {
                     tmp.add(openFileOutputStream() ? fileStream : System.err);
-                } else if (ls == LogStreamOutput.LS_COMBINED_FILE) {
+                } else if (ls == LogStreamOutput.COMBINED_FILE) {
                     LogDomain domain = this;
                     for (; domain.parent != null && domain.parent.configuration.configureSubTree; domain = domain.parent) {}
                     tmp.add(domain.openFileOutputStream() ? fileStream : System.err);
@@ -220,13 +220,13 @@ public class LogDomain {
      */
     private String getLevelString(LogLevel level) {
         switch (level) {
-        case LL_ERROR:
+        case ERROR:
             return "[error]   ";
-        case LL_WARNING:
+        case WARNING:
             return "[warning] ";
-        case LL_DEBUG_WARNING:
+        case DEBUG_WARNING:
             return "[debug]   ";
-        case LL_DEBUG:
+        case DEBUG:
             return "[debug]   ";
         default:
             return "          ";
@@ -258,13 +258,13 @@ public class LogDomain {
      */
     private String getControlStringForColoredOutput(LogLevel level) {
         switch (level) {
-        case LL_ERROR:
+        case ERROR:
             return "\033[;1;31m";
-        case LL_WARNING:
+        case WARNING:
             return "\033[;1;34m";
-        case LL_DEBUG_WARNING:
+        case DEBUG_WARNING:
             return "\033[;2;33m";
-        case LL_DEBUG:
+        case DEBUG:
             return "\033[;2;32m";
         default:
             return "\033[;0m";

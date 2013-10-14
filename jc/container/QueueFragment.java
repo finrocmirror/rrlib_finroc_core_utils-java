@@ -80,7 +80,7 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
                         current = current.prev;
                     }
                     //System.out.println("Rare preemption case: " + n2.toString() + " " + current.toString());
-                    log(LogLevel.LL_DEBUG_VERBOSE_1, logDomain, "Rare preemption case: " + n2.toString() + " " + current.toString());
+                    log(LogLevel.DEBUG_VERBOSE_1, logDomain, "Rare preemption case: " + n2.toString() + " " + current.toString());
                     next = (C)current;
                 }
                 //assert(n2.count == current.count - 1);

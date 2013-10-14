@@ -118,7 +118,7 @@ public class OutputStreamSink extends LogUser implements Sink {
         try {
             wrapped.flush();
         } catch (IOException e) {
-            log(LogLevel.LL_ERROR, logDomain, e);
+            log(LogLevel.ERROR, logDomain, e);
         }
     }
 

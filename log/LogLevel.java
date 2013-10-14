@@ -22,21 +22,21 @@
 package org.rrlib.finroc_core_utils.log;
 
 /**
-* The enumeration that encodes the message levels. These levels are
-* predefined and can be used to give the messages different priorities,
-* as messages with too low level will be suppressed by a configuration
-* setting or when _RRLIB_LOGGING_LESS_OUTPUT_ is defined (e.g. in
-* release mode).
-* They are also used for colored output to stdout or stderr.
+ * The enumeration that encodes the message levels. These levels are
+ * predefined and can be used to give the messages different priorities,
+ * as messages with too low level will be suppressed by a configuration
+ * setting or when _RRLIB_LOGGING_LESS_OUTPUT_ is defined (e.g. in
+ * release mode).
+ * They are also used for colored output to stdout or stderr.
  */
 public enum LogLevel {
-    LL_USER,             //!< Information for user (including end-users). Is always shown if domain is active.
-    LL_ERROR,            //!< Error message. Used to inform about _certain_ malfunction of application. Is always shown if domain is active.
-    LL_WARNING,          //!< Critical warning. Warns about possible application malfunction and invalid (and therefore discarded) user input. (default max level with _RRLIB_LOG_LESS_OUTPUT_)
-    LL_DEBUG_WARNING,    //!< Debug info with warning character (e.g. "Parameter x not set - using default y")
-    LL_DEBUG,            //!< Debug info about coarse program flow (default max level without _RRLIB_LOG_LESS_OUTPUT_) - information possibly relevant to developers outside of respective domain
-    LL_DEBUG_VERBOSE_1,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
-    LL_DEBUG_VERBOSE_2,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
-    LL_DEBUG_VERBOSE_3,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
-    LL_DIMENSION         //!< Endmarker and dimension of eLogLevel
+    USER,             //!< Information for user (including end-users). Is always shown if domain is active.
+    ERROR,            //!< Error message. Used to inform about _certain_ malfunction of application. Is always shown if domain is active.
+    WARNING,          //!< Critical warning. Warns about possible application malfunction and invalid (and therefore discarded) user input. (default max level with _RRLIB_LOG_LESS_OUTPUT_)
+    DEBUG_WARNING,    //!< Debug info with warning character (e.g. "Parameter x not set - using default y")
+    DEBUG,            //!< Debug info about coarse program flow (default max level without _RRLIB_LOG_LESS_OUTPUT_) - information possibly relevant to developers outside of respective domain
+    DEBUG_VERBOSE_1,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
+    DEBUG_VERBOSE_2,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
+    DEBUG_VERBOSE_3,  //!< Higher detail debug info (not available in release mode) - only relevant to developers in respective domain
+    DIMENSION         //!< Endmarker and dimension of eLogLevel
 };

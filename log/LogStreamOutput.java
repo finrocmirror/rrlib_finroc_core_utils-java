@@ -22,15 +22,15 @@
 package org.rrlib.finroc_core_utils.log;
 
 /**
-* The enumeration that encodes the streams used by a logging domain.
-* Messages can be streams to stdout, stderr, into on file per domain
-* or into on combined file for all domains that are recursively
-* configured in one subtree of the domain hierarchy.
+ * The enumeration that encodes the streams used by a logging domain.
+ * Messages can be streams to stdout, stderr, into on file per domain
+ * or into on combined file for all domains that are recursively
+ * configured in one subtree of the domain hierarchy.
  */
 public enum LogStreamOutput {
-    LS_STDOUT,          //!< Messages are printed to stdout
-    LS_STDERR,          //!< Messages are printed to stderr
-    LS_FILE,            //!< Messages are printed to one file per domain
-    LS_COMBINED_FILE,   //!< Messages are collected in one file per recursively configured subtree
-    LS_DIMENSION        //!< Endmarker and dimension of eLogStream
+    STDOUT,          //!< Messages are printed to stdout
+    STDERR,          //!< Messages are printed to stderr
+    FILE,            //!< Messages are printed to one file per domain
+    COMBINED_FILE,   //!< Messages are collected in one file per recursively configured subtree
+    DIMENSION        //!< Endmarker and dimension of eLogStream
 }

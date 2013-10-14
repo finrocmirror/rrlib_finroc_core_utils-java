@@ -189,7 +189,7 @@ public class MemoryBuffer extends RRLibSerializableImpl implements ConstSource, 
         }
         if (resizeReserveFactor <= 1.2) {
             //System.out.println("warning: small resizeReserveFactor");
-            logDomain.log(LogLevel.LL_DEBUG_WARNING, getDescription(), "warning: small resizeReserveFactor");
+            logDomain.log(LogLevel.DEBUG_WARNING, getDescription(), "warning: small resizeReserveFactor");
         }
 
         reallocate(newSize, keepContents, oldSize);

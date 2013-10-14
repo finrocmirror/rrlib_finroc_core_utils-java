@@ -270,14 +270,14 @@ public class StringInputStream {
         }
 
         if (enumString.length() > 0) {
-            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Could not find enum constant for string '" + enumString + "'. Trying number '" + numString + "'");
+            logDomain.log(LogLevel.WARNING, getLogDescription(), "Could not find enum constant for string '" + enumString + "'. Trying number '" + numString + "'");
         }
         if (numString.length() == 0) {
             throw new RuntimeException("No Number String specified");
         }
         int n = Integer.parseInt(numString);
         if (n >= enumConstants.length) {
-            logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Number " + n + " out of range for enum (" + enumConstants.length + ")");
+            logDomain.log(LogLevel.ERROR, getLogDescription(), "Number " + n + " out of range for enum (" + enumConstants.length + ")");
             throw new RuntimeException("Number out of range");
         }
         return n;

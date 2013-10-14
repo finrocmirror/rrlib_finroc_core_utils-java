@@ -210,13 +210,13 @@ public class DataTypeBase {
     private void addType(DataTypeInfoRaw nfo) {
         nfo.uid = (short)getTypes().size();
         if (getTypes().size() >= MAX_TYPES) {
-            logDomain.log(LogLevel.LL_ERROR, getLogDescription(), "Maximum number of data types exceeded. Increase cMAX_TYPES.");
+            logDomain.log(LogLevel.ERROR, getLogDescription(), "Maximum number of data types exceeded. Increase cMAX_TYPES.");
             throw new RuntimeException("Maximum number of data types exceeded. Increase MAX_TYPES.");
         }
         getTypes().add(this);
         nfo.newInfo = false;
         String msg = "Adding data type " + getName();
-        logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, getLogDescription(), msg);
+        logDomain.log(LogLevel.DEBUG_VERBOSE_1, getLogDescription(), msg);
     }
 
     private String getLogDescription() {
@@ -470,7 +470,7 @@ public class DataTypeBase {
         }
         sb.reverse();
 
-        logDomain.log(LogLevel.LL_DEBUG_VERBOSE_2, "DataTypeBase", "Input: " + typeName + " Output: " + sb.toString());
+        logDomain.log(LogLevel.DEBUG_VERBOSE_2, "DataTypeBase", "Input: " + typeName + " Output: " + sb.toString());
         return sb.toString();
     }
 

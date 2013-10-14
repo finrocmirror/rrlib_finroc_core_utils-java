@@ -61,7 +61,7 @@ public class Time extends LoopThread {
     }
 
     public void stopThread() {
-        logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, getLogDescription(), "Stopping time caching thread");
+        logDomain.log(LogLevel.DEBUG_VERBOSE_1, getLogDescription(), "Stopping time caching thread");
         super.stopThread();
         threadRunning = false;
     }
@@ -136,7 +136,7 @@ public class Time extends LoopThread {
             try {
                 Thread.sleep(ms, nanos);
             } catch (InterruptedException e) {
-                logDomain.log(LogLevel.LL_DEBUG_WARNING, "", e);
+                logDomain.log(LogLevel.DEBUG_WARNING, "", e);
             }
         }
     }

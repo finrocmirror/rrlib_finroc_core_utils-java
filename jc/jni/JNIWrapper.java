@@ -59,7 +59,7 @@ public abstract class JNIWrapper extends UsedInC implements HasDestructor {
         super.finalize();
         if (owner && pointer != 0) {
             //System.out.println("Deleting C++ object " + toString());
-            log(LogLevel.LL_DEBUG_VERBOSE_1, logDomain, "Deleting C++ object " + toString());
+            log(LogLevel.DEBUG_VERBOSE_1, logDomain, "Deleting C++ object " + toString());
             delete();
             cppDelete();
             pointer = 0;

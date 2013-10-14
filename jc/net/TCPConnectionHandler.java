@@ -89,7 +89,7 @@ public class TCPConnectionHandler extends Thread {
             return true;
         } catch (Exception e) {
             //System.err.println("Could not listen on port: " + port + ".");
-            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "Could not listen on port: " + port + ".");
+            logDomain.log(LogLevel.WARNING, getLogDescription(), "Could not listen on port: " + port + ".");
             return false;
         }
     }
@@ -108,13 +108,13 @@ public class TCPConnectionHandler extends Thread {
             try {
                 handle(serverSocket.accept());
             } catch (IOException e) {
-                logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
+                logDomain.log(LogLevel.WARNING, getLogDescription(), e);
             }
         }
         try {
             serverSocket.close();
         } catch (IOException e) {
-            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
+            logDomain.log(LogLevel.WARNING, getLogDescription(), e);
         }
     }
 
@@ -149,12 +149,12 @@ public class TCPConnectionHandler extends Thread {
 
         // no handler
         //System.out.println("No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
-        logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
+        logDomain.log(LogLevel.WARNING, getLogDescription(), "No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
         try {
             socket.getInputStream().close();
             socket.close();
         } catch (IOException e) {
-            logDomain.log(LogLevel.LL_WARNING, getLogDescription(), e);
+            logDomain.log(LogLevel.WARNING, getLogDescription(), e);
         }
     }
 

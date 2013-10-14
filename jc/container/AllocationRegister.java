@@ -182,7 +182,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
      */
     private void interpretNum(int num) {
         if ((num % 100) == 0) {
-            logDomain.log(LogLevel.LL_DEBUG_VERBOSE_1, getLogDescription(), "Allocated " + reusables.get() + " Reusables");
+            logDomain.log(LogLevel.DEBUG_VERBOSE_1, getLogDescription(), "Allocated " + reusables.get() + " Reusables");
         }
     }
 

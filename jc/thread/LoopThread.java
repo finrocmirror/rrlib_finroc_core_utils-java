@@ -101,9 +101,9 @@ public abstract class LoopThread extends Thread {
         } catch (InterruptedException ie) {
 
             //System.out.println(toString() + " Interrupted");
-            logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Uncaught Thread Interrupt");
+            logDomain.log(LogLevel.DEBUG, getLogDescription(), "Uncaught Thread Interrupt");
         } catch (Exception e) {
-            logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Uncaught Thread Exception - ", e);
+            logDomain.log(LogLevel.DEBUG, getLogDescription(), "Uncaught Thread Exception - ", e);
         }
     }
 
@@ -126,7 +126,7 @@ public abstract class LoopThread extends Thread {
                 long waitForX = cycleTime - lastCycleTime;
                 if (waitForX < 0 && warnOnCycleTimeExceed && DISPLAYWARNINGS) {
                     //System.err.println("warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
-                    logDomain.log(LogLevel.LL_WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
+                    logDomain.log(LogLevel.WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
                 } else if (waitForX > 0) {
                     waitFor(waitForX);
                 }
@@ -163,7 +163,7 @@ public abstract class LoopThread extends Thread {
             }
         } catch (InterruptedException e) {
             //System.out.println("wait for " + toString() + " Interrupted");
-            logDomain.log(LogLevel.LL_DEBUG, getLogDescription(), "Thread interrupted waiting for next loop");
+            logDomain.log(LogLevel.DEBUG, getLogDescription(), "Thread interrupted waiting for next loop");
             waiting = false;
         }
     }

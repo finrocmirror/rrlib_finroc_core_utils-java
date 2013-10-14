@@ -177,7 +177,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
         boolean s = prev.next2.compareAndSet(BoundedQElementContainer.getDummy(lastCounter), pd); // only set, if still needed
 //      assert(!rec || !s);
         if (!s) {
-            log(LogLevel.LL_DEBUG_VERBOSE_1, logDomain, "Skipped setting next");
+            log(LogLevel.DEBUG_VERBOSE_1, logDomain, "Skipped setting next");
         }
 
         // adjust length - if size exceeds maximum length

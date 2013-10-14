@@ -125,7 +125,7 @@ public class InputStreamSource extends LogUser implements Source {
         try {
             return wrapped.available() > 0;
         } catch (IOException e) {
-            log(LogLevel.LL_ERROR, logDomain, e);
+            log(LogLevel.ERROR, logDomain, e);
             return false;
         }
     }

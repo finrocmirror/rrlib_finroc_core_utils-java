@@ -68,7 +68,7 @@ public class LogUser {
      * @param msg Log message
      */
     public void objectLog(LogLevel level, LogDomain domain, String msg) {
-        if (level.ordinal() <= LogLevel.LL_WARNING.ordinal() || showObjectDebugMessages()) {
+        if (level.ordinal() <= LogLevel.WARNING.ordinal() || showObjectDebugMessages()) {
             domain.log(level, getLogDescription(), msg, null, 2);
         }
     }
@@ -93,7 +93,7 @@ public class LogUser {
      * @param e Exception
      */
     public void objectLog(LogLevel level, LogDomain domain, Exception e) {
-        if (level.ordinal() <= LogLevel.LL_WARNING.ordinal() || showObjectDebugMessages()) {
+        if (level.ordinal() <= LogLevel.WARNING.ordinal() || showObjectDebugMessages()) {
             domain.log(level, getLogDescription(), "", e, 2);
         }
     }
@@ -120,7 +120,7 @@ public class LogUser {
      * @param e Exception
      */
     public void objectLog(LogLevel level, LogDomain domain, String msg, Exception e) {
-        if (level.ordinal() <= LogLevel.LL_WARNING.ordinal() || showObjectDebugMessages()) {
+        if (level.ordinal() <= LogLevel.WARNING.ordinal() || showObjectDebugMessages()) {
             domain.log(level, getLogDescription(), msg, e, 2);
         }
     }

@@ -24,6 +24,7 @@ package org.rrlib.finroc_core_utils.log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -53,9 +54,6 @@ import org.w3c.dom.Node;
  * @author Tobias Föhst
  */
 public class LogDomainRegistry {
-    String fileNamePrefix;
-    ArrayList<LogDomain> domains = new ArrayList<LogDomain>();
-    ArrayList<LogDomainConfiguration> domainConfigurations = new ArrayList<LogDomainConfiguration>();
 
     /** Ctor of tLoggingDomainRegistry
      *
@@ -229,12 +227,6 @@ public class LogDomainRegistry {
 
         return true;
     }
-
-//----------------------------------------------------------------------
-//Public methods
-//----------------------------------------------------------------------
-
-    private static final LogDomainRegistry instance = new LogDomainRegistry();
 
     /** Get an instance of this class (singleton)
      *
@@ -541,4 +533,49 @@ public class LogDomainRegistry {
         return true;
     }
 
+    /**
+     * Returns domain for specified package (creates it if necessary)
+     *
+     * @param package1 Package to obtain domain for
+     * @return Log domain
+     */
+    public static LogDomain getDomainForPackage(Package package1) {
+        LogDomain result = domainForPackageLookup.get(package1);
+        if (result == null) {
+            synchronized (LogDomain.class) {
+                result = getDomainByQualifiedName(package1.getName());
+                domainForPackageLookup.put(package1, result);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns domain for specified qualified name (. is used as separator)
+     *
+     * @param name Fully-qualified domain name
+     * @return Log domain
+     */
+    public synchronized static LogDomain getDomainByQualifiedName(String name) {
+        if (name.length() == 0) {
+            return getDefaultDomain();
+        }
+        String[] names = name.split(".");
+        int index = (names[0].length() == 0) ? 1 : 0;
+        LogDomain current = getDefaultDomain();
+        for (int i = index; i < names.length; i++) {
+            current = current.getSubDomain(names[i]);
+        }
+        return current;
+    }
+
+
+    private String fileNamePrefix;
+    private ArrayList<LogDomain> domains = new ArrayList<LogDomain>();
+    private ArrayList<LogDomainConfiguration> domainConfigurations = new ArrayList<LogDomainConfiguration>();
+
+    private static final LogDomainRegistry instance = new LogDomainRegistry();
+
+    /** Cache for package=>log domain lookup */
+    private static final ConcurrentHashMap<Package, LogDomain> domainForPackageLookup = new ConcurrentHashMap<Package, LogDomain>();
 }

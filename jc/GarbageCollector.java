@@ -118,7 +118,7 @@ public class GarbageCollector extends LoopThread {
         try {
             join();
         } catch (Exception e) {
-            logDomain.log(LogLevel.LL_DEBUG_WARNING, getLogDescription(), e);
+            logDomain.log(LogLevel.DEBUG_WARNING, getLogDescription(), e);
         }
 
         // possibly some thread-local objects of Garbage Collector thread
