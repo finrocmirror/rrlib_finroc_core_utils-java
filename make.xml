@@ -1,5 +1,5 @@
 <targets>
-  <rrlib name="finroc_core_utils">
+  <rrlib>
     <sources>**.java</sources>
   </rrlib>
 </targets>
