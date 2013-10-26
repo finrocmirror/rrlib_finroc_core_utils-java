@@ -135,7 +135,7 @@ public class PortDataListImpl<T extends RRLibSerializable> extends RRLibSerializ
         }
     }
 
-    @SuppressWarnings( { "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void applyChange(PortDataList<T> t, long offset, long parameter2) {
         for (long i = offset; i < Math.min(offset + t.size(), size()); i++) {

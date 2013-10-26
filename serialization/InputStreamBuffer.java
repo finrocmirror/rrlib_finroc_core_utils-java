@@ -633,7 +633,7 @@ public class InputStreamBuffer implements HasDestructor {
     /**
      * @return Enum value
      */
-    @SuppressWarnings( { "rawtypes"})
+    @SuppressWarnings({ "rawtypes"})
     public <E extends Enum> E readEnum(Class<E> c) {
         return c.getEnumConstants()[readEnum(c.getEnumConstants())];
     }

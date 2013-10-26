@@ -75,7 +75,7 @@ public class DataType<T> extends DataTypeBase {
             throw new RuntimeException("do not call in Java");
         }
 
-        @SuppressWarnings( { "rawtypes" })
+        @SuppressWarnings({ "rawtypes" })
         @Override
         public Object createInstance(int placement) {
             Object result = null;
@@ -105,7 +105,7 @@ public class DataType<T> extends DataTypeBase {
             return result;
         }
 
-        @SuppressWarnings( { "unchecked", "rawtypes" })
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public GenericObject createInstanceGeneric(int placement, int managerSize) {
             return new GenericObjectInstance((RRLibSerializable)createInstance(placement), dataType, null);

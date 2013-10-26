@@ -234,7 +234,7 @@ public class StringInputStream {
     /**
      * @return Enum value
      */
-    @SuppressWarnings( { "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     public <E extends Enum> E readEnum(Class<E> eclass) {
         return eclass.getEnumConstants()[readEnum(eclass.getEnumConstants())];
     }

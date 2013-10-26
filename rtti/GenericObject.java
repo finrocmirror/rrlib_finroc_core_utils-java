@@ -77,7 +77,7 @@ public abstract class GenericObject extends TypedObjectImpl {
      *
      * @param source Source object
      */
-    @SuppressWarnings( { "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void deepCopyFrom(GenericObject source, Factory f) {
         if (source.type == type) {
             deepCopyFrom((Object)source.wrapped, f);
