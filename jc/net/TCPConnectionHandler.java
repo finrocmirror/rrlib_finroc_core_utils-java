@@ -29,10 +29,9 @@ import org.rrlib.finroc_core_utils.jc.ArrayWrapper;
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
 import org.rrlib.finroc_core_utils.jc.container.ConcurrentMap;
 import org.rrlib.finroc_core_utils.jc.container.SafeConcurrentlyIterableList;
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.thread.ThreadUtil;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -65,9 +64,6 @@ public class TCPConnectionHandler extends Thread {
     @SuppressWarnings("unused")
     private static MutexLockOrder staticClassMutex = new MutexLockOrder(0x7FFFFFFF - 50);
 
-    /** Log domain for this class */
-    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("net");
-
     /**
      * @param port Port the Handler is running on
      */
@@ -89,7 +85,7 @@ public class TCPConnectionHandler extends Thread {
             return true;
         } catch (Exception e) {
             //System.err.println("Could not listen on port: " + port + ".");
-            logDomain.log(LogLevel.WARNING, getLogDescription(), "Could not listen on port: " + port + ".");
+            Log.log(LogLevel.WARNING, this, "Could not listen on port: " + port + ".");
             return false;
         }
     }
@@ -108,13 +104,13 @@ public class TCPConnectionHandler extends Thread {
             try {
                 handle(serverSocket.accept());
             } catch (IOException e) {
-                logDomain.log(LogLevel.WARNING, getLogDescription(), e);
+                Log.log(LogLevel.WARNING, this, e);
             }
         }
         try {
             serverSocket.close();
         } catch (IOException e) {
-            logDomain.log(LogLevel.WARNING, getLogDescription(), e);
+            Log.log(LogLevel.WARNING, this, e);
         }
     }
 
@@ -149,12 +145,12 @@ public class TCPConnectionHandler extends Thread {
 
         // no handler
         //System.out.println("No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
-        logDomain.log(LogLevel.WARNING, getLogDescription(), "No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
+        Log.log(LogLevel.WARNING, this, "No TCP handler found for stream id " + first  + " on port " + port + ". Closing connection.");
         try {
             socket.getInputStream().close();
             socket.close();
         } catch (IOException e) {
-            logDomain.log(LogLevel.WARNING, getLogDescription(), e);
+            Log.log(LogLevel.WARNING, this, e);
         }
     }
 
@@ -231,10 +227,7 @@ public class TCPConnectionHandler extends Thread {
         }
     }
 
-    /**
-     * @return Description for logging
-     */
-    private String getLogDescription() {
+    public String toString() {
         return "TCPConnectionHandler on port " + port;
     }
 }

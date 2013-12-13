@@ -30,8 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class AtomicPtr<T> {
 
-    /** UID */
-    private static final long serialVersionUID = 5117825501316865000L;
 
     AtomicReference<T> wrapped;
 

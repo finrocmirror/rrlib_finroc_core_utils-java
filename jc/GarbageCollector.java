@@ -22,11 +22,10 @@
 package org.rrlib.finroc_core_utils.jc;
 
 import org.rrlib.finroc_core_utils.jc.container.ConcurrentQueue;
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
 import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
 import org.rrlib.finroc_core_utils.jc.thread.ThreadUtil;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -75,9 +74,6 @@ public class GarbageCollector extends LoopThread {
     /** Next delete task - never null */
     private DeferredDeleteTask next = new DeferredDeleteTask();
 
-    /** Log domain for this class */
-    public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("garbage_collector");
-
     private GarbageCollector() {
         super(1000, false, false);
         assert(started == NO) : "may only create single instance";
@@ -118,7 +114,7 @@ public class GarbageCollector extends LoopThread {
         try {
             join();
         } catch (Exception e) {
-            logDomain.log(LogLevel.DEBUG_WARNING, getLogDescription(), e);
+            Log.log(LogLevel.DEBUG_WARNING, this, e);
         }
 
         // possibly some thread-local objects of Garbage Collector thread

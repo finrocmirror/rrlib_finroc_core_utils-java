@@ -21,11 +21,11 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.stream;
 
-import org.rrlib.finroc_core_utils.serialization.BufferInfo;
-import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
-import org.rrlib.finroc_core_utils.serialization.MemoryBuffer;
-import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
-import org.rrlib.finroc_core_utils.serialization.Sink;
+import org.rrlib.serialization.BinaryOutputStream;
+import org.rrlib.serialization.BufferInfo;
+import org.rrlib.serialization.FixedBuffer;
+import org.rrlib.serialization.MemoryBuffer;
+import org.rrlib.serialization.Sink;
 
 /**
  * @author Max Reichardt
@@ -52,7 +52,7 @@ public class LargeIntermediateStreamBuffer extends MemoryBuffer {
      *
      * @param byteCount Number of bytes to write
      */
-    private void flushContents(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
+    private void flushContents(BinaryOutputStream outputStreamBuffer, BufferInfo buffer) {
         if (buffer.position > buffer.start) {
             sink.directWrite(outputStreamBuffer, backend, buffer.start, buffer.position);
             buffer.position = buffer.start;
@@ -60,13 +60,13 @@ public class LargeIntermediateStreamBuffer extends MemoryBuffer {
     }
 
     @Override
-    public void close(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
+    public void close(BinaryOutputStream outputStreamBuffer, BufferInfo buffer) {
         flushContents(outputStreamBuffer, buffer);
         super.close(outputStreamBuffer, dummyInfo);
     }
 
     @Override
-    public void directWrite(OutputStreamBuffer outputStreamBuffer, FixedBuffer buffer, int offset, int len) {
+    public void directWrite(BinaryOutputStream outputStreamBuffer, FixedBuffer buffer, int offset, int len) {
         sink.directWrite(outputStreamBuffer, buffer, offset, len);
     }
 
@@ -76,13 +76,13 @@ public class LargeIntermediateStreamBuffer extends MemoryBuffer {
     }
 
     @Override
-    public void reset(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
+    public void reset(BinaryOutputStream outputStreamBuffer, BufferInfo buffer) {
         super.reset(outputStreamBuffer, buffer);
         sink.reset(outputStreamBuffer, dummyInfo);
     }
 
     @Override
-    public boolean write(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer, int writeSizeHint) {
+    public boolean write(BinaryOutputStream outputStreamBuffer, BufferInfo buffer, int writeSizeHint) {
         if (writeSizeHint < 0) { // ok... this was a manual flush... or one before a directWrite => write contents to output
             flushContents(outputStreamBuffer, buffer);
             buffer.position = buffer.start;

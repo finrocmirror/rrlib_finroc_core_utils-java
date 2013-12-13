@@ -25,17 +25,17 @@ import org.rrlib.finroc_core_utils.jc.AutoDeleter;
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
 import org.rrlib.finroc_core_utils.jc.container.ReusablesPoolCR;
-import org.rrlib.finroc_core_utils.rtti.Clearable;
-import org.rrlib.finroc_core_utils.rtti.DataType;
-import org.rrlib.finroc_core_utils.rtti.DataTypeBase;
-import org.rrlib.finroc_core_utils.serialization.BufferInfo;
-import org.rrlib.finroc_core_utils.serialization.ConstSource;
-import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
-import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
-import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
-import org.rrlib.finroc_core_utils.serialization.RRLibSerializableImpl;
-import org.rrlib.finroc_core_utils.serialization.Sink;
-import org.rrlib.finroc_core_utils.serialization.Source;
+import org.rrlib.serialization.BinaryInputStream;
+import org.rrlib.serialization.BinaryOutputStream;
+import org.rrlib.serialization.BinarySerializable;
+import org.rrlib.serialization.BufferInfo;
+import org.rrlib.serialization.ConstSource;
+import org.rrlib.serialization.FixedBuffer;
+import org.rrlib.serialization.Sink;
+import org.rrlib.serialization.Source;
+import org.rrlib.serialization.rtti.Clearable;
+import org.rrlib.serialization.rtti.DataType;
+import org.rrlib.serialization.rtti.DataTypeBase;
 
 /**
  * @author Max Reichardt
@@ -62,7 +62,7 @@ import org.rrlib.finroc_core_utils.serialization.Source;
  * in buffer an exception is thrown. So check with available() whether data is available
  * and only commit complete chunks.
  */
-public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource, Sink, HasDestructor, Clearable {
+public class ChunkedBuffer implements BinarySerializable, ConstSource, Sink, HasDestructor, Clearable {
 
     /** First chunk in buffer - only changed by reader - next ones can be determined following links through "next"-attributes*/
     protected BufferChunk first;
@@ -141,13 +141,13 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     // Concurrent Source implementation
 
     @Override
-    public void close(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
+    public void close(BinaryInputStream inputStreamBuffer, BufferInfo buffer) {
         // do nothing really
         buffer.reset();
     }
 
     @Override
-    public void directRead(InputStreamBuffer inputStreamBuffer, FixedBuffer buffer, int offset, int len) {
+    public void directRead(BinaryInputStream inputStreamBuffer, FixedBuffer buffer, int offset, int len) {
         throw new RuntimeException("shouldn't be called");
     }
 
@@ -157,7 +157,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public void read(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, int len) {
+    public void read(BinaryInputStream inputStreamBuffer, BufferInfo buffer, int len) {
         readImpl(inputStreamBuffer, buffer, len);
     }
 
@@ -170,7 +170,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
      * @param destructive Implementation for destructive source?
      * @return Has a buffer switch occured?
      */
-    public boolean readImpl(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, int len) {
+    public boolean readImpl(BinaryInputStream inputStreamBuffer, BufferInfo buffer, int len) {
 
         BufferChunk bc = (BufferChunk)buffer.customData;
 
@@ -235,7 +235,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public void reset(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
+    public void reset(BinaryInputStream inputStreamBuffer, BufferInfo buffer) {
         buffer.buffer = first.buffer;
         buffer.setRange(0, minSizeT(first.curSize.getVal2(), (int)(writtenBytes - first.virtualPosition)));
         buffer.position = 0;
@@ -243,7 +243,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public boolean moreDataAvailable(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
+    public boolean moreDataAvailable(BinaryInputStream inputStreamBuffer, BufferInfo buffer) {
         BufferChunk bc = (BufferChunk)buffer.customData;
         //System.out.println(bc.virtualPosition +" + " + buffer.position +" < "+ writtenBytes);
         return ((long)(bc.virtualPosition + buffer.end) < writtenBytes);
@@ -252,13 +252,13 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     // Sink implementation
 
     @Override
-    public void close(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
+    public void close(BinaryOutputStream outputStreamBuffer, BufferInfo buffer) {
         // do nothing really
         buffer.reset();
     }
 
     @Override
-    public void directWrite(OutputStreamBuffer outputStreamBuffer, FixedBuffer buffer, int offset, int len) {
+    public void directWrite(BinaryOutputStream outputStreamBuffer, FixedBuffer buffer, int offset, int len) {
         throw new RuntimeException("shouldn't be called");
     }
 
@@ -268,7 +268,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public void reset(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
+    public void reset(BinaryOutputStream outputStreamBuffer, BufferInfo buffer) {
         clear();
         writtenBytes = 0;
         first.virtualPosition = 0;
@@ -279,7 +279,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public boolean write(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer, int writeSizeHint) {
+    public boolean write(BinaryOutputStream outputStreamBuffer, BufferInfo buffer, int writeSizeHint) {
         BufferChunk bc = (BufferChunk)buffer.customData;
         if (buffer.remaining() > 8) {
 
@@ -311,7 +311,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public void deserialize(InputStreamBuffer is) {
+    public void deserialize(BinaryInputStream is) {
 
         // read Size
         int size = is.readInt();
@@ -360,7 +360,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public void serialize(OutputStreamBuffer os) {
+    public void serialize(BinaryOutputStream os) {
         long relevantPos = Math.max(destructiveSource.readPos, first.virtualPosition);
 
         // write size
@@ -384,7 +384,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
     }
 
     @Override
-    public void flush(OutputStreamBuffer outputStreamBuffer, BufferInfo buffer) {
+    public void flush(BinaryOutputStream outputStreamBuffer, BufferInfo buffer) {
         BufferChunk bc = (BufferChunk)buffer.customData;
         //System.out.println("Flushing " + bc.hashCode());
         assert(bc.curSize.getVal2() == buffer.position) : "please commit before flush";
@@ -412,10 +412,10 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
         private long readPos;
 
         /** Current user of Source */
-        private InputStreamBuffer user = null;
+        private BinaryInputStream user = null;
 
         @Override
-        public void close(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
+        public void close(BinaryInputStream inputStreamBuffer, BufferInfo buffer) {
             assert(inputStreamBuffer == user);
             // do nothing really
             readPos = ((BufferChunk)buffer.customData).virtualPosition + buffer.position;
@@ -424,7 +424,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
         }
 
         @Override
-        public void directRead(InputStreamBuffer inputStreamBuffer, FixedBuffer buffer, int offset, int len) {
+        public void directRead(BinaryInputStream inputStreamBuffer, FixedBuffer buffer, int offset, int len) {
             throw new RuntimeException("Should not be called");
         }
 
@@ -434,14 +434,14 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
         }
 
         @Override
-        public boolean moreDataAvailable(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
+        public boolean moreDataAvailable(BinaryInputStream inputStreamBuffer, BufferInfo buffer) {
             assert(inputStreamBuffer == user);
             BufferChunk bc = (BufferChunk)buffer.customData;
             return (long)(bc.virtualPosition + buffer.end) < writtenBytes;
         }
 
         @Override
-        public void read(InputStreamBuffer inputStreamBuffer, BufferInfo buffer, int len) {
+        public void read(BinaryInputStream inputStreamBuffer, BufferInfo buffer, int len) {
             if (readImpl(inputStreamBuffer, buffer, len)) {
 
                 // buffer switch: recycle old one
@@ -455,7 +455,7 @@ public class ChunkedBuffer extends RRLibSerializableImpl implements ConstSource,
         }
 
         @Override
-        public void reset(InputStreamBuffer inputStreamBuffer, BufferInfo buffer) {
+        public void reset(BinaryInputStream inputStreamBuffer, BufferInfo buffer) {
             assert(user == null);
             user = inputStreamBuffer;
             buffer.buffer = first.buffer;

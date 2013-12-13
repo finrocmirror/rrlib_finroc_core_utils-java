@@ -23,7 +23,7 @@ package org.rrlib.finroc_core_utils.jc.stream;
 
 import org.rrlib.finroc_core_utils.jc.AtomicDoubleInt;
 import org.rrlib.finroc_core_utils.jc.container.Reusable;
-import org.rrlib.finroc_core_utils.serialization.FixedBuffer;
+import org.rrlib.serialization.FixedBuffer;
 
 /**
  * @author Max Reichardt

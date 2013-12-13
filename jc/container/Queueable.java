@@ -21,8 +21,6 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.HasDestructor;
-import org.rrlib.finroc_core_utils.jc.log.LogUser;
 
 /**
  * @author Max Reichardt
@@ -30,7 +28,7 @@ import org.rrlib.finroc_core_utils.jc.log.LogUser;
  * This is the base class of a queueable object. It contains the pointer
  * to the next element in singly-linked queue.
  */
-public class Queueable extends LogUser implements HasDestructor {
+public class Queueable {
 
     /** Terminator (not null for efficiency reasons) */
     public final static Queueable terminator = new Queueable(true);
@@ -49,6 +47,6 @@ public class Queueable extends LogUser implements HasDestructor {
         next = this;
     }
 
-    @Override
+    /** Delete method */
     public void delete() {}
 }

@@ -24,7 +24,7 @@ package org.rrlib.finroc_core_utils.jc;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.rrlib.finroc_core_utils.xml.XMLDocument;
+import org.rrlib.xml.XMLDocument;
 
 /**
  * @author Max Reichardt

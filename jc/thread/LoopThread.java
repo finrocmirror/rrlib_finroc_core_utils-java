@@ -21,9 +21,8 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.thread;
 
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -60,8 +59,6 @@ public abstract class LoopThread extends Thread {
     /** Start time of last cycle */
     private long lastCycleStart;
 
-    /** Log domain for this class */
-    public static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("thread");
 
     /**
      * @param defaultCycleTime Cycle time with which callback function is called
@@ -101,9 +98,9 @@ public abstract class LoopThread extends Thread {
         } catch (InterruptedException ie) {
 
             //System.out.println(toString() + " Interrupted");
-            logDomain.log(LogLevel.DEBUG, getLogDescription(), "Uncaught Thread Interrupt");
+            Log.log(LogLevel.DEBUG, getLogDescription(), "Uncaught Thread Interrupt");
         } catch (Exception e) {
-            logDomain.log(LogLevel.DEBUG, getLogDescription(), "Uncaught Thread Exception - ", e);
+            Log.log(LogLevel.DEBUG, getLogDescription(), "Uncaught Thread Exception - ", e);
         }
     }
 
@@ -126,7 +123,7 @@ public abstract class LoopThread extends Thread {
                 long waitForX = cycleTime - lastCycleTime;
                 if (waitForX < 0 && warnOnCycleTimeExceed && DISPLAYWARNINGS) {
                     //System.err.println("warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
-                    logDomain.log(LogLevel.WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
+                    Log.log(LogLevel.WARNING, getLogDescription(), "warning: Couldn't keep up cycle time (" + (-waitForX) + " ms too long)");
                 } else if (waitForX > 0) {
                     waitFor(waitForX);
                 }
@@ -163,7 +160,7 @@ public abstract class LoopThread extends Thread {
             }
         } catch (InterruptedException e) {
             //System.out.println("wait for " + toString() + " Interrupted");
-            logDomain.log(LogLevel.DEBUG, getLogDescription(), "Thread interrupted waiting for next loop");
+            Log.log(LogLevel.DEBUG, getLogDescription(), "Thread interrupted waiting for next loop");
             waiting = false;
         }
     }

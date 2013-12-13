@@ -22,7 +22,8 @@
 package org.rrlib.finroc_core_utils.jc;
 
 import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -61,7 +62,7 @@ public class Time extends LoopThread {
     }
 
     public void stopThread() {
-        logDomain.log(LogLevel.DEBUG_VERBOSE_1, getLogDescription(), "Stopping time caching thread");
+        Log.log(LogLevel.DEBUG_VERBOSE_1, this, "Stopping time caching thread");
         super.stopThread();
         threadRunning = false;
     }
@@ -136,7 +137,7 @@ public class Time extends LoopThread {
             try {
                 Thread.sleep(ms, nanos);
             } catch (InterruptedException e) {
-                logDomain.log(LogLevel.DEBUG_WARNING, "", e);
+                Log.log(LogLevel.DEBUG_WARNING, e);
             }
         }
     }

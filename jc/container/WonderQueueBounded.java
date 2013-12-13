@@ -21,12 +21,9 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.HasDestructor;
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.jc.log.LogUser;
 import org.rrlib.finroc_core_utils.jc.stampedptr.AtomicStampedPtrIdx64;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -56,7 +53,7 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
  *   [1bit flag: signal that element has already been used/dequeued - do not use/recycle content anymore (enters this state when dequeueing last element]
  *   [29bit counter - wrapped around]
  */
-public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> extends LogUser implements HasDestructor {
+public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> {
 
     /** See class comment for meanings */
     //private static final int DQ_THREAD_LOCK_FLAG = 0x40000000;
@@ -80,8 +77,6 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
     /** Dummy object to signal that we need to retry an operation */
     private static final Object RETRY = new Object();
 
-    /** Log domain for this class */
-    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     public WonderQueueBounded() {
         BoundedQElementContainer.staticInit();
@@ -177,7 +172,7 @@ public abstract class WonderQueueBounded<T, C extends BoundedQElementContainer> 
         boolean s = prev.next2.compareAndSet(BoundedQElementContainer.getDummy(lastCounter), pd); // only set, if still needed
 //      assert(!rec || !s);
         if (!s) {
-            log(LogLevel.DEBUG_VERBOSE_1, logDomain, "Skipped setting next");
+            Log.log(LogLevel.DEBUG_VERBOSE_1, this, "Skipped setting next");
         }
 
         // adjust length - if size exceeds maximum length

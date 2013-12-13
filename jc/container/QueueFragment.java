@@ -21,10 +21,8 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.jc.log.LogUser;
-import org.rrlib.finroc_core_utils.log.LogDomain;
-import org.rrlib.finroc_core_utils.log.LogLevel;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -33,7 +31,7 @@ import org.rrlib.finroc_core_utils.log.LogLevel;
  *
  * Used to dequeue all elements of bounded WonderQueue at once
  */
-public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUser {
+public class QueueFragment<T, C extends BoundedQElementContainer> {
 
     /** Next element in fragment */
     protected C next = null;
@@ -49,9 +47,6 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
 
     /** Skip first/next element */
     public boolean skipFirst = false;
-
-    /** Log domain for this class */
-    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("queue_impl");
 
     /**
      * Dequeue one element
@@ -80,7 +75,7 @@ public class QueueFragment<T, C extends BoundedQElementContainer> extends LogUse
                         current = current.prev;
                     }
                     //System.out.println("Rare preemption case: " + n2.toString() + " " + current.toString());
-                    log(LogLevel.DEBUG_VERBOSE_1, logDomain, "Rare preemption case: " + n2.toString() + " " + current.toString());
+                    Log.log(LogLevel.DEBUG_VERBOSE_1, this, "Rare preemption case: " + n2.toString() + " " + current.toString());
                     next = (C)current;
                 }
                 //assert(n2.count == current.count - 1);

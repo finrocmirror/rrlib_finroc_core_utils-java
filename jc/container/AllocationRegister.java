@@ -24,13 +24,10 @@ package org.rrlib.finroc_core_utils.jc.container;
 import java.util.ArrayDeque;
 
 import org.rrlib.finroc_core_utils.jc.AtomicInt;
-import org.rrlib.finroc_core_utils.jc.HasDestructor;
 import org.rrlib.finroc_core_utils.jc.Time;
-import org.rrlib.finroc_core_utils.jc.log.LogDefinitions;
-import org.rrlib.finroc_core_utils.jc.log.LogUser;
-import org.rrlib.finroc_core_utils.log.LogDomainRegistry;
-import org.rrlib.finroc_core_utils.log.LogLevel;
-import org.rrlib.finroc_core_utils.log.LogDomain;
+import org.rrlib.logging.Log;
+import org.rrlib.logging.LogDomainRegistry;
+import org.rrlib.logging.LogLevel;
 
 /**
  * @author Max Reichardt
@@ -40,7 +37,7 @@ import org.rrlib.finroc_core_utils.log.LogDomain;
  * Furthermore, global register for all reusable objects that should be assigned an application-unique 32bit Integer.
  * Allows associating the unique integer with an object - which in turn allows storing a stamped pointer in a long variable.
  */
-public class AllocationRegister extends LogUser implements HasDestructor {
+public class AllocationRegister {
 
     /** Number of reusables objects allocated */
     private AtomicInt reusables = new AtomicInt();
@@ -72,9 +69,6 @@ public class AllocationRegister extends LogUser implements HasDestructor {
 
     /** Queue with free(d) slots in indexedReusables, TODO: needn't be concurrent */
     private ArrayDeque<Integer> freeSlotQueue = new ArrayDeque<Integer>();
-
-    /** Log domain for this class */
-    private static final LogDomain logDomain = LogDefinitions.finrocUtil.getSubDomain("reusables");
 
     /** "Lock" on log domain registry - to prevent domains from being deallocated before AllocationRegister */
     @SuppressWarnings("unused")
@@ -182,11 +176,7 @@ public class AllocationRegister extends LogUser implements HasDestructor {
      */
     private void interpretNum(int num) {
         if ((num % 100) == 0) {
-            logDomain.log(LogLevel.DEBUG_VERBOSE_1, getLogDescription(), "Allocated " + reusables.get() + " Reusables");
+            Log.log(LogLevel.DEBUG_VERBOSE_1, this, "Allocated " + reusables.get() + " Reusables");
         }
-    }
-
-    public void delete() {
-        rawInstance = null;
     }
 }

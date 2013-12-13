@@ -21,14 +21,14 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.serialization.InputStreamBuffer;
-import org.rrlib.finroc_core_utils.serialization.OutputStreamBuffer;
-import org.rrlib.finroc_core_utils.serialization.RRLibSerializableImpl;
+import org.rrlib.serialization.BinaryInputStream;
+import org.rrlib.serialization.BinaryOutputStream;
+import org.rrlib.serialization.BinarySerializable;
 
 /**
  * Wraps an array
  */
-public class IntArrayWrapper extends RRLibSerializableImpl {
+public class IntArrayWrapper implements BinarySerializable {
 
     /** size of array... may be smaller than backend capacity */
     private int size;
@@ -126,7 +126,7 @@ public class IntArrayWrapper extends RRLibSerializableImpl {
     }
 
     @Override
-    public void serialize(OutputStreamBuffer os) {
+    public void serialize(BinaryOutputStream os) {
         os.writeInt(size());
         for (int i = 0, n = size(); i < n; i++) {
             os.writeInt(get(i));
@@ -134,7 +134,7 @@ public class IntArrayWrapper extends RRLibSerializableImpl {
     }
 
     @Override
-    public void deserialize(InputStreamBuffer is) {
+    public void deserialize(BinaryInputStream is) {
         setSize(0);
         int size = is.readInt();
         for (int i = 0; i < size; i++) {
