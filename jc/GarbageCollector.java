@@ -21,7 +21,8 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc;
 
-import org.rrlib.finroc_core_utils.jc.container.ConcurrentQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.rrlib.finroc_core_utils.jc.thread.LoopThread;
 import org.rrlib.finroc_core_utils.jc.thread.ThreadUtil;
 import org.rrlib.logging.Log;
@@ -54,7 +55,7 @@ import org.rrlib.logging.LogLevel;
 public class GarbageCollector extends LoopThread {
 
     /** Current tasks of Garbage Collector */
-    private final ConcurrentQueue<DeferredDeleteTask> tasks = new ConcurrentQueue<DeferredDeleteTask>();
+    private final ConcurrentLinkedQueue<DeferredDeleteTask> tasks = new ConcurrentLinkedQueue<DeferredDeleteTask>();
 
     /** Singleton instance - non-null while thread is running */
     private volatile static GarbageCollector instance; /*= new GarbageCollector();*/
@@ -102,7 +103,7 @@ public class GarbageCollector extends LoopThread {
         }
 
         while (!tasks.isEmpty()) {
-            tasks.dequeue().execute();
+            tasks.poll().execute();
         }
     }
 
@@ -119,7 +120,7 @@ public class GarbageCollector extends LoopThread {
 
         // possibly some thread-local objects of Garbage Collector thread
         while (!tasks.isEmpty()) {
-            tasks.dequeue().execute();
+            tasks.poll().execute();
         }
 
         instance = null;
@@ -130,7 +131,7 @@ public class GarbageCollector extends LoopThread {
      */
     public static void createAndStartInstance() {
         if (started == NO) {
-            GarbageCollector tmp = ThreadUtil.getThreadSharedPtr(new GarbageCollector());
+            GarbageCollector tmp = new GarbageCollector();
             tmp.start();
             instance = tmp;
             started = YES;
@@ -152,7 +153,7 @@ public class GarbageCollector extends LoopThread {
         // check waiting deletion tasks
         while ((!tasks.isEmpty()) || (next.elementToDelete != null)) {
             if (next.elementToDelete == null) {
-                next = tasks.dequeue();
+                next = tasks.poll();
             }
 
             if (time < next.timeWhen) {
@@ -192,7 +193,7 @@ public class GarbageCollector extends LoopThread {
         }
 
         DeferredDeleteTask t = new DeferredDeleteTask(elementToDelete, Time.getCoarse() + SAFE_DELETE_INTERVAL);
-        gc.tasks.enqueue(t);
+        gc.tasks.add(t);
     }
 
     /**

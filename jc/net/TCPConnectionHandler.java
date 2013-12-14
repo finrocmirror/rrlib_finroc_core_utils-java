@@ -24,12 +24,11 @@ package org.rrlib.finroc_core_utils.jc.net;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.rrlib.finroc_core_utils.jc.ArrayWrapper;
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
-import org.rrlib.finroc_core_utils.jc.container.ConcurrentMap;
 import org.rrlib.finroc_core_utils.jc.container.SafeConcurrentlyIterableList;
-import org.rrlib.finroc_core_utils.jc.thread.ThreadUtil;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogLevel;
 
@@ -46,7 +45,7 @@ import org.rrlib.logging.LogLevel;
 public class TCPConnectionHandler extends Thread {
 
     /** keeps track on which ports handlers are already running */
-    private static final ConcurrentMap<Integer, TCPConnectionHandler> handlers = new ConcurrentMap<Integer, TCPConnectionHandler>(getNullPtr());
+    private static final ConcurrentHashMap<Integer, TCPConnectionHandler> handlers = new ConcurrentHashMap<Integer, TCPConnectionHandler>();
 
     /** All servers listening on port */
     private final SafeConcurrentlyIterableList<TCPServer> servers = new SafeConcurrentlyIterableList<TCPServer>(3, 5);
@@ -88,11 +87,6 @@ public class TCPConnectionHandler extends Thread {
             Log.log(LogLevel.WARNING, this, "Could not listen on port: " + port + ".");
             return false;
         }
-    }
-
-    /** Helper for simpler source code conversion */
-    private static TCPConnectionHandler getNullPtr() {
-        return null;
     }
 
     // Start server for HTTP and ProtoOmega requests etc.
@@ -137,7 +131,7 @@ public class TCPConnectionHandler extends Thread {
         for (int i = 0, n = it.size(); i < n; i++) {
             TCPServer ts = it.get(i);
             if (ts != null && ts.accepts(first)) {
-                HandlerThread ht = ThreadUtil.getThreadSharedPtr(new HandlerThread(socket, ts, first));
+                HandlerThread ht = new HandlerThread(socket, ts, first);
                 ht.start();
                 return;
             }
@@ -207,7 +201,6 @@ public class TCPConnectionHandler extends Thread {
                 return false;
             }
             handlers.put(port, handler);
-            ThreadUtil.setAutoDelete(handler);
             handler.start();  // start server socket in new Thread
         }
         handler.servers.add(ts, false);

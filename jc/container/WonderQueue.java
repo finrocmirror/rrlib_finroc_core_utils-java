@@ -21,8 +21,9 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.container;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.rrlib.finroc_core_utils.jc.ArrayWrapper;
-import org.rrlib.finroc_core_utils.jc.AtomicPtr;
 import org.rrlib.finroc_core_utils.jc.thread.SpinLock;
 
 /**
@@ -39,7 +40,7 @@ class RawWonderQueue extends Queueable {
      * Pointer to last element in queue - never null
      * This variable us used for "communication" among writers
      */
-    private final AtomicPtr<Queueable> last = new AtomicPtr<Queueable>(this);
+    private final AtomicReference<Queueable> last = new AtomicReference<Queueable>(this);
 
     /**
      * Temporary last object (for dequeueing) - this way all elements can be dequeued.
@@ -52,7 +53,7 @@ class RawWonderQueue extends Queueable {
      *
      * This variable is used for "communication" between writer and reader.
      */
-    private final AtomicPtr<Queueable> nextFirst = new AtomicPtr<Queueable>(null);
+    private final AtomicReference<Queueable> nextFirst = new AtomicReference<Queueable>(null);
 
     public RawWonderQueue() {
         next = null;

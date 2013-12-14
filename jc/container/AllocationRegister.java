@@ -22,8 +22,9 @@
 package org.rrlib.finroc_core_utils.jc.container;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rrlib.finroc_core_utils.jc.AtomicInt;
 import org.rrlib.finroc_core_utils.jc.Time;
 import org.rrlib.logging.Log;
 import org.rrlib.logging.LogDomainRegistry;
@@ -40,7 +41,7 @@ import org.rrlib.logging.LogLevel;
 public class AllocationRegister {
 
     /** Number of reusables objects allocated */
-    private AtomicInt reusables = new AtomicInt();
+    private AtomicInteger reusables = new AtomicInteger();
 
     /** Time when Runtime was created */
     @SuppressWarnings("unused")
@@ -59,13 +60,13 @@ public class AllocationRegister {
 
     /** List of tracked reusables */
     @SuppressWarnings("unused")
-    private final SimpleListWithMutex<AbstractReusable> trackedReusables = new SimpleListWithMutex<AbstractReusable>(0x7FFFFFFF - 5);
+    private final ArrayList<AbstractReusable> trackedReusables = new ArrayList<AbstractReusable>(0x7FFFFFFF - 5);
 
     /** Initial size of indexed-Reusables register */
     private static final int INITIAL_REUSABLES_INDEX_SIZE = 128000;
 
     /** ArrayList that contains all reusables that should be indexed - index in list is "official" index */
-    private SimpleListWithMutex<AbstractReusable> indexedReusables = new SimpleListWithMutex<AbstractReusable>(INITIAL_REUSABLES_INDEX_SIZE, 0x7FFFFFFF - 5);
+    private ArrayList<AbstractReusable> indexedReusables = new ArrayList<AbstractReusable>(INITIAL_REUSABLES_INDEX_SIZE);
 
     /** Queue with free(d) slots in indexedReusables, TODO: needn't be concurrent */
     private ArrayDeque<Integer> freeSlotQueue = new ArrayDeque<Integer>();

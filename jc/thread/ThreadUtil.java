@@ -42,30 +42,6 @@ public class ThreadUtil {
         return Thread.currentThread().getId();
     }
 
-    /**
-     * Setup thread so that it will automatically delete itself
-     * when it is finished and there are no further references
-     * to it
-     *
-     * @param t Thread to set up
-     * @return Relevant Further Thread reference
-     */
-    public static Thread setAutoDelete(Thread t) {
-        return t;
-    }
-
-    /**
-     * Get shared pointer to thread (the same that thread uses internally)
-     * (only relevant for C++)
-     * (Thread object will be deallocated when both thread has ended and any
-     *  further references from this shared pointer are reset)
-     *
-     * @param t Thread to get pointer from
-     * @return Shared pointer to thread
-     */
-    public static <T extends Thread> T getThreadSharedPtr(T t) {
-        return t;
-    }
 
     /**
      * Makes a thread a real-time thread.

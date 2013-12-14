@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.AtomicPtr;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Max Reichardt
@@ -41,10 +41,10 @@ import org.rrlib.finroc_core_utils.jc.AtomicPtr;
 class RawWonderQueueFast extends Queueable {
 
     /** Pointer to last element in queue - never null */
-    private final AtomicPtr<Queueable> last = new AtomicPtr<Queueable>(this);
+    private final AtomicReference<Queueable> last = new AtomicReference<Queueable>(this);
 
     /** Atomic Pointer to next element in queue - only relevant for concurrent reading */
-    protected final AtomicPtr<Queueable> nextCR = new AtomicPtr<Queueable>(this);
+    protected final AtomicReference<Queueable> nextCR = new AtomicReference<Queueable>(this);
 
     /**
      * @param concurrentReaders Is this queue meant for concurrent reading? (appropriate dequeue method needs to be called depending on choice)

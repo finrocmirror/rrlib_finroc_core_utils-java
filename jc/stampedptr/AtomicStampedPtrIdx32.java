@@ -21,7 +21,8 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.stampedptr;
 
-import org.rrlib.finroc_core_utils.jc.AtomicInt;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.rrlib.finroc_core_utils.jc.container.AbstractReusable;
 import org.rrlib.finroc_core_utils.jc.container.AllocationRegister;
 
@@ -36,7 +37,7 @@ import org.rrlib.finroc_core_utils.jc.container.AllocationRegister;
 public class AtomicStampedPtrIdx32<T extends AbstractReusable> extends AbstractAtomicStampedPtr<T> {
 
     /** wrapped atomic pointer */
-    private AtomicInt wrapped = new AtomicInt();
+    private AtomicInteger wrapped = new AtomicInteger();
 
     /** Number of bits for index */
     public static final int INDEX_BITS = 24;

@@ -21,8 +21,7 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.container;
 
-import org.rrlib.finroc_core_utils.jc.AtomicPtr;
-import org.rrlib.finroc_core_utils.jc.AutoDeleter;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Max Reichardt
@@ -70,7 +69,7 @@ public abstract class BoundedQElementContainer extends Reusable {
     protected int reuseCounter = 0;
 
     /** Next element in queue */
-    public final AtomicPtr<BoundedQElementContainer> next2 = new AtomicPtr<BoundedQElementContainer>(getDummy(0));
+    public final AtomicReference<BoundedQElementContainer> next2 = new AtomicReference<BoundedQElementContainer>(getDummy(0));
 
     protected BoundedQElementContainer() {
         registerForIndex(); // bounded queue requires containers to be registered
@@ -121,12 +120,11 @@ public abstract class BoundedQElementContainer extends Reusable {
             return;
         }
         assert(dummies == null);
-        dummies = AutoDeleter.addStatic(new BoundedQElementContainer[DUMMY_ELEMENTS]);
+        dummies = new BoundedQElementContainer[DUMMY_ELEMENTS];
         for (int i = 0; i < DUMMY_ELEMENTS; i++) {
             BoundedQElementContainer tmp = new Dummy();
             tmp.next2.set(getDummy(0));
             dummies[i] = tmp;
-            AutoDeleter.addStatic(tmp);
         }
         initialized = true;
     }

@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.thread;
 
-import org.rrlib.finroc_core_utils.jc.AtomicInt64;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Max Reichardt
@@ -32,7 +32,7 @@ import org.rrlib.finroc_core_utils.jc.AtomicInt64;
 public class SpinLock {
 
     /** Stores uid of thread that currently has exclusive access - -1 means none */
-    private final AtomicInt64 mutex = new AtomicInt64(-1);
+    private final AtomicLong mutex = new AtomicLong(-1);
 
     /**
      * Wait until exclusive access is gained

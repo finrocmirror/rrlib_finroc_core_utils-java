@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.stream;
 
-import org.rrlib.finroc_core_utils.jc.AutoDeleter;
 import org.rrlib.finroc_core_utils.jc.HasDestructor;
 import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
 import org.rrlib.finroc_core_utils.jc.container.ReusablesPoolCR;
@@ -88,7 +87,6 @@ public class ChunkedBuffer implements BinarySerializable, ConstSource, Sink, Has
 
     public static void staticInit() {
         chunks = new ReusablesPoolCR<BufferChunk>();
-        AutoDeleter.addStatic(chunks);
     }
 
     public ChunkedBuffer() {

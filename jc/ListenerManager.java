@@ -21,8 +21,9 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc;
 
+import java.util.ArrayList;
+
 import org.rrlib.finroc_core_utils.jc.container.SafeConcurrentlyIterableList;
-import org.rrlib.finroc_core_utils.jc.container.SimpleList;
 
 /**
  * @author Max Reichardt
@@ -139,7 +140,7 @@ public abstract class ListenerManager < ORIGIN, PARAMETER, LISTENERTYPE, T exten
     /**
      * @param result List to write result to: Contains all current listeners after call
      */
-    public void getListenersCopy(SimpleList<LISTENERTYPE> result) {
+    public void getListenersCopy(ArrayList<LISTENERTYPE> result) {
         result.clear();
         if (listenerList != null) {
             ArrayWrapper<LISTENERTYPE> it = listenerList.getIterable();

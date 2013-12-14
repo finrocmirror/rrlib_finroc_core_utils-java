@@ -21,6 +21,8 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author Max Reichardt
  *
@@ -31,7 +33,7 @@ package org.rrlib.finroc_core_utils.jc;
 public class AtomicDoubleInt {
 
     /** Wrapped AtomicInt 32 */
-    private AtomicInt wrapped = new AtomicInt();
+    private AtomicInteger wrapped = new AtomicInteger();
 
     /** Bit mask for first and second number; Number of bits to shift first number */
     private final int mask1, mask2, shift1;

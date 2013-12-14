@@ -21,7 +21,8 @@
 //----------------------------------------------------------------------
 package org.rrlib.finroc_core_utils.jc.stampedptr;
 
-import org.rrlib.finroc_core_utils.jc.AtomicInt64;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.rrlib.finroc_core_utils.jc.container.AbstractReusable;
 import org.rrlib.finroc_core_utils.jc.container.AllocationRegister;
 
@@ -36,7 +37,7 @@ import org.rrlib.finroc_core_utils.jc.container.AllocationRegister;
 public class AtomicStampedPtrIdx64<T extends AbstractReusable> extends AbstractAtomicStampedPtr<T> {
 
     /** wrapped atomic pointer */
-    private AtomicInt64 wrapped = new AtomicInt64();
+    private AtomicLong wrapped = new AtomicLong();
 
     /** Number of bits for index */
     public static final int INDEX_BITS = 32;
