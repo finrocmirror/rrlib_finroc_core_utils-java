@@ -60,7 +60,7 @@ public class AllocationRegister {
 
     /** List of tracked reusables */
     @SuppressWarnings("unused")
-    private final ArrayList<AbstractReusable> trackedReusables = new ArrayList<AbstractReusable>(0x7FFFFFFF - 5);
+    private final ArrayList<AbstractReusable> trackedReusables = new ArrayList<AbstractReusable>();
 
     /** Initial size of indexed-Reusables register */
     private static final int INITIAL_REUSABLES_INDEX_SIZE = 128000;
