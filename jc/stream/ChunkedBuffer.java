@@ -28,7 +28,6 @@ import org.rrlib.serialization.BinaryInputStream;
 import org.rrlib.serialization.BinaryOutputStream;
 import org.rrlib.serialization.BinarySerializable;
 import org.rrlib.serialization.BufferInfo;
-import org.rrlib.serialization.ConstSource;
 import org.rrlib.serialization.FixedBuffer;
 import org.rrlib.serialization.Sink;
 import org.rrlib.serialization.Source;
@@ -61,7 +60,7 @@ import org.rrlib.serialization.rtti.DataTypeBase;
  * in buffer an exception is thrown. So check with available() whether data is available
  * and only commit complete chunks.
  */
-public class ChunkedBuffer implements BinarySerializable, ConstSource, Sink, HasDestructor, Clearable {
+public class ChunkedBuffer implements BinarySerializable, Source, Sink, HasDestructor, Clearable {
 
     /** First chunk in buffer - only changed by reader - next ones can be determined following links through "next"-attributes*/
     protected BufferChunk first;

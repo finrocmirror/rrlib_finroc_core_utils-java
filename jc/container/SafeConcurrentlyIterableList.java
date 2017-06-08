@@ -27,9 +27,24 @@ import org.rrlib.finroc_core_utils.jc.MutexLockOrder;
 /**
  * @author Max Reichardt
  *
- * Implementation of class below.
+ * This list is thread-safe. It can be iterated over (concurrently to modifications)
+ * by many threads without blocking. Iterations are very efficient.
+ * The list may contain null entries after deleting (so check!).
+ *
+ * To efficiently iterate over the list, this code should be used:
+ *
+ *       ArrayWrapper<T> iterable = xyz.getIterable();
+ *       for (int i = 0, n = iterable.size(); i < n; i++) {
+ *          T x = iterable.get(i);
+ *          if (x != null) {
+ *              // do something
+ *          }
+ *       }
+ *
+ * Idea: Unlike ArrayList (Java) or std::vector (C++), old Array backends are deleted deferred so that
+ * threads still iterating over this area can always complete this.
  */
-abstract class SafeConcurrentlyIterableListBase<T> {
+public class SafeConcurrentlyIterableList<T> {
 
     /** Mutex for list - Since we call garbage collector lock for list needs to be before in order */
     public final MutexLockOrder objMutex;
@@ -40,15 +55,30 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     /** optimization variable: There are no free entries before this index */
     private int firstFreeFromHere = 0;
 
+    /** Empty Dummy List */
+    @SuppressWarnings("rawtypes")
+    private static final SafeConcurrentlyIterableList EMPTY = new SafeConcurrentlyIterableList(0, 0);
+
+    /** Factor by which list is enlarged, when backend is too small */
+    private final int resizeFactor;
+
+    /**
+     * @return Empty Dummy List
+     */
+    @SuppressWarnings("rawtypes")
+    public static SafeConcurrentlyIterableList getEmptyInstance() {
+        return EMPTY;
+    }
+
     /**
      * @param initialSize Initial size of backend
      * @param resizeFactor Factor by which list is enlarged, when backend is too small (dummy in C++, template parameter specifies it here)
-     * @param deleteElemsWithList Delete elements when List is deleted? (relevant for C++ only)
      */
     @SuppressWarnings("unchecked")
-    public SafeConcurrentlyIterableListBase(int initialSize) {
+    public SafeConcurrentlyIterableList(int initialSize, int resizeFactor_) {
         objMutex = new MutexLockOrder(Integer.MAX_VALUE - 20);
         currentBackend = initialSize > 0 ? new ArrayWrapper<T>(0, initialSize) : ArrayWrapper.getEmpty();
+        resizeFactor = resizeFactor_;
     }
 
     /**
@@ -73,20 +103,12 @@ abstract class SafeConcurrentlyIterableListBase<T> {
         if (backend.freeCapacity()) {
             backend.add(element);
         } else {
-            ArrayWrapper<T> old = currentBackend;
             ArrayWrapper<T> newBackend = new ArrayWrapper<T>(0, Math.max(1, backend.getCapacity()) * getResizeFactor());
             newBackend.copyAllFrom(backend);
             newBackend.add(element);
             currentBackend = newBackend;
-
-            if (old.size() > 0) { // we don't want to delete empty backend from ArrayWrapper class
-                deleteBackend(old);
-            }
         }
         return currentBackend.size() - 1;
-    }
-
-    private void deleteBackend(ArrayWrapper<T> b) {
     }
 
     /**
@@ -99,12 +121,9 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     /**
      * @return Factor by which list is enlarged, when backend is too small
      */
-    protected abstract int getResizeFactor();
-
-    /**
-     * @return Delete elements when List is deleted? (relevant for C++ only)
-     */
-    protected abstract boolean deleteElemsWithList();
+    protected int getResizeFactor() {
+        return resizeFactor;
+    }
 
     /**
      * Ensure/Reserve specified capacity
@@ -114,12 +133,9 @@ abstract class SafeConcurrentlyIterableListBase<T> {
     public synchronized void ensureCapacity(int cap) {
         ArrayWrapper<T> backend = currentBackend; // acquire non-volatile pointer
         if (backend.getCapacity() < cap) {
-            ArrayWrapper<T> old = currentBackend;
             ArrayWrapper<T> newBackend = new ArrayWrapper<T>(0, cap * getResizeFactor());
             newBackend.copyAllFrom(backend);
             currentBackend = newBackend;
-
-            deleteBackend(old);
         }
     }
 
@@ -198,77 +214,5 @@ abstract class SafeConcurrentlyIterableListBase<T> {
             }
         }
         return true;
-    }
-}
-
-/**
- * @author Max Reichardt
- *
- * This list is thread-safe. It can be iterated over (concurrently to modifications)
- * by many threads without blocking. Iterations are very efficient (both C++ and Java).
- * The list may contain null entries after deleting (so check!).
- *
- * To efficiently iterate over the list, this code should be used:
- *
- *      Java:
- *       ArrayWrapper<T> iterable = xyz.getIterable();
- *       for (int i = 0, n = iterable.size(); i < n; i++) {
- *          T x = iterable.get(i);
- *          if (x != null) {
- *              // do something
- *          }
- *       }
- *
- *      C++:
- *       ArrayWrapper<T>* iterable = xyz.getIterable();
- *       for (int i = 0, n = iterable->size(); i < n; i++) {
- *          T* x = iterable->get(i);
- *          if (x != NULL {
- *              // do something
- *          }
- *       }
- *
- * Idea: Unlike ArrayList (Java) or std::vector (C++), old Array backends are deleted deferred so that
- * threads still iterating over this area can always complete this.
- * TODO: If iterations can be particularly delayed, use a delay-iterator in C++.
- *
- *
- * (C++) This list may only contain pointers (no shared pointers etc. because of thread-safety)...
- *       because only this allows atomic deletion by overwriting with null
- */
-public class SafeConcurrentlyIterableList<T> extends SafeConcurrentlyIterableListBase<T> {
-
-    /** Empty Dummy List */
-    @SuppressWarnings("rawtypes")
-    private static final SafeConcurrentlyIterableList EMPTY = new SafeConcurrentlyIterableList(0, 0);
-
-    /** Factor by which list is enlarged, when backend is too small */
-    private final int resizeFactor;
-
-    /**
-     * @return Empty Dummy List
-     */
-    @SuppressWarnings("rawtypes")
-    public static SafeConcurrentlyIterableList getEmptyInstance() {
-        return EMPTY;
-    }
-
-    /**
-     * @param initialSize Initial size of backend
-     * @param resizeFactor Factor by which list is enlarged, when backend is too small (dummy in C++, template parameter specifies it here)
-     */
-    public SafeConcurrentlyIterableList(int initialSize, int resizeFactor_) {
-        super(initialSize);
-        resizeFactor = resizeFactor_;
-    }
-
-    @Override
-    protected boolean deleteElemsWithList() {
-        return false;
-    }
-
-    @Override
-    protected int getResizeFactor() {
-        return resizeFactor;
     }
 }

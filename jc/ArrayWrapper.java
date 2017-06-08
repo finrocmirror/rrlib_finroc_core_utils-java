@@ -27,8 +27,6 @@ import java.util.Arrays;
  * Wraps an array.
  * The wrapper keeps track of the array's 'capacity' and the number
  * of elements it currently contains ('size').
- * Usually, 'size' and 'capacity' are identical.
- * In C++, bounds checking is done via asserts (=> can be (de)activated).
  *
  * To efficiently iterate over the array, this code should be used:
  *
@@ -36,12 +34,6 @@ import java.util.Arrays;
  *       ArrayWrapper<T> iterable = ...;
  *       for (int i = 0, n = iterable.size(); i < n; i++) {
  *          ... iterable.get(i)
- *       }
- *
- *      C++:
- *       ArrayWrapper<T> iterable = ...;
- *       for (size_t i = 0, n = iterable->size(); i < n; i++) {
- *          ... iterable.get(i)  OR  ... iterable[i]
  *       }
  */
 public class ArrayWrapper<T> {
@@ -121,13 +113,6 @@ public class ArrayWrapper<T> {
     }
 
     /**
-     * @return Backend
-     */
-    public T[] getBackend() {
-        return backend;
-    }
-
-    /**
      * @return Is there free capacity in the array?
      */
     public boolean freeCapacity() {
@@ -153,14 +138,6 @@ public class ArrayWrapper<T> {
             set(i, null);
         }
         size = 0;
-    }
-
-    /**
-     * Clear array contents and delete objects in Array
-     * (should only be used when using array with raw pointers)
-     */
-    public void clearAndDelete() {
-        clear();
     }
 
     /**
@@ -191,7 +168,6 @@ public class ArrayWrapper<T> {
     /**
      * Sets (somewhat virtual) size of Array (not capacity)
      * - if size is reduced, elements are not deleted or set to NULL
-     * (Attention! Potential Java and C++ memory leaks...)
      */
     public void setSize(int newSize) {
         assert(newSize <= backend.length);
